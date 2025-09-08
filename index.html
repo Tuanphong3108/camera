@@ -289,20 +289,6 @@
                 <button id="retake-button" class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-full transition-colors hidden">Chụp lại</button>
             </div>
         </div>
-
-        <!-- Khu vực hiển thị nội dung AI -->
-        <div id="ai-buttons" class="flex flex-col items-center gap-4 mt-4 w-full hidden">
-            <div class="flex justify-center gap-4 w-full">
-                <button id="analyze-button" class="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-full transition-colors flex items-center justify-center gap-2">
-                    ✨ Phân tích ảnh
-                </button>
-                <button id="story-button" class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-full transition-colors flex items-center justify-center gap-2">
-                    ✨ Viết truyện
-                </button>
-            </div>
-            <div id="ai-output" class="text-white text-sm"></div>
-        </div>
-
         <button id="restart-button" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-full transition-colors">Khởi động lại</button>
         
         <div id="status-message" class="absolute top-2 px-4 py-2 bg-white/20 text-white rounded-full text-sm opacity-0 transition-opacity duration-300 pointer-events-none"></div>
@@ -342,10 +328,6 @@
         const modeVideoButton = document.getElementById('mode-video-button');
         const modeButtonsContainer = document.getElementById('mode-buttons-container');
         const restartButton = document.getElementById('restart-button');
-        const aiButtonsContainer = document.getElementById('ai-buttons');
-        const analyzeButton = document.getElementById('analyze-button');
-        const storyButton = document.getElementById('story-button');
-        const aiOutputDiv = document.getElementById('ai-output');
         const recordingTimer = document.getElementById('recording-timer');
 
         // Nút điều khiển video tùy chỉnh
@@ -360,10 +342,56 @@
         let recordedChunks = [];
         let timerInterval = null;
         let startTime = null;
+        
+        // --- CÁC BIẾN VÀ HÀM LIÊN QUAN ĐẾN ÂM THANH ---
+        let audioContext = null;
+        let shutterBuffer = null;
+        let beepBuffer = null;
+        
+        // Hàm tạo một bộ đệm âm thanh từ tần số và thời gian
+        const createAudioBuffer = (frequency, duration, volume) => {
+            if (!audioContext) return null;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.value = frequency;
+            gainNode.gain.value = volume;
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Tạm thời tạo bộ đệm, không phát ngay
+            const buffer = audioContext.createBuffer(1, audioContext.sampleRate * duration, audioContext.sampleRate);
+            const channelData = buffer.getChannelData(0);
+            for (let i = 0; i < channelData.length; i++) {
+                channelData[i] = Math.sin(2 * Math.PI * frequency * (i / audioContext.sampleRate)) * volume;
+            }
+            return buffer;
+        };
+        
+        // Hàm phát âm thanh từ một bộ đệm
+        const playSound = (buffer) => {
+            if (!audioContext || !buffer) return;
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            source.start();
+        };
 
-        // API Key cho Gemini API
-        const apiKey = "";
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+        // Hàm khởi tạo AudioContext và các bộ đệm âm thanh
+        const setupAudio = () => {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                // Tạo âm thanh cho tiếng chụp ảnh (tần số cao, ngắn)
+                shutterBuffer = createAudioBuffer(4400, 0.1, 0.5);
+                // Tạo âm thanh tiếng bíp (tần số trung bình, ngắn)
+                beepBuffer = createAudioBuffer(1000, 0.2, 0.8);
+            } catch (e) {
+                console.error("Web Audio API không được hỗ trợ:", e);
+            }
+        };
+        // --- KẾT THÚC CÁC HÀM ÂM THANH ---
 
         // Hàm hiển thị thông báo
         const showMessage = (message) => {
@@ -380,6 +408,14 @@
         const startCamera = async () => {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 showMessage('Trình duyệt không hỗ trợ truy cập camera.');
+                // Ẩn splash screen sau 2s ngay cả khi lỗi
+                setTimeout(() => {
+                    splashScreen.style.opacity = '0';
+                    splashScreen.style.pointerEvents = 'none';
+
+                    cameraScreen.style.opacity = '1';
+                    cameraScreen.style.pointerEvents = 'auto';
+                }, 2000);
                 return;
             }
             try {
@@ -396,9 +432,28 @@
                 videoElement.srcObject = stream;
                 videoElement.play();
                 showMessage('Camera đã sẵn sàng.');
+
+                // Ẩn màn hình khởi động và hiện giao diện chính sau 2 giây
+                setTimeout(() => {
+                    splashScreen.style.opacity = '0';
+                    splashScreen.style.pointerEvents = 'none';
+
+                    cameraScreen.style.opacity = '1';
+                    cameraScreen.style.pointerEvents = 'auto';
+                }, 2000);
+
             } catch (err) {
                 console.error("Lỗi khi truy cập camera:", err);
                 showMessage(`Lỗi: Không thể truy cập camera. Vui lòng kiểm tra quyền.`);
+
+                // Vẫn ẩn màn hình khởi động sau 2 giây để hiển thị thông báo lỗi
+                setTimeout(() => {
+                    splashScreen.style.opacity = '0';
+                    splashScreen.style.pointerEvents = 'none';
+                    
+                    cameraScreen.style.opacity = '1';
+                    cameraScreen.style.pointerEvents = 'auto';
+                }, 2000);
             }
         };
 
@@ -457,13 +512,12 @@
             recordedVideoContainer.style.display = 'none';
             downloadButton.classList.add('hidden');
             retakeButton.classList.add('hidden');
-            aiButtonsContainer.classList.add('hidden');
-            aiOutputDiv.style.display = 'none';
         };
 
         // Hàm chụp ảnh
         const takePhoto = () => {
             if (stream) {
+                playSound(shutterBuffer); // Phát tiếng chụp ảnh
                 const videoSettings = stream.getVideoTracks()[0].getSettings();
                 canvasElement.width = videoSettings.width;
                 canvasElement.height = videoSettings.height;
@@ -487,8 +541,6 @@
                 downloadButton.classList.remove('hidden');
                 retakeButton.classList.remove('hidden');
                 modeButtonsContainer.classList.add('hidden');
-                aiButtonsContainer.classList.remove('hidden');
-
                 downloadButton.textContent = 'Tải xuống ảnh';
                 showMessage('Đã chụp ảnh!');
             }
@@ -500,6 +552,7 @@
                 mediaRecorder.stop();
                 recordingIndicator.style.display = 'none';
                 stopTimer();
+                playSound(beepBuffer); // Phát tiếng bíp khi dừng
                 showMessage('Đã dừng quay video.');
             } else {
                 recordedChunks = [];
@@ -544,6 +597,7 @@
                 mediaRecorder.start();
                 recordingIndicator.style.display = 'block';
                 startTimer();
+                playSound(beepBuffer); // Phát tiếng bíp khi bắt đầu
                 showMessage('Đang quay video...');
             }
         };
@@ -560,8 +614,6 @@
             downloadButton.classList.add('hidden');
             retakeButton.classList.add('hidden');
             modeButtonsContainer.classList.remove('hidden');
-            aiButtonsContainer.classList.add('hidden');
-            aiOutputDiv.style.display = 'none';
 
             // Reset video state và overlay
             recordedVideoElement.pause();
@@ -594,113 +646,6 @@
             document.body.removeChild(link);
             showMessage('Đang tải về...');
         };
-
-        // Hàm gửi ảnh đến Gemini API để phân tích
-        const analyzeImage = async () => {
-            if (!capturedImage.src) {
-                showMessage("Không có ảnh để phân tích.");
-                return;
-            }
-            
-            analyzeButton.textContent = "Đang phân tích...";
-            analyzeButton.disabled = true;
-            storyButton.disabled = true;
-
-            aiOutputDiv.textContent = "Đang phân tích ảnh...";
-            aiOutputDiv.style.display = 'block';
-
-            const base64Data = capturedImage.src.split(',')[1];
-            const prompt = "Hãy mô tả bức ảnh này bằng tiếng Việt.";
-
-            const payload = {
-                contents: [
-                    {
-                        role: "user",
-                        parts: [
-                            { text: prompt },
-                            {
-                                inlineData: {
-                                    mimeType: "image/png",
-                                    data: base64Data
-                                }
-                            }
-                        ]
-                    }
-                ],
-            };
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                aiOutputDiv.textContent = text || "Không thể phân tích ảnh. Vui lòng thử lại.";
-            } catch (error) {
-                console.error("Lỗi khi gọi Gemini API:", error);
-                aiOutputDiv.textContent = "Đã xảy ra lỗi khi kết nối với AI. Vui lòng thử lại.";
-            } finally {
-                analyzeButton.textContent = "✨ Phân tích ảnh";
-                analyzeButton.disabled = false;
-                storyButton.disabled = false;
-            }
-        };
-
-        // Hàm gửi ảnh đến Gemini API để viết truyện
-        const createStory = async () => {
-            if (!capturedImage.src) {
-                showMessage("Không có ảnh để viết truyện.");
-                return;
-            }
-            
-            storyButton.textContent = "Đang viết truyện...";
-            analyzeButton.disabled = true;
-            storyButton.disabled = true;
-
-            aiOutputDiv.textContent = "Đang viết một câu chuyện thú vị...";
-            aiOutputDiv.style.display = 'block';
-
-            const base64Data = capturedImage.src.split(',')[1];
-            const prompt = "Dựa vào bức ảnh này, hãy viết một câu chuyện ngắn bằng tiếng Việt. Câu chuyện nên có bối cảnh, nhân vật, và một tình tiết bất ngờ.";
-
-            const payload = {
-                contents: [
-                    {
-                        role: "user",
-                        parts: [
-                            { text: prompt },
-                            {
-                                inlineData: {
-                                    mimeType: "image/png",
-                                    data: base64Data
-                                }
-                            }
-                        ]
-                    }
-                ],
-            };
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                aiOutputDiv.textContent = text || "Không thể tạo câu chuyện. Vui lòng thử lại.";
-            } catch (error) {
-                console.error("Lỗi khi gọi Gemini API:", error);
-                aiOutputDiv.textContent = "Đã xảy ra lỗi khi kết nối với AI. Vui lòng thử lại.";
-            } finally {
-                storyButton.textContent = "✨ Viết truyện";
-                analyzeButton.disabled = false;
-                storyButton.disabled = false;
-            }
-        };
-
 
         // Xử lý nút điều khiển video tùy chỉnh
         playPauseButton.addEventListener('click', () => {
@@ -744,29 +689,15 @@
         restartButton.addEventListener('click', () => {
             location.reload();
         });
-
-        // Xử lý sự kiện click cho các nút AI mới
-        analyzeButton.addEventListener('click', analyzeImage);
-        storyButton.addEventListener('click', createStory);
-
-        // Logic của màn hình chào
-        const initializeApp = () => {
-            switchMode('photo');
-            startCamera();
-            
-            // Ẩn splash screen và hiện giao diện chính sau 2 giây
-            setTimeout(() => {
-                splashScreen.style.opacity = '0';
-                splashScreen.style.pointerEvents = 'none';
-
-                cameraScreen.style.opacity = '1';
-                cameraScreen.style.pointerEvents = 'auto';
-            }, 2000);
-        };
         
         // Khởi động ứng dụng khi tải trang
-        window.onload = initializeApp;
+        window.onload = () => {
+            setupAudio(); // Khởi tạo âm thanh
+            switchMode('photo');
+            startCamera();
+        };
 
     </script>
 </body>
 </html>
+
