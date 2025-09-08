@@ -1,49 +1,42 @@
 // Tên cache
-const CACHE_NAME = 'camera-pwa-cache-v1';
+const CACHE_NAME = 'camera-pwa-cache-v2';
+
 // Các file cần lưu cache
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  // Thêm các file icon nếu có
-  // '/icon-192x192.png',
-  // '/icon-512x512.png'
+  '/camera/',
+  '/camera/index.html',
+  '/camera/manifest.json',
+  '/camera/icon.png',
+  // thêm js/css nếu có
 ];
 
-// Sự kiện install: Cài đặt service worker và lưu cache các file cần thiết
+// Sự kiện install
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Cache đã được mở');
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('Cache đã được mở');
+      return cache.addAll(urlsToCache);
+    })
   );
 });
 
-// Sự kiện fetch: Phản hồi từ cache khi offline
+// Sự kiện fetch
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Trả về file từ cache nếu có
-        if (response) {
-          return response;
-        }
-        // Nếu không có, tải về từ mạng
-        return fetch(event.request);
-      })
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
   );
 });
 
-// Sự kiện activate: Dọn dẹp cache cũ
+// Sự kiện activate: dọn cache cũ
 self.addEventListener('activate', (event) => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
+          if (!cacheWhitelist.includes(cacheName)) {
             return caches.delete(cacheName);
           }
         })
