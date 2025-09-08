@@ -280,7 +280,15 @@
             }
             try {
                 // Yêu cầu quyền truy cập cả video (camera) và audio (mic)
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: true });
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        aspectRatio: 16/9
+                    },
+                    audio: true
+                });
                 videoElement.srcObject = stream;
                 videoElement.play();
                 showMessage('Camera đã sẵn sàng.');
@@ -317,8 +325,9 @@
         // Hàm chụp ảnh
         const takePhoto = () => {
             if (stream) {
-                canvasElement.width = videoElement.videoWidth;
-                canvasElement.height = videoElement.videoHeight;
+                const videoSettings = stream.getVideoTracks()[0].getSettings();
+                canvasElement.width = videoSettings.width;
+                canvasElement.height = videoSettings.height;
                 
                 const context = canvasElement.getContext('2d');
                 // Lật ngược ảnh để lưu
