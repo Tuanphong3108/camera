@@ -39,6 +39,10 @@
             position: relative;
         }
 
+        #camera-screen {
+            animation: flyIn 1s ease-out forwards;
+        }
+
         #video-container, #photo-container, #recorded-video-container {
             width: 100%;
             height: 100%;
@@ -100,6 +104,17 @@
             50% { transform: scale(1.2); opacity: 0.7; }
             100% { transform: scale(1); opacity: 1; }
         }
+        
+        @keyframes flyIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
         /* CSS cho nút điều khiển video tùy chỉnh */
         #video-overlay {
@@ -135,6 +150,14 @@
 
         #play-pause-button:hover {
             background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* CSS cho nút khởi động lại ở góc */
+        #restart-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10;
         }
     </style>
 </head>
@@ -187,6 +210,8 @@
                 <button id="retake-button" class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-full transition-colors hidden">Chụp lại</button>
             </div>
         </div>
+
+        <button id="restart-button" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-full transition-colors">Khởi động lại app</button>
         
         <div id="status-message" class="absolute top-2 px-4 py-2 bg-white/20 text-white rounded-full text-sm opacity-0 transition-opacity duration-300 pointer-events-none"></div>
     </div>
@@ -223,6 +248,7 @@
         const modePhotoButton = document.getElementById('mode-photo-button');
         const modeVideoButton = document.getElementById('mode-video-button');
         const modeButtonsContainer = document.getElementById('mode-buttons-container');
+        const restartButton = document.getElementById('restart-button');
 
         // Nút điều khiển video tùy chỉnh
         const videoOverlay = document.getElementById('video-overlay');
@@ -455,6 +481,9 @@
         });
         retakeButton.addEventListener('click', retake);
         downloadButton.addEventListener('click', saveFile);
+        restartButton.addEventListener('click', () => {
+            location.reload();
+        });
 
         // Khởi động chế độ mặc định khi tải trang
         window.onload = () => {
