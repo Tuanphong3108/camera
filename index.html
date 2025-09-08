@@ -181,6 +181,20 @@
             white-space: pre-wrap;
             display: none;
         }
+
+        #recording-timer {
+            position: absolute;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0.25rem 0.75rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            color: white;
+            z-index: 10;
+            display: none; /* Mặc định ẩn */
+        }
     </style>
 </head>
 <body class="selection:bg-white/20 selection:text-white">
@@ -223,6 +237,9 @@
                 <button id="mode-photo-button" class="px-4 py-2 rounded-full font-medium transition-colors bg-blue-600">Ảnh</button>
                 <button id="mode-video-button" class="px-4 py-2 rounded-full font-medium transition-colors bg-gray-600 hover:bg-gray-700">Video</button>
             </div>
+
+            <!-- Bộ đếm thời gian video mới -->
+            <div id="recording-timer" class="px-4 py-2 bg-white/20 text-white rounded-full text-sm">00:00</div>
             
             <div class="flex items-center justify-center w-full max-w-sm">
                 <button id="capture-button" class="w-16 h-16 rounded-full bg-white relative group transition-transform duration-200 active:scale-95 shadow-lg">
@@ -291,6 +308,7 @@
         const analyzeButton = document.getElementById('analyze-button');
         const storyButton = document.getElementById('story-button');
         const aiOutputDiv = document.getElementById('ai-output');
+        const recordingTimer = document.getElementById('recording-timer');
 
         // Nút điều khiển video tùy chỉnh
         const videoOverlay = document.getElementById('video-overlay');
@@ -302,6 +320,8 @@
         let currentMode = 'photo'; // Mặc định là chế độ chụp ảnh
         let mediaRecorder = null;
         let recordedChunks = [];
+        let timerInterval = null;
+        let startTime = null;
 
         // API Key cho Gemini API
         const apiKey = "";
@@ -344,6 +364,38 @@
             }
         };
 
+        // Hàm bắt đầu bộ đếm giờ
+        const startTimer = () => {
+            startTime = Date.now();
+            recordingTimer.textContent = '00:00';
+            recordingTimer.style.display = 'block';
+
+            timerInterval = setInterval(() => {
+                const elapsedTime = Date.now() - startTime;
+                const totalSeconds = Math.floor(elapsedTime / 1000);
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+
+                let formattedTime = '';
+                if (hours > 0) {
+                    formattedTime += `${hours.toString().padStart(2, '0')}:`;
+                }
+                formattedTime += `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                recordingTimer.textContent = formattedTime;
+            }, 1000);
+        };
+
+        // Hàm dừng bộ đếm giờ
+        const stopTimer = () => {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                recordingTimer.style.display = 'none';
+            }
+        };
+
         // Hàm chuyển chế độ
         const switchMode = (mode) => {
             currentMode = mode;
@@ -353,6 +405,7 @@
                 modeVideoButton.classList.add('bg-gray-600', 'hover:bg-gray-700');
                 captureButton.style.backgroundColor = 'white';
                 captureButton.innerHTML = `<div class="absolute inset-0 m-auto w-12 h-12 bg-white/20 rounded-full group-hover:bg-white/30 transition-all"></div>`;
+                stopTimer(); // Dừng bộ đếm khi chuyển sang chế độ ảnh
             } else {
                 modeVideoButton.classList.add('bg-blue-600');
                 modePhotoButton.classList.remove('bg-blue-600');
@@ -408,6 +461,7 @@
             if (mediaRecorder && mediaRecorder.state === 'recording') {
                 mediaRecorder.stop();
                 recordingIndicator.style.display = 'none';
+                stopTimer();
                 showMessage('Đã dừng quay video.');
             } else {
                 recordedChunks = [];
@@ -451,6 +505,7 @@
                 
                 mediaRecorder.start();
                 recordingIndicator.style.display = 'block';
+                startTimer();
                 showMessage('Đang quay video...');
             }
         };
@@ -476,7 +531,7 @@
             videoOverlay.classList.remove('hidden');
             playIcon.classList.remove('hidden');
             pauseIcon.classList.add('hidden');
-
+            stopTimer();
             startCamera();
         };
 
@@ -508,6 +563,10 @@
                 showMessage("Không có ảnh để phân tích.");
                 return;
             }
+            
+            analyzeButton.textContent = "Đang phân tích...";
+            analyzeButton.disabled = true;
+            storyButton.disabled = true;
 
             aiOutputDiv.textContent = "Đang phân tích ảnh...";
             aiOutputDiv.style.display = 'block';
@@ -544,6 +603,10 @@
             } catch (error) {
                 console.error("Lỗi khi gọi Gemini API:", error);
                 aiOutputDiv.textContent = "Đã xảy ra lỗi khi kết nối với AI. Vui lòng thử lại.";
+            } finally {
+                analyzeButton.textContent = "✨ Phân tích ảnh";
+                analyzeButton.disabled = false;
+                storyButton.disabled = false;
             }
         };
 
@@ -553,6 +616,10 @@
                 showMessage("Không có ảnh để viết truyện.");
                 return;
             }
+            
+            storyButton.textContent = "Đang viết truyện...";
+            analyzeButton.disabled = true;
+            storyButton.disabled = true;
 
             aiOutputDiv.textContent = "Đang viết một câu chuyện thú vị...";
             aiOutputDiv.style.display = 'block';
@@ -589,6 +656,10 @@
             } catch (error) {
                 console.error("Lỗi khi gọi Gemini API:", error);
                 aiOutputDiv.textContent = "Đã xảy ra lỗi khi kết nối với AI. Vui lòng thử lại.";
+            } finally {
+                storyButton.textContent = "✨ Viết truyện";
+                analyzeButton.disabled = false;
+                storyButton.disabled = false;
             }
         };
 
