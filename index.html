@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Ẩn thanh cuộn */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            height: 100%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #video-container, #photo-container, #recorded-video-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-color: #111;
+            border-radius: 1rem;
+            position: relative;
+        }
+
+        video, canvas, img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 1rem;
+        }
+
+        #photo-container, #recorded-video-container {
+            display: none;
+        }
+
+        .setup-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .message-box {
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        #recording-indicator {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            width: 0.75rem;
+            height: 0.75rem;
+            background-color: red;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* CSS cho nút điều khiển video tùy chỉnh */
+        #video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        #video-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #play-pause-button {
+            width: 4rem;
+            height: 4rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #play-pause-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="selection:bg-white/20 selection:text-white">
+
+    <!-- Khu vực thiết lập ban đầu -->
+    <div id="setup-screen" class="container bg-gray-900 rounded-3xl shadow-xl flex-col items-center justify-center">
+
+        <!-- Bước 1: Xin quyền truy cập thư mục -->
+        <div id="setup-step-1" class="setup-screen">
+            <h1 class="text-2xl font-bold mb-4">Chào mừng đến với Ứng Dụng Camera!</h1>
+            <p class="text-gray-400 text-sm mb-6">Đây là lần đầu bạn sử dụng. Chúng ta cùng thiết lập nhé.</p>
+            <div class="message-box max-w-sm">
+                <p class="text-sm font-medium">Để tiện lợi, bạn có muốn cho phép ứng dụng lưu ảnh trực tiếp vào máy không?</p>
+                <p class="text-xs text-gray-500 mt-2">Tính năng này phụ thuộc vào trình duyệt, nếu không hỗ trợ, ảnh sẽ được tải về như thông thường.</p>
+            </div>
+            <div class="flex gap-4">
+                <button id="save-now-button" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-colors">Thiết lập ngay</button>
+                <button id="save-later-button" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-full transition-colors">Để sau</button>
+            </div>
+        </div>
+
+        <!-- Bước 2: Xin quyền truy cập Camera/Mic -->
+        <div id="setup-step-2" class="setup-screen hidden">
+            <h1 class="text-2xl font-bold mb-4">Quyền truy cập Camera</h1>
+            <p class="text-gray-400 text-sm mb-6">Để chụp ảnh và quay video, ứng dụng cần truy cập Camera và Mic.</p>
+            <button id="allow-camera-button" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-colors">Cho phép</button>
+        </div>
+    </div>
+
+    <!-- Khu vực ứng dụng camera chính -->
+    <div id="camera-screen" class="container bg-gray-900 rounded-3xl shadow-xl p-4 flex-col items-center hidden">
+        <!-- Live view -->
+        <div id="video-container" class="w-full h-full bg-gray-800 rounded-2xl flex items-center justify-center relative">
+            <video id="camera-video" playsinline></video>
+            <div id="recording-indicator"></div>
+        </div>
+        
+        <!-- Ảnh đã chụp -->
+        <div id="photo-container" class="w-full h-full bg-gray-800 rounded-2xl flex items-center justify-center">
+            <canvas id="photo-canvas" class="hidden"></canvas>
+            <img id="captured-image" class="w-full h-full object-contain hidden" alt="Ảnh đã chụp">
+        </div>
+
+        <!-- Video đã quay -->
+        <div id="recorded-video-container" class="w-full h-full bg-gray-800 rounded-2xl flex items-center justify-content-center">
+            <video id="recorded-video" class="hidden"></video>
+            <div id="video-overlay">
+                <button id="play-pause-button">
+                    <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-12 h-12">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.262-2.175A2 2 0 008 10.435v3.13a2 2 0 003.49 1.582l3.262-2.175a2 2 0 000-3.164z" />
+                    </svg>
+                    <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-12 h-12 hidden">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 5v14M18 5v14" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Các nút điều khiển -->
+        <div class="flex flex-col items-center gap-4 mt-6 w-full">
+            <div id="mode-buttons-container" class="flex justify-center gap-4 w-full text-white">
+                <button id="mode-photo-button" class="px-4 py-2 rounded-full font-medium transition-colors bg-blue-600">Ảnh</button>
+                <button id="mode-video-button" class="px-4 py-2 rounded-full font-medium transition-colors bg-gray-600 hover:bg-gray-700">Video</button>
+            </div>
+            
+            <div class="flex items-center justify-center w-full max-w-sm">
+                <button id="capture-button" class="w-16 h-16 rounded-full bg-white relative group transition-transform duration-200 active:scale-95 shadow-lg">
+                    <div class="absolute inset-0 m-auto w-12 h-12 bg-white/20 rounded-full group-hover:bg-white/30 transition-all"></div>
+                </button>
+            </div>
+            
+            <div class="flex items-center justify-center gap-4 w-full">
+                <button id="download-button" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-colors hidden">Tải xuống</button>
+                <button id="retake-button" class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-full transition-colors hidden">Chụp lại</button>
+            </div>
+        </div>
+        
+        <div id="status-message" class="absolute top-2 px-4 py-2 bg-white/20 text-white rounded-full text-sm opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+    </div>
+
+    <script>
+        // Đăng ký Service Worker để bật tính năng PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js').then(registration => {
+                    console.log('Service Worker đã được đăng ký thành công:', registration.scope);
+                }).catch(err => {
+                    console.error('Đăng ký Service Worker thất bại:', err);
+                });
+            });
+        }
+    </script>
+    
+    <script>
+        // Lấy các phần tử DOM
+        const setupScreen = document.getElementById('setup-screen');
+        const setupStep1 = document.getElementById('setup-step-1');
+        const setupStep2 = document.getElementById('setup-step-2');
+        const cameraScreen = document.getElementById('camera-screen');
+        
+        const saveNowButton = document.getElementById('save-now-button');
+        const saveLaterButton = document.getElementById('save-later-button');
+        const allowCameraButton = document.getElementById('allow-camera-button');
+
+        const videoElement = document.getElementById('camera-video');
+        const canvasElement = document.getElementById('photo-canvas');
+        const capturedImage = document.getElementById('captured-image');
+        const recordedVideoElement = document.getElementById('recorded-video');
+        const captureButton = document.getElementById('capture-button');
+        const downloadButton = document.getElementById('download-button');
+        const retakeButton = document.getElementById('retake-button');
+        const statusMessage = document.getElementById('status-message');
+        const videoContainer = document.getElementById('video-container');
+        const photoContainer = document.getElementById('photo-container');
+        const recordedVideoContainer = document.getElementById('recorded-video-container');
+        const recordingIndicator = document.getElementById('recording-indicator');
+        const modePhotoButton = document.getElementById('mode-photo-button');
+        const modeVideoButton = document.getElementById('mode-video-button');
+        const modeButtonsContainer = document.getElementById('mode-buttons-container');
+
+        // Nút điều khiển video tùy chỉnh
+        const videoOverlay = document.getElementById('video-overlay');
+        const playPauseButton = document.getElementById('play-pause-button');
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+
+        let stream = null;
+        let saveMethod = 'download'; // Mặc định là tải về
+        let currentMode = 'photo'; // Mặc định là chế độ chụp ảnh
+        let mediaRecorder = null;
+        let recordedChunks = [];
+
+        // Hàm hiển thị thông báo
+        const showMessage = (message) => {
+            statusMessage.textContent = message;
+            statusMessage.classList.remove('opacity-0');
+            statusMessage.classList.add('opacity-100');
+            setTimeout(() => {
+                statusMessage.classList.remove('opacity-100');
+                statusMessage.classList.add('opacity-0');
+            }, 3000);
+        };
+        
+        // Hàm bắt đầu camera
+        const startCamera = async () => {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showMessage('Trình duyệt không hỗ trợ truy cập camera.');
+                return;
+            }
+            try {
+                // Yêu cầu quyền truy cập cả video (camera) và audio (mic)
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: true });
+                videoElement.srcObject = stream;
+                videoElement.play();
+                showMessage('Camera đã sẵn sàng.');
+                // Ẩn màn hình thiết lập và hiển thị màn hình camera
+                setupScreen.classList.add('hidden');
+                cameraScreen.classList.remove('hidden');
+            } catch (err) {
+                console.error("Lỗi khi truy cập camera:", err);
+                showMessage(`Lỗi: Không thể truy cập camera. Vui lòng kiểm tra quyền.`);
+            }
+        };
+
+        // Hàm chuyển chế độ
+        const switchMode = (mode) => {
+            currentMode = mode;
+            if (mode === 'photo') {
+                modePhotoButton.classList.add('bg-blue-600');
+                modeVideoButton.classList.remove('bg-blue-600');
+                modeVideoButton.classList.add('bg-gray-600', 'hover:bg-gray-700');
+                captureButton.style.backgroundColor = 'white';
+                captureButton.innerHTML = `<div class="absolute inset-0 m-auto w-12 h-12 bg-white/20 rounded-full group-hover:bg-white/30 transition-all"></div>`;
+            } else {
+                modeVideoButton.classList.add('bg-blue-600');
+                modePhotoButton.classList.remove('bg-blue-600');
+                modePhotoButton.classList.add('bg-gray-600', 'hover:bg-gray-700');
+                captureButton.style.backgroundColor = 'red';
+                captureButton.innerHTML = `<div class="absolute inset-0 m-auto w-12 h-12 bg-red-500 rounded-full group-hover:bg-red-400 transition-all"></div>`;
+            }
+            // Reset lại giao diện
+            videoContainer.style.display = 'flex';
+            photoContainer.style.display = 'none';
+            recordedVideoContainer.style.display = 'none';
+            downloadButton.classList.add('hidden');
+            retakeButton.classList.add('hidden');
+        };
+
+        // Hàm chụp ảnh
+        const takePhoto = () => {
+            if (stream) {
+                canvasElement.width = videoElement.videoWidth;
+                canvasElement.height = videoElement.videoHeight;
+                
+                const context = canvasElement.getContext('2d');
+                context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+                const imageDataUrl = canvasElement.toDataURL('image/png');
+                capturedImage.src = imageDataUrl;
+                
+                videoContainer.style.display = 'none';
+                photoContainer.style.display = 'flex';
+                capturedImage.classList.remove('hidden');
+                
+                captureButton.classList.add('hidden');
+                downloadButton.classList.remove('hidden');
+                retakeButton.classList.remove('hidden');
+                modeButtonsContainer.classList.add('hidden');
+
+                if (saveMethod === 'download') {
+                    downloadButton.textContent = 'Tải xuống';
+                } else {
+                    downloadButton.textContent = 'Lưu ảnh';
+                }
+
+                showMessage('Đã chụp ảnh!');
+            }
+        };
+
+        // Hàm bắt đầu/dừng quay video
+        const toggleRecording = () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                recordingIndicator.style.display = 'none';
+                showMessage('Đã dừng quay video.');
+            } else {
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const videoUrl = URL.createObjectURL(videoBlob);
+                    
+                    recordedVideoElement.src = videoUrl;
+                    recordedVideoElement.classList.remove('hidden');
+                    recordedVideoElement.load(); // Load the video source
+
+                    videoContainer.style.display = 'none';
+                    recordedVideoContainer.style.display = 'flex';
+                    
+                    captureButton.classList.add('hidden');
+                    downloadButton.classList.remove('hidden');
+                    retakeButton.classList.remove('hidden');
+                    modeButtonsContainer.classList.add('hidden');
+                    
+                    if (saveMethod === 'download') {
+                        downloadButton.textContent = 'Tải xuống';
+                    } else {
+                        downloadButton.textContent = 'Lưu video';
+                    }
+
+                    // Thử phát video ngay khi nó đã tải xong
+                    recordedVideoElement.oncanplaythrough = () => {
+                        recordedVideoElement.play().catch(e => {
+                            console.error("Lỗi tự động phát video:", e);
+                            showMessage("Bấm nút Play để xem video.");
+                            videoOverlay.classList.remove('hidden');
+                            playIcon.classList.remove('hidden');
+                            pauseIcon.classList.add('hidden');
+                        });
+                    };
+                };
+                
+                mediaRecorder.start();
+                recordingIndicator.style.display = 'block';
+                showMessage('Đang quay video...');
+            }
+        };
+
+        // Hàm quay lại
+        const retake = () => {
+            videoContainer.style.display = 'flex';
+            photoContainer.style.display = 'none';
+            recordedVideoContainer.style.display = 'none';
+            capturedImage.classList.add('hidden');
+            recordedVideoElement.classList.add('hidden');
+            
+            captureButton.classList.remove('hidden');
+            downloadButton.classList.add('hidden');
+            retakeButton.classList.add('hidden');
+            modeButtonsContainer.classList.remove('hidden');
+
+            // Reset video state và overlay
+            recordedVideoElement.pause();
+            recordedVideoElement.removeAttribute('src');
+            videoOverlay.classList.remove('hidden');
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+
+            startCamera();
+        };
+
+        // Hàm lưu file (ảnh hoặc video)
+        const saveFile = async () => {
+            let fileBlob;
+            let fileType;
+            let fileName;
+
+            if (currentMode === 'photo') {
+                fileBlob = await new Promise(resolve => canvasElement.toBlob(resolve, 'image/png'));
+                fileType = 'image/png';
+                fileName = `photo-${Date.now()}.png`;
+            } else {
+                fileBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                fileType = 'video/webm';
+                fileName = `video-${Date.now()}.webm`;
+            }
+
+            if (saveMethod === 'download') {
+                const link = document.createElement('a');
+                link.download = fileName;
+                link.href = URL.createObjectURL(fileBlob);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showMessage('Đang tải về...');
+            } else if (saveMethod === 'file-system-access') {
+                if ('showSaveFilePicker' in window) {
+                    try {
+                        const fileHandle = await window.showSaveFilePicker({
+                            suggestedName: fileName,
+                            types: [{
+                                description: 'Tệp',
+                                accept: { [fileType]: ['.png', '.webm'] },
+                            }],
+                        });
+                        const writableStream = await fileHandle.createWritable();
+                        await writableStream.write(fileBlob);
+                        await writableStream.close();
+                        showMessage('Đã lưu vào máy!');
+                    } catch (err) {
+                        console.error("Lỗi khi lưu file:", err);
+                        showMessage('Lỗi: Không thể lưu file vào máy.');
+                    }
+                } else {
+                    showMessage('Trình duyệt không hỗ trợ lưu trực tiếp. Sẽ tải về như thông thường.');
+                    saveMethod = 'download';
+                    saveFile(); // Tự động gọi lại để tải về
+                }
+            }
+        };
+
+        // Xử lý nút điều khiển video tùy chỉnh
+        playPauseButton.addEventListener('click', () => {
+            if (recordedVideoElement.paused || recordedVideoElement.ended) {
+                recordedVideoElement.play();
+            } else {
+                recordedVideoElement.pause();
+            }
+        });
+
+        recordedVideoElement.addEventListener('play', () => {
+            videoOverlay.classList.add('hidden');
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+        });
+
+        recordedVideoElement.addEventListener('pause', () => {
+            videoOverlay.classList.remove('hidden');
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+        });
+
+        recordedVideoElement.addEventListener('ended', () => {
+            videoOverlay.classList.remove('hidden');
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+        });
+
+        // Xử lý các sự kiện click
+        saveNowButton.addEventListener('click', () => {
+            saveMethod = 'file-system-access';
+            setupStep1.classList.add('hidden');
+            setupStep2.classList.remove('hidden');
+        });
+        
+        saveLaterButton.addEventListener('click', () => {
+            saveMethod = 'download';
+            setupStep1.classList.add('hidden');
+            setupStep2.classList.remove('hidden');
+        });
+
+        allowCameraButton.addEventListener('click', startCamera);
+        modePhotoButton.addEventListener('click', () => switchMode('photo'));
+        modeVideoButton.addEventListener('click', () => switchMode('video'));
+        captureButton.addEventListener('click', () => {
+            if (currentMode === 'photo') {
+                takePhoto();
+            } else {
+                toggleRecording();
+            }
+        });
+        retakeButton.addEventListener('click', retake);
+        downloadButton.addEventListener('click', saveFile);
+
+        // Khởi động chế độ mặc định khi tải trang
+        window.onload = () => {
+            switchMode('photo');
+        };
+
+    </script>
+</body>
+</html>
