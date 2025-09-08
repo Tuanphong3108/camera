@@ -1,6 +1,6 @@
 {
-"name": "Chụp Ảnh PWA",
-"short_name": "Camera PWA",
+"name": "Camera",
+"short_name": "Camera",
 "description": "Ứng dụng camera đơn giản được cài đặt từ web.",
 "start_url": "/index.html",
 "display": "standalone",
