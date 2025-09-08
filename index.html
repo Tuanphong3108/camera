@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Web App</title>
+    <title>Chụp Ảnh & Quay Video</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -56,6 +56,11 @@
             height: 100%;
             object-fit: contain;
             border-radius: 1rem;
+        }
+
+        /* Thêm thuộc tính này để lật ngược hình ảnh từ camera */
+        #camera-video {
+            transform: scaleX(-1);
         }
 
         #photo-container, #recorded-video-container {
@@ -290,7 +295,12 @@
                 canvasElement.height = videoElement.videoHeight;
                 
                 const context = canvasElement.getContext('2d');
+                // Lật ngược ảnh để lưu
+                context.save();
+                context.translate(canvasElement.width, 0);
+                context.scale(-1, 1);
                 context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+                context.restore();
 
                 const imageDataUrl = canvasElement.toDataURL('image/png');
                 capturedImage.src = imageDataUrl;
