@@ -576,6 +576,7 @@
                 // Lấy thiết bị camera hiện tại
                 const currentCamera = videoDevices[currentCameraIndex];
                 
+                // Lấy cả video và audio stream
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         deviceId: currentCamera.deviceId,
@@ -586,8 +587,11 @@
                     },
                     audio: true
                 });
+
+                // Tách track video ra để chỉ hiển thị live stream mà không có audio
+                const videoOnlyStream = new MediaStream(stream.getVideoTracks());
                 
-                videoElement.srcObject = stream;
+                videoElement.srcObject = videoOnlyStream; // Chỉ truyền stream video
                 videoElement.play();
                 showMessage('Camera đã sẵn sàng.');
 
