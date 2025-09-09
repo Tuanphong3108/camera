@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chụp Ảnh & Quay Video</title>
+    <title>Camera Web App</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -141,6 +141,15 @@
             z-index: 10;
         }
 
+        #app-icon {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            z-index: 10;
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+        
         #camera-toggle-button {
             position: absolute;
             top: 1rem;
@@ -317,46 +326,6 @@
             width: 1.5rem;
             height: 1.5rem;
         }
-        
-        /* Modal Style */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .modal-content {
-            background-color: #1a1a1a;
-            padding: 2rem;
-            border-radius: 1rem;
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        .modal-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-        
-        .modal-button {
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            border-radius: 9999px;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        
     </style>
 </head>
 <body>
@@ -368,6 +337,8 @@
 
     <!-- Khu vực ứng dụng camera chính -->
     <div id="camera-screen" class="container bg-black flex-col items-center opacity-0 transition-opacity duration-500 pointer-events-none">
+        <!-- Icon ứng dụng ở góc trái -->
+        <img id="app-icon" src="icon.png" alt="Biểu tượng ứng dụng">
         
         <!-- Nút chuyển camera -->
         <button id="camera-toggle-button" class="hidden">
@@ -452,19 +423,6 @@
         <div id="status-message" class="absolute top-2 px-4 py-2 bg-white/20 text-white rounded-full text-sm opacity-0 transition-opacity duration-300 pointer-events-none"></div>
     </div>
 
-    <!-- Modal Lưu Dưới Dạng -->
-    <div id="save-as-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 class="text-xl font-bold mb-4">Lưu dưới dạng</h2>
-            <p class="text-gray-400">Chọn định dạng bạn muốn lưu ảnh:</p>
-            <div class="modal-buttons">
-                <button id="save-png-button" class="modal-button bg-blue-600 hover:bg-blue-700 text-white">PNG</button>
-                <button id="save-jpg-button" class="modal-button bg-gray-600 hover:bg-gray-700 text-white">JPG</button>
-            </div>
-            <button id="modal-close-button" class="mt-4 text-gray-400 hover:text-white">Hủy</button>
-        </div>
-    </div>
-    
     <script>
         // Đăng ký Service Worker để bật tính năng PWA
         if ('serviceWorker' in navigator) {
@@ -479,8 +437,8 @@
     </script>
     
     <script>
-        // Chặn menu chuột phải ở mọi nơi trên trang
-        document.addEventListener('contextmenu', function(event) {
+        // Chặn menu chuột phải trên toàn bộ trang
+        document.addEventListener('contextmenu', (event) => {
             event.preventDefault();
         });
 
@@ -507,12 +465,6 @@
         const recordingTimer = document.getElementById('recording-timer');
         const timerCountdown = document.getElementById('timer-countdown');
         const cameraToggleButton = document.getElementById('camera-toggle-button');
-        
-        // Modal Save As
-        const saveAsModal = document.getElementById('save-as-modal');
-        const savePngButton = document.getElementById('save-png-button');
-        const saveJpgButton = document.getElementById('save-jpg-button');
-        const modalCloseButton = document.getElementById('modal-close-button');
 
         // Nút điều khiển video tùy chỉnh
         const videoOverlay = document.getElementById('video-overlay');
@@ -842,7 +794,18 @@
                     modeButtonsContainer.classList.add('hidden');
                     
                     downloadButton.textContent = 'Tải xuống video';
+                    
+                    recordedVideoElement.oncanplaythrough = () => {
+                        recordedVideoElement.play().catch(e => {
+                            console.error("Lỗi tự động phát video:", e);
+                            showMessage("Bấm nút Play để xem video.");
+                            videoOverlay.classList.remove('hidden');
+                            playIcon.classList.remove('hidden');
+                            pauseIcon.classList.add('hidden');
+                        });
+                    };
                 };
+                
                 mediaRecorder.start();
                 recordingIndicator.style.display = 'block';
                 startVideoTimer();
@@ -850,19 +813,18 @@
                 showMessage('Đang quay video...');
             }
         };
-
-        // Hàm bắt đầu hẹn giờ quay video
-        const startVideoTimerCapture = (seconds) => {
-            if (seconds === 0) {
-                toggleRecording();
-                return;
-            }
+        
+        // Hàm hẹn giờ quay video
+        const startVideoTimerWithCountdown = (seconds) => {
+            if (countdownRunning) return;
+            countdownRunning = true;
+            
             showMessage(`Hẹn giờ ${seconds} giây`);
             timerCountdown.textContent = seconds;
             timerCountdown.classList.remove('hidden');
             timerCountdown.style.opacity = '1';
-            let countdown = seconds;
             
+            let countdown = seconds;
             const timer = setInterval(() => {
                 countdown--;
                 if (countdown > 0) {
@@ -872,198 +834,171 @@
                     clearInterval(timer);
                     timerCountdown.classList.add('hidden');
                     toggleRecording();
+                    countdownRunning = false;
                 }
             }, 1000);
         };
-        
-        // Cập nhật giao diện khi quay video hoặc chụp ảnh
-        const updateUIForCapture = () => {
-            if (currentMode === 'photo') {
-                if (activeTimer > 0) {
-                    startPhotoTimer(activeTimer);
-                } else {
-                    takePhoto();
-                }
-            } else { // video mode
-                if (activeTimer > 0) {
-                    startVideoTimerCapture(activeTimer);
-                } else {
-                    toggleRecording();
-                }
-            }
-        };
 
-        // Hàm chụp lại
+        // Hàm quay lại
         const retake = () => {
-            if (currentMode === 'photo') {
-                photoContainer.style.display = 'none';
-                videoContainer.style.display = 'flex';
-                capturedImage.classList.add('hidden');
-            } else { // video mode
-                recordedVideoContainer.style.display = 'none';
-                videoContainer.style.display = 'flex';
-                recordedVideoElement.classList.add('hidden');
-                videoOverlay.classList.remove('hidden');
-                playIcon.classList.remove('hidden');
-                pauseIcon.classList.add('hidden');
-            }
+            videoContainer.style.display = 'flex';
+            photoContainer.style.display = 'none';
+            recordedVideoContainer.style.display = 'none';
+            capturedImage.classList.add('hidden');
+            recordedVideoElement.classList.add('hidden');
             
             captureButton.classList.remove('hidden');
             downloadButton.classList.add('hidden');
             retakeButton.classList.add('hidden');
             modeButtonsContainer.classList.remove('hidden');
 
-            // Reset UI for the current mode
-            switchMode(currentMode);
-        };
-
-        // Hàm tải ảnh/video về
-        const downloadFile = (fileType) => {
-            const link = document.createElement('a');
-            let dataUrl = '';
-            let fileName = '';
-            
-            if (currentMode === 'photo') {
-                if (fileType === 'png') {
-                    dataUrl = canvasElement.toDataURL('image/png');
-                    fileName = `photo-${Date.now()}.png`;
-                } else if (fileType === 'jpg') {
-                    dataUrl = canvasElement.toDataURL('image/jpeg', 0.8);
-                    fileName = `photo-${Date.now()}.jpg`;
-                }
-                
-                link.download = fileName;
-                link.href = dataUrl;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                showMessage(`Đã tải ảnh về dạng ${fileType.toUpperCase()}!`);
-
-            } else if (currentMode === 'video' && recordedVideoElement.src) {
-                link.download = `video-${Date.now()}.webm`;
-                link.href = recordedVideoElement.src;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                showMessage('Đã tải video về!');
-            }
-        };
-        
-        const showSaveAsModal = () => {
-             saveAsModal.style.display = 'flex';
-        };
-
-        const hideSaveAsModal = () => {
-             saveAsModal.style.display = 'none';
-        };
-
-
-        // Thêm sự kiện click cho các nút
-        captureButton.addEventListener('click', updateUIForCapture);
-        retakeButton.addEventListener('click', retake);
-        
-        downloadButton.addEventListener('click', () => {
-            if (currentMode === 'photo') {
-                showSaveAsModal();
-            } else {
-                downloadFile('webm');
-            }
-        });
-
-        savePngButton.addEventListener('click', () => {
-            downloadFile('png');
-            hideSaveAsModal();
-        });
-        
-        saveJpgButton.addEventListener('click', () => {
-            downloadFile('jpg');
-            hideSaveAsModal();
-        });
-        
-        modalCloseButton.addEventListener('click', hideSaveAsModal);
-
-        modePhotoButton.addEventListener('click', () => switchMode('photo'));
-        modeVideoButton.addEventListener('click', () => switchMode('video'));
-        cameraToggleButton.addEventListener('click', switchCamera);
-        
-        // Hẹn giờ
-        timerToggleButton.addEventListener('click', () => {
-            const isHidden = timerSection.classList.contains('hidden');
-            filterSection.classList.add('hidden'); // Ẩn nút lọc nếu đang hiện
-            timerSection.classList.toggle('hidden', !isHidden);
-        });
-
-        filterToggleButton.addEventListener('click', () => {
-            const isHidden = filterSection.classList.contains('hidden');
-            timerSection.classList.add('hidden'); // Ẩn nút hẹn giờ nếu đang hiện
-            filterSection.classList.toggle('hidden', !isHidden);
-        });
-        
-        filterButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-                e.currentTarget.classList.add('active');
-                currentFilter = e.currentTarget.dataset.filter;
-                if (currentMode === 'photo') {
-                    videoElement.style.filter = currentFilter !== 'none' ? `filter: ${currentFilter}(100%);` : '';
-                }
-            });
-        });
-        
-        timerButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                timerButtons.forEach(btn => btn.classList.remove('active'));
-                e.currentTarget.classList.add('active');
-                activeTimer = parseInt(e.currentTarget.dataset.timer, 10);
-                showMessage(`Đã đặt hẹn giờ ${activeTimer}s`);
-            });
-        });
-
-        // Bật/tắt video đã quay
-        playPauseButton.addEventListener('click', () => {
-            if (recordedVideoElement.paused || recordedVideoElement.ended) {
-                recordedVideoElement.play();
-                playIcon.classList.add('hidden');
-                pauseIcon.classList.remove('hidden');
-            } else {
-                recordedVideoElement.pause();
-                playIcon.classList.remove('hidden');
-                pauseIcon.classList.add('hidden');
-            }
-        });
-        
-        recordedVideoElement.addEventListener('play', () => {
-            playIcon.classList.add('hidden');
-            pauseIcon.classList.remove('hidden');
-            videoOverlay.classList.add('hidden');
-        });
-
-        recordedVideoElement.addEventListener('pause', () => {
+            recordedVideoElement.pause();
+            recordedVideoElement.removeAttribute('src');
+            videoOverlay.classList.remove('hidden');
             playIcon.classList.remove('hidden');
             pauseIcon.classList.add('hidden');
-            videoOverlay.classList.remove('hidden');
-        });
-
-        recordedVideoElement.addEventListener('ended', () => {
-            playIcon.classList.remove('hidden');
-            pauseIcon.classList.add('hidden');
-            videoOverlay.classList.remove('hidden');
-        });
-        
-        videoOverlay.addEventListener('click', () => {
-            playPauseButton.click();
-        });
-
-        // Xử lý màn hình khởi động
-        window.onload = () => {
-            setupAudio();
+            stopVideoTimer();
             startCamera();
         };
 
-        // Nút khởi động lại
-        restartButton.addEventListener('click', () => {
-            window.location.reload();
+        // Hàm lưu file (ảnh hoặc video)
+        const saveFile = async () => {
+            let fileBlob;
+            let fileName;
+
+            if (currentMode === 'photo') {
+                fileBlob = await new Promise(resolve => canvasElement.toBlob(resolve, 'image/png'));
+                fileName = `photo-${Date.now()}.png`;
+            } else {
+                fileBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                fileName = `video-${Date.now()}.webm`;
+            }
+
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = URL.createObjectURL(fileBlob);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showMessage('Đang tải về...');
+        };
+
+        // Xử lý nút điều khiển video tùy chỉnh
+        playPauseButton.addEventListener('click', () => {
+            if (recordedVideoElement.paused || recordedVideoElement.ended) {
+                recordedVideoElement.play();
+            } else {
+                recordedVideoElement.pause();
+            }
         });
+
+        recordedVideoElement.addEventListener('play', () => {
+            videoOverlay.classList.add('hidden');
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+        });
+
+        recordedVideoElement.addEventListener('pause', () => {
+            videoOverlay.classList.remove('hidden');
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+        });
+
+        recordedVideoElement.addEventListener('ended', () => {
+            videoOverlay.classList.remove('hidden');
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+        });
+        
+        // Xử lý nút hẹn giờ
+        timerButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                timerButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                activeTimer = parseInt(button.dataset.timer);
+            });
+        });
+        
+        // Xử lý nút bộ lọc
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentFilter = button.dataset.filter;
+                if (currentFilter === 'none') {
+                    videoElement.style.filter = '';
+                } else if (currentFilter === 'sepia') {
+                    videoElement.style.filter = 'sepia(100%)';
+                } else if (currentFilter === 'grayscale') {
+                    videoElement.style.filter = 'grayscale(100%)';
+                } else if (currentFilter === 'vivid') {
+                    videoElement.style.filter = 'brightness(1.2) saturate(1.5)';
+                }
+            });
+        });
+
+        // Xử lý các sự kiện click
+        modePhotoButton.addEventListener('click', () => {
+            switchMode('photo');
+        });
+        modeVideoButton.addEventListener('click', () => {
+            switchMode('video');
+        });
+
+        // Toggle visibility for timer section
+        timerToggleButton.addEventListener('click', () => {
+            timerSection.classList.toggle('hidden');
+            filterSection.classList.add('hidden'); // Ensure filter section is hidden
+        });
+
+        // Toggle visibility for filter section
+        filterToggleButton.addEventListener('click', () => {
+            filterSection.classList.toggle('hidden');
+            timerSection.classList.add('hidden'); // Ensure timer section is hidden
+        });
+        
+        // Nút chuyển đổi camera
+        cameraToggleButton.addEventListener('click', switchCamera);
+
+        captureButton.addEventListener('click', () => {
+            // Check if countdown is already running to prevent multiple triggers
+            if (countdownRunning) {
+                return;
+            }
+            if (currentMode === 'photo') {
+                if (activeTimer >= 0) {
+                    startPhotoTimer(activeTimer);
+                    activeTimer = 0; // Reset timer after capture
+                    timerButtons.forEach(btn => btn.classList.remove('active'));
+                    timerSection.classList.add('hidden');
+                } else {
+                    takePhoto();
+                }
+            } else { // currentMode === 'video'
+                 // Only trigger countdown if a timer is selected
+                if (activeTimer > 0) {
+                    startVideoTimerWithCountdown(activeTimer);
+                    activeTimer = 0; // Reset timer after recording
+                    timerButtons.forEach(btn => btn.classList.remove('active'));
+                    timerSection.classList.add('hidden');
+                } else {
+                    // Start/stop recording immediately if 0s timer or no timer is active
+                    toggleRecording();
+                }
+            }
+        });
+        retakeButton.addEventListener('click', retake);
+        downloadButton.addEventListener('click', saveFile);
+        restartButton.addEventListener('click', () => {
+            location.reload();
+        });
+        
+        // Start the app when the window loads
+        window.onload = () => {
+            setupAudio();
+            switchMode('photo');
+            startCamera();
+        };
 
     </script>
 </body>
