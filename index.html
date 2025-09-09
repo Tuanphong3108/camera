@@ -539,7 +539,7 @@
         // Hàm bắt đầu camera
         const startCamera = async () => {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showMessage('Trình duyệt không hỗ trợ truy cập camera.');
+                showMessage('🚫Trình duyệt không hỗ trợ truy cập camera.');
                 setTimeout(() => {
                     splashScreen.style.opacity = '0';
                     splashScreen.style.pointerEvents = 'none';
@@ -587,7 +587,7 @@
                 
                 videoElement.srcObject = videoOnlyStream; // Chỉ truyền stream video
                 videoElement.play();
-                showMessage('Camera đã sẵn sàng.');
+                showMessage('📷Camera đã sẵn sàng.');
 
                 setTimeout(() => {
                     splashScreen.style.opacity = '0';
@@ -718,8 +718,8 @@
                 downloadButton.classList.remove('hidden');
                 retakeButton.classList.remove('hidden');
                 modeButtonsContainer.classList.add('hidden');
-                downloadButton.textContent = 'Tải xuống ảnh';
-                showMessage('Đã chụp ảnh!');
+                downloadButton.textContent = '⬇Tải xuống ảnh';
+                showMessage('📸Đã chụp ảnh!');
             }
         };
         
@@ -729,7 +729,7 @@
                 takePhoto();
                 return;
             }
-            showMessage(`Hẹn giờ ${seconds} giây`);
+            showMessage(`⏰Hẹn giờ ${seconds} giây`);
             timerCountdown.textContent = seconds;
             timerCountdown.classList.remove('hidden');
             timerCountdown.style.opacity = '1';
@@ -755,7 +755,7 @@
                 recordingIndicator.style.display = 'none';
                 stopVideoTimer();
                 playSound(beepBuffer);
-                showMessage('Đã dừng quay video.');
+                showMessage('📼Đã dừng quay video.');
             } else {
                 recordedChunks = [];
                 mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
@@ -799,7 +799,7 @@
                 recordingIndicator.style.display = 'block';
                 startVideoTimer();
                 playSound(beepBuffer);
-                showMessage('Đang quay video...');
+                showMessage('📹Đang quay video...');
             }
         };
         
@@ -808,7 +808,7 @@
             if (countdownRunning) return;
             countdownRunning = true;
             
-            showMessage(`Hẹn giờ ${seconds} giây`);
+            showMessage(`⏰Hẹn giờ ${seconds} giây`);
             timerCountdown.textContent = seconds;
             timerCountdown.classList.remove('hidden');
             timerCountdown.style.opacity = '1';
@@ -869,7 +869,7 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            showMessage('Đang tải về...');
+            showMessage('⬇Đang tải về...');
         };
 
         // Xử lý nút điều khiển video tùy chỉnh
