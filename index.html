@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chụp Ảnh & Quay Video</title>
+    <title>Camera Web App</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -437,6 +437,11 @@
     </script>
     
     <script>
+        // Chặn menu chuột phải trên toàn bộ trang
+        document.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
+
         // Lấy các phần tử DOM
         const cameraScreen = document.getElementById('camera-screen');
         const splashScreen = document.getElementById('splash-screen');
