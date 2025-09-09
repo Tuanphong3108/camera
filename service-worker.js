@@ -1,26 +1,26 @@
 // Tên cache
 const CACHE_NAME = 'camera-pwa-cache-v2';
 
-// Các file cần lưu cache
+// Các file cần cache
 const urlsToCache = [
-  '/camera/',
-  '/camera/index.html',
-  '/camera/manifest.json',
-  '/camera/icon.png',
-  // thêm js/css nếu có
+  'index.html',
+  'manifest.json',
+  'favicon-96x96.png',
+  'web-app-manifest-192x192.png',
+  'web-app-manifest-512x512.png'
 ];
 
-// Sự kiện install
+// Install: cache các file cần thiết
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Cache đã được mở');
+      console.log('[SW] Cache opened');
       return cache.addAll(urlsToCache);
     })
   );
 });
 
-// Sự kiện fetch
+// Fetch: ưu tiên cache trước, mạng sau
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
@@ -29,7 +29,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Sự kiện activate: dọn cache cũ
+// Activate: xóa cache cũ
 self.addEventListener('activate', (event) => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
@@ -37,6 +37,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (!cacheWhitelist.includes(cacheName)) {
+            console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
