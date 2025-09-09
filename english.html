@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capture Photo & Video</title>
+    <title>Camera Web App</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -64,6 +64,934 @@
 
         #camera-video {
             transform: scaleX(-1);
+        }
+
+        #photo-container, #recorded-video-container {
+            display: none;
+        }
+
+        #recording-indicator {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            width: 0.75rem;
+            height: 0.75rem;
+            background-color: red;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes flyIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        #video-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #play-pause-button {
+            width: 4rem;
+            height: 4rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #play-pause-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        #restart-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10;
+        }
+        
+        #camera-toggle-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10;
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        
+        #camera-toggle-button.hidden {
+            display: none;
+        }
+
+        #recording-timer {
+            position: absolute;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0.25rem 0.75rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            color: white;
+            z-index: 10;
+            display: none;
+        }
+        
+        #timer-countdown {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-in-out;
+            z-index: 100;
+        }
+
+        #splash-icon {
+            width: 150px;
+            height: 150px;
+            animation: zoomIn 1s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .control-buttons-wrapper {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            box-sizing: border-box;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));
+        }
+
+        .control-buttons-wrapper .flex {
+            width: 100%;
+            justify-content: center;
+        }
+
+        @media (min-width: 640px) {
+            .control-buttons-wrapper {
+                bottom: 2rem;
+            }
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-button {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .filter-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        .filter-button.active {
+            background-color: white;
+            color: black;
+            font-weight: 600;
+            border-color: white;
+        }
+        
+        .timer-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            align-items: center;
+        }
+        .timer-button {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .timer-button.active {
+            background-color: white;
+            color: black;
+            font-weight: 600;
+            border-color: white;
+        }
+        
+        .sepia { filter: sepia(100%); }
+        .grayscale { filter: grayscale(100%); }
+        .vivid { filter: brightness(1.2) saturate(1.5); }
+        
+        .timer-section, .filter-section {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .button-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <img id="splash-icon" src="icon.png" alt="App Icon">
+    </div>
+
+    <!-- Main Camera App Area -->
+    <div id="camera-screen" class="container bg-black flex-col items-center opacity-0 transition-opacity duration-500 pointer-events-none">
+        
+        <!-- Camera toggle button -->
+        <button id="camera-toggle-button" class="hidden">
+            <svg class="button-icon text-white" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7 16V8a1 1 0 011-1h8a1 1 0 011 1v8a1 1 0 01-1 1H8a1 1 0 01-1-1zM5 12V8a3 3 0 013-3h8a3 3 0 013 3v4a3 3 0 01-3 3h-8a3 3 0 01-3-3zm2 0a5 5 0 015-5 5 5 0 015 5h-1a4 4 0 00-4-4 4 4 0 00-4 4H7zm0 0a5 5 0 01-5-5h1a4 4 0 004 4z" fill-rule="evenodd" clip-rule="evenodd"/>
+            </svg>
+        </button>
+
+        <!-- Live view -->
+        <div id="video-container" class="w-full h-full bg-gray-900 flex items-center justify-center relative">
+            <video id="camera-video" playsinline></video>
+            <div id="recording-indicator"></div>
+            <div id="timer-countdown" class="hidden"></div>
+        </div>
+        
+        <!-- Captured photo -->
+        <div id="photo-container" class="w-full h-full bg-gray-900 flex items-center justify-center">
+            <canvas id="photo-canvas" class="hidden"></canvas>
+            <img id="captured-image" class="w-full h-full object-contain hidden" alt="Captured Photo">
+        </div>
+
+        <!-- Recorded video -->
+        <div id="recorded-video-container" class="w-full h-full bg-gray-900 flex items-center justify-content-center">
+            <video id="recorded-video" class="hidden"></video>
+            <div id="video-overlay">
+                <button id="play-pause-button">
+                    <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-12 h-12">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.262-2.175A2 2 0 008 10.435v3.13a2 2 0 003.49 1.582l3.262-2.175a2 2 0 000-3.164z" />
+                    </svg>
+                    <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-12 h-12 hidden">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 5v14M18 5v14" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Control buttons moved to the bottom of the screen -->
+        <div class="control-buttons-wrapper">
+            <!-- Filter options area -->
+            <div id="filter-section" class="filter-buttons text-white hidden">
+                <button class="filter-button active" data-filter="none">Normal</button>
+                <button class="filter-button" data-filter="sepia">Sepia</button>
+                <button class="filter-button" data-filter="grayscale">Grayscale</button>
+                <button class="filter-button" data-filter="vivid">Vivid</button>
+            </div>
+            
+            <!-- Timer options area -->
+            <div id="timer-section" class="timer-buttons text-white hidden">
+                <button class="timer-button" data-timer="0">0s</button>
+                <button class="timer-button" data-timer="3">3s</button>
+                <button class="timer-button" data-timer="5">5s</button>
+                <button class="timer-button" data-timer="10">10s</button>
+            </div>
+
+            <div id="mode-buttons-container" class="flex justify-center gap-4 w-full text-white">
+                <button id="mode-photo-button" class="px-4 py-2 rounded-full font-medium transition-colors bg-blue-600">Photo</button>
+                <button id="mode-video-button" class="px-4 py-2 rounded-full font-medium transition-colors bg-gray-600 hover:bg-gray-700">Video</button>
+            </div>
+
+            <!-- New video timer -->
+            <div id="recording-timer" class="px-4 py-2 bg-white/20 text-white rounded-full text-sm">00:00</div>
+            
+            <div class="flex items-center justify-center w-full max-w-sm mt-4">
+                <button id="timer-toggle-button" class="w-16 h-16 rounded-full bg-white/10 relative group transition-transform duration-200 active:scale-95 shadow-lg flex items-center justify-center">
+                    <svg class="button-icon text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
+                </button>
+                <button id="capture-button" class="w-20 h-20 rounded-full mx-4 bg-white relative group transition-transform duration-200 active:scale-95 shadow-lg flex items-center justify-center">
+                    <div class="absolute inset-0 m-auto w-16 h-16 bg-white/20 rounded-full group-hover:bg-white/30 transition-all"></div>
+                </button>
+                <button id="filter-toggle-button" class="w-16 h-16 rounded-full bg-white/10 relative group transition-transform duration-200 active:scale-95 shadow-lg flex items-center justify-center">
+                    <svg class="button-icon text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
+                </button>
+            </div>
+            
+            <div class="flex items-center justify-center gap-4 w-full mt-4">
+                <button id="download-button" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-colors hidden">Download</button>
+                <button id="retake-button" class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-full transition-colors hidden">Retake</button>
+            </div>
+        </div>
+        <button id="restart-button" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-full transition-colors">Restart</button>
+        
+        <div id="status-message" class="absolute top-2 px-4 py-2 bg-white/20 text-white rounded-full text-sm opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+    </div>
+
+    <script>
+        // Register Service Worker for PWA features
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js').then(registration => {
+                    console.log('Service Worker registered successfully:', registration.scope);
+                }).catch(err => {
+                    console.error('Service Worker registration failed:', err);
+                });
+            });
+        }
+    </script>
+    
+    <script>
+        // Prevent right-click menu on the whole page
+        document.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
+
+        // Get DOM elements
+        const cameraScreen = document.getElementById('camera-screen');
+        const splashScreen = document.getElementById('splash-screen');
+        
+        const videoElement = document.getElementById('camera-video');
+        const canvasElement = document.getElementById('photo-canvas');
+        const capturedImage = document.getElementById('captured-image');
+        const recordedVideoElement = document.getElementById('recorded-video');
+        const captureButton = document.getElementById('capture-button');
+        const downloadButton = document.getElementById('download-button');
+        const retakeButton = document.getElementById('retake-button');
+        const statusMessage = document.getElementById('status-message');
+        const videoContainer = document.getElementById('video-container');
+        const photoContainer = document.getElementById('photo-container');
+        const recordedVideoContainer = document.getElementById('recorded-video-container');
+        const recordingIndicator = document.getElementById('recording-indicator');
+        const modePhotoButton = document.getElementById('mode-photo-button');
+        const modeVideoButton = document.getElementById('mode-video-button');
+        const modeButtonsContainer = document.getElementById('mode-buttons-container');
+        const restartButton = document.getElementById('restart-button');
+        const recordingTimer = document.getElementById('recording-timer');
+        const timerCountdown = document.getElementById('timer-countdown');
+        const cameraToggleButton = document.getElementById('camera-toggle-button');
+
+        // Custom video controls
+        const videoOverlay = document.getElementById('video-overlay');
+        const playPauseButton = document.getElementById('play-pause-button');
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+        
+        // Filter and timer buttons
+        const filterSection = document.getElementById('filter-section');
+        const filterButtons = document.querySelectorAll('.filter-button');
+        const timerSection = document.getElementById('timer-section');
+        const timerButtons = document.querySelectorAll('.timer-button');
+        const timerToggleButton = document.getElementById('timer-toggle-button');
+        const filterToggleButton = document.getElementById('filter-toggle-button');
+
+        let stream = null;
+        let currentMode = 'photo';
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let timerInterval = null;
+        let startTime = null;
+        let activeTimer = 0;
+        let currentFilter = 'none';
+        let countdownRunning = false;
+        let videoDevices = [];
+        let currentCameraIndex = 0;
+
+        // --- AUDIO VARIABLES AND FUNCTIONS ---
+        let audioContext = null;
+        let shutterBuffer = null;
+        let beepBuffer = null;
+        
+        const createAudioBuffer = (frequency, duration, volume) => {
+            if (!audioContext) return null;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.value = frequency;
+            gainNode.gain.value = volume;
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            const buffer = audioContext.createBuffer(1, audioContext.sampleRate * duration, audioContext.sampleRate);
+            const channelData = buffer.getChannelData(0);
+            for (let i = 0; i < channelData.length; i++) {
+                channelData[i] = Math.sin(2 * Math.PI * frequency * (i / audioContext.sampleRate)) * volume;
+            }
+            return buffer;
+        };
+        
+        const playSound = (buffer) => {
+            if (!audioContext || !buffer) return;
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            source.start();
+        };
+
+        const setupAudio = () => {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                shutterBuffer = createAudioBuffer(4400, 0.1, 0.5);
+                beepBuffer = createAudioBuffer(1000, 0.2, 0.8);
+            } catch (e) {
+                console.error("Web Audio API not supported:", e);
+            }
+        };
+        // --- END OF AUDIO FUNCTIONS ---
+
+        // Function to show a status message
+        const showMessage = (message) => {
+            statusMessage.textContent = message;
+            statusMessage.classList.remove('opacity-0');
+            statusMessage.classList.add('opacity-100');
+            setTimeout(() => {
+                statusMessage.classList.remove('opacity-100');
+                statusMessage.classList.add('opacity-0');
+            }, 3000);
+        };
+        
+        // Function to start the camera
+        const startCamera = async () => {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showMessage('Your browser does not support camera access.');
+                setTimeout(() => {
+                    splashScreen.style.opacity = '0';
+                    splashScreen.style.pointerEvents = 'none';
+
+                    cameraScreen.style.opacity = '1';
+                    cameraScreen.style.pointerEvents = 'auto';
+                }, 2000);
+                return;
+            }
+            
+            try {
+                // Stop the current stream if it exists
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+
+                // Get a list of video devices
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+                // Show the toggle button if there is more than 1 camera
+                if (videoDevices.length > 1) {
+                    cameraToggleButton.classList.remove('hidden');
+                } else {
+                    cameraToggleButton.classList.add('hidden');
+                }
+
+                // Get the current camera device
+                const currentCamera = videoDevices[currentCameraIndex];
+                
+                // Get both video and audio streams
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        deviceId: currentCamera.deviceId,
+                        facingMode: 'environment',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        aspectRatio: 16/9
+                    },
+                    audio: true
+                });
+
+                // Separate the video track to only show the live stream without audio
+                const videoOnlyStream = new MediaStream(stream.getVideoTracks());
+                
+                videoElement.srcObject = videoOnlyStream; // Pass only the video stream
+                videoElement.play();
+                showMessage('Camera is ready.');
+
+                setTimeout(() => {
+                    splashScreen.style.opacity = '0';
+                    splashScreen.style.pointerEvents = 'none';
+
+                    cameraScreen.style.opacity = '1';
+                    cameraScreen.style.pointerEvents = 'auto';
+                }, 2000);
+
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                showMessage(`Error: Cannot access camera. Please check permissions.`);
+
+                setTimeout(() => {
+                    splashScreen.style.opacity = '0';
+                    splashScreen.style.pointerEvents = 'none';
+                    
+                    cameraScreen.style.opacity = '1';
+                    cameraScreen.style.pointerEvents = 'auto';
+                }, 2000);
+            }
+        };
+
+        // Function to switch cameras
+        const switchCamera = () => {
+            if (videoDevices.length > 1) {
+                currentCameraIndex = (currentCameraIndex + 1) % videoDevices.length;
+                startCamera();
+            }
+        };
+
+        // Function to start the video timer
+        const startVideoTimer = () => {
+            startTime = Date.now();
+            recordingTimer.textContent = '00:00';
+            recordingTimer.style.display = 'block';
+
+            timerInterval = setInterval(() => {
+                const elapsedTime = Date.now() - startTime;
+                const totalSeconds = Math.floor(elapsedTime / 1000);
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+
+                let formattedTime = '';
+                if (hours > 0) {
+                    formattedTime += `${hours.toString().padStart(2, '0')}:`;
+                }
+                formattedTime += `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                recordingTimer.textContent = formattedTime;
+            }, 1000);
+        };
+
+        // Function to stop the video timer
+        const stopVideoTimer = () => {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                recordingTimer.style.display = 'none';
+            }
+        };
+
+        // Function to switch modes
+        const switchMode = (mode) => {
+            currentMode = mode;
+            // Reset active timer to 0
+            activeTimer = 0;
+            timerButtons.forEach(btn => btn.classList.remove('active'));
+            timerSection.classList.add('hidden');
+            
+            if (mode === 'photo') {
+                modePhotoButton.classList.add('bg-blue-600');
+                modeVideoButton.classList.remove('bg-blue-600');
+                modeVideoButton.classList.add('bg-gray-600', 'hover:bg-gray-700');
+                captureButton.style.backgroundColor = 'white';
+                captureButton.innerHTML = `<div class="absolute inset-0 m-auto w-16 h-16 bg-white/20 rounded-full group-hover:bg-white/30 transition-all"></div>`;
+                stopVideoTimer();
+                // Enable features in photo mode
+                timerToggleButton.classList.remove('hidden');
+                filterToggleButton.classList.remove('hidden');
+            } else { // 'video' mode
+                modeVideoButton.classList.add('bg-blue-600');
+                modePhotoButton.classList.remove('bg-blue-600');
+                modePhotoButton.classList.add('bg-gray-600', 'hover:bg-gray-700');
+                captureButton.style.backgroundColor = 'red';
+                captureButton.innerHTML = `<div class="absolute inset-0 m-auto w-16 h-16 bg-red-500 rounded-full group-hover:bg-red-400 transition-all"></div>`;
+                // Only enable timer button in video mode, hide filter button
+                filterSection.classList.add('hidden');
+                filterToggleButton.classList.add('hidden');
+                timerToggleButton.classList.remove('hidden');
+            }
+            // Reset UI
+            videoContainer.style.display = 'flex';
+            photoContainer.style.display = 'none';
+            recordedVideoContainer.style.display = 'none';
+            downloadButton.classList.add('hidden');
+            retakeButton.classList.add('hidden');
+        };
+
+        // Function to take a photo
+        const takePhoto = () => {
+            if (stream) {
+                playSound(shutterBuffer);
+                const videoSettings = stream.getVideoTracks()[0].getSettings();
+                canvasElement.width = videoSettings.width;
+                canvasElement.height = videoSettings.height;
+                
+                const context = canvasElement.getContext('2d');
+                context.filter = videoElement.style.filter;
+
+                context.save();
+                context.translate(canvasElement.width, 0);
+                context.scale(-1, 1);
+                context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+                context.restore();
+
+                const imageDataUrl = canvasElement.toDataURL('image/png');
+                capturedImage.src = imageDataUrl;
+                
+                capturedImage.style.filter = videoElement.style.filter;
+
+                videoContainer.style.display = 'none';
+                photoContainer.style.display = 'flex';
+                capturedImage.classList.remove('hidden');
+                
+                captureButton.classList.add('hidden');
+                downloadButton.classList.remove('hidden');
+                retakeButton.classList.remove('hidden');
+                modeButtonsContainer.classList.add('hidden');
+                downloadButton.textContent = 'Download Photo';
+                showMessage('Photo captured!');
+            }
+        };
+        
+        // Function to start photo timer
+        const startPhotoTimer = (seconds) => {
+            if (seconds === 0) {
+                takePhoto();
+                return;
+            }
+            showMessage(`Starting countdown for ${seconds} seconds`);
+            timerCountdown.textContent = seconds;
+            timerCountdown.classList.remove('hidden');
+            timerCountdown.style.opacity = '1';
+            let countdown = seconds;
+            
+            const timer = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    timerCountdown.textContent = countdown;
+                    playSound(beepBuffer);
+                } else {
+                    clearInterval(timer);
+                    timerCountdown.classList.add('hidden');
+                    takePhoto();
+                }
+            }, 1000);
+        };
+        
+        // Function to start/stop video recording
+        const toggleRecording = () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                recordingIndicator.style.display = 'none';
+                stopVideoTimer();
+                playSound(beepBuffer);
+                showMessage('Video recording stopped.');
+            } else {
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const videoUrl = URL.createObjectURL(videoBlob);
+                    
+                    recordedVideoElement.src = videoUrl;
+                    recordedVideoElement.classList.remove('hidden');
+                    recordedVideoElement.load();
+
+                    videoContainer.style.display = 'none';
+                    recordedVideoContainer.style.display = 'flex';
+                    
+                    captureButton.classList.add('hidden');
+                    downloadButton.classList.remove('hidden');
+                    retakeButton.classList.remove('hidden');
+                    modeButtonsContainer.classList.add('hidden');
+                    
+                    downloadButton.textContent = 'Download Video';
+                    
+                    recordedVideoElement.oncanplaythrough = () => {
+                        recordedVideoElement.play().catch(e => {
+                            console.error("Autoplay failed:", e);
+                            showMessage("Tap the Play button to watch the video.");
+                            videoOverlay.classList.remove('hidden');
+                            playIcon.classList.remove('hidden');
+                            pauseIcon.classList.add('hidden');
+                        });
+                    };
+                };
+                
+                mediaRecorder.start();
+                recordingIndicator.style.display = 'block';
+                startVideoTimer();
+                playSound(beepBuffer);
+                showMessage('Recording...');
+            }
+        };
+        
+        // Function to start video timer with countdown
+        const startVideoTimerWithCountdown = (seconds) => {
+            if (countdownRunning) return;
+            countdownRunning = true;
+            
+            showMessage(`Starting countdown for ${seconds} seconds`);
+            timerCountdown.textContent = seconds;
+            timerCountdown.classList.remove('hidden');
+            timerCountdown.style.opacity = '1';
+            
+            let countdown = seconds;
+            const timer = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    timerCountdown.textContent = countdown;
+                    playSound(beepBuffer);
+                } else {
+                    clearInterval(timer);
+                    timerCountdown.classList.add('hidden');
+                    toggleRecording();
+                    countdownRunning = false;
+                }
+            }, 1000);
+        };
+
+        // Function to retake
+        const retake = () => {
+            videoContainer.style.display = 'flex';
+            photoContainer.style.display = 'none';
+            recordedVideoContainer.style.display = 'none';
+            capturedImage.classList.add('hidden');
+            recordedVideoElement.classList.add('hidden');
+            
+            captureButton.classList.remove('hidden');
+            downloadButton.classList.add('hidden');
+            retakeButton.classList.add('hidden');
+            modeButtonsContainer.classList.remove('hidden');
+
+            recordedVideoElement.pause();
+            recordedVideoElement.removeAttribute('src');
+            videoOverlay.classList.remove('hidden');
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+            stopVideoTimer();
+            startCamera();
+        };
+
+        // Function to save file (photo or video)
+        const saveFile = async () => {
+            let fileBlob;
+            let fileName;
+
+            if (currentMode === 'photo') {
+                fileBlob = await new Promise(resolve => canvasElement.toBlob(resolve, 'image/png'));
+                fileName = `photo-${Date.now()}.png`;
+            } else {
+                fileBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                fileName = `video-${Date.now()}.webm`;
+            }
+
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = URL.createObjectURL(fileBlob);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showMessage('Downloading...');
+        };
+
+        // Handle custom video controls
+        playPauseButton.addEventListener('click', () => {
+            if (recordedVideoElement.paused || recordedVideoElement.ended) {
+                recordedVideoElement.play();
+            } else {
+                recordedVideoElement.pause();
+            }
+        });
+
+        recordedVideoElement.addEventListener('play', () => {
+            videoOverlay.classList.add('hidden');
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+        });
+
+        recordedVideoElement.addEventListener('pause', () => {
+            videoOverlay.classList.remove('hidden');
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+        });
+
+        recordedVideoElement.addEventListener('ended', () => {
+            videoOverlay.classList.remove('hidden');
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+        });
+        
+        // Handle timer button clicks
+        timerButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                timerButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                activeTimer = parseInt(button.dataset.timer);
+            });
+        });
+        
+        // Handle filter button clicks
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentFilter = button.dataset.filter;
+                if (currentFilter === 'none') {
+                    videoElement.style.filter = '';
+                } else if (currentFilter === 'sepia') {
+                    videoElement.style.filter = 'sepia(100%)';
+                } else if (currentFilter === 'grayscale') {
+                    videoElement.style.filter = 'grayscale(100%)';
+                } else if (currentFilter === 'vivid') {
+                    videoElement.style.filter = 'brightness(1.2) saturate(1.5)';
+                }
+            });
+        });
+
+        // Handle click events
+        modePhotoButton.addEventListener('click', () => {
+            switchMode('photo');
+        });
+        modeVideoButton.addEventListener('click', () => {
+            switchMode('video');
+        });
+
+        // Toggle visibility for timer section
+        timerToggleButton.addEventListener('click', () => {
+            timerSection.classList.toggle('hidden');
+            filterSection.classList.add('hidden'); // Ensure filter section is hidden
+        });
+
+        // Toggle visibility for filter section
+        filterToggleButton.addEventListener('click', () => {
+            filterSection.classList.toggle('hidden');
+            timerSection.classList.add('hidden'); // Ensure timer section is hidden
+        });
+        
+        // Camera toggle button
+        cameraToggleButton.addEventListener('click', switchCamera);
+
+        captureButton.addEventListener('click', () => {
+            // Check if countdown is already running to prevent multiple triggers
+            if (countdownRunning) {
+                return;
+            }
+            if (currentMode === 'photo') {
+                if (activeTimer >= 0) {
+                    startPhotoTimer(activeTimer);
+                    activeTimer = 0; // Reset timer after capture
+                    timerButtons.forEach(btn => btn.classList.remove('active'));
+                    timerSection.classList.add('hidden');
+                } else {
+                    takePhoto();
+                }
+            } else { // currentMode === 'video'
+                 // Only trigger countdown if a timer is selected
+                if (activeTimer > 0) {
+                    startVideoTimerWithCountdown(activeTimer);
+                    activeTimer = 0; // Reset timer after recording
+                    timerButtons.forEach(btn => btn.classList.remove('active'));
+                    timerSection.classList.add('hidden');
+                } else {
+                    // Start/stop recording immediately if 0s timer or no timer is active
+                    toggleRecording();
+                }
+            }
+        });
+        retakeButton.addEventListener('click', retake);
+        downloadButton.addEventListener('click', saveFile);
+        restartButton.addEventListener('click', () => {
+            location.reload();
+        });
+        
+        // Start the app when the window loads
+        window.onload = () => {
+            setupAudio();
+            switchMode('photo');
+            startCamera();
+        };
+
+    </script>
+</body>
+</html>
         }
 
         #photo-container, #recorded-video-container {
