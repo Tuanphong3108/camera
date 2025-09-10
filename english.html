@@ -427,15 +427,7 @@
                 <button id="retake-button" class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-full transition-colors hidden">Retake</button>
             </div>
         </div>
-<!-- Nút góc phải trên -->
-<div class="absolute top-4 right-4 flex gap-2 z-20">
-    <button id="about-button" 
-        class="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-full text-sm transition-colors">
-        About
-    </button>
-</div>
-
-<div id="status-message" class="absolute top-2 px-4 py-2 bg-white/20 text-white rounded-full text-sm opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+        <button id="restart-button" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-full transition-colors">Restart</button>
         
         <div id="status-message" class="absolute top-2 px-4 py-2 bg-white/20 text-white rounded-full text-sm opacity-0 transition-opacity duration-300 pointer-events-none"></div>
     </div>
@@ -1007,12 +999,6 @@
         });
         modeVideoButton.addEventListener('click', () => {
             switchMode('video');
-        });
-        
-        // Nút About
-        const aboutButton = document.getElementById('about-button');
-        aboutButton.addEventListener('click', () => {
-        window.location.href = "about.html";
         });
 
         // Toggle visibility for timer section
