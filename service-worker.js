@@ -10,6 +10,8 @@ const urlsToCache = [
   'icon.png',
   'english.html',
   'vietnamese.html',
+  'about_english.html',
+  'about_vietnamese.html',
   'web-app-manifest-512x512.png'
 ];
 
