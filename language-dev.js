@@ -19,6 +19,9 @@ window.changeLanguage = function(lang) {
 
 window.resetLanguage = function() {
   localStorage.removeItem('preferredLang');
-  console.log("🗑 Ngôn ngữ đã được reset. Thoát ra mở lại để chọn lại.");
-  console.log("🗑 Language has been reset. Exit and reopen to select again.");
+  console.log("🗑 Ngôn ngữ đã được reset. Quay lại màn hình chọn ngôn ngữ...");
+  console.log("🗑 Language has been reset. Returning to language selection...");
+
+  // 🔄 Redirect ngay về trang chọn ngôn ngữ
+  window.location.href = "index.html";
 };
