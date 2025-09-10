@@ -1,42 +1,66 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chọn Ngôn Ngữ</title>
-    <!-- Thư viện Tailwind CSS để tạo giao diện nhanh và đẹp -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chọn ngôn ngữ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      animation: fadeIn 0.6s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-white flex flex-col items-center justify-center h-screen p-4">
+<body class="flex flex-col justify-center items-center h-screen bg-gray-900 text-white">
 
-    <!-- Tiêu đề mới đã được thêm vào đây -->
-    <h1 class="text-3xl sm:text-4xl font-bold mb-12 text-center">Choose your language / Chọn ngôn ngữ của bạn</h1>
-    
-    <!-- Container chính để chứa các nút -->
-    <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
-        
-        <!-- Nút Tiếng Việt -->
-        <a 
-            href="https://tuanphong3108.github.io/camera/vietnamese.html" 
-            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg transform transition duration-300 hover:scale-105 active:scale-95 text-xl w-64 text-center"
-        >
-            Tiếng Việt
-        </a>
+  <h1 class="text-2xl font-bold mb-6">Chọn ngôn ngữ / Choose your language</h1>
 
-        <!-- Nút English -->
-        <a 
-            href="https://tuanphong3108.github.io/camera/english.html" 
-            class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg transform transition duration-300 hover:scale-105 active:scale-95 text-xl w-64 text-center"
-        >
-            English
-        </a>
+  <div class="flex gap-4 mb-4">
+    <button onclick="setLanguage('vietnamese.html')" 
+      class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-lg font-semibold transition-transform duration-200 hover:scale-105">
+      🇻🇳 Tiếng Việt
+    </button>
+    <button onclick="setLanguage('english.html')" 
+      class="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg text-lg font-semibold transition-transform duration-200 hover:scale-105">
+      🇬🇧 English
+    </button>
+  </div>
 
-    </div>
+  <label class="flex items-center gap-2 text-sm">
+    <input type="checkbox" id="rememberLang" class="w-4 h-4">
+    Nhớ ngôn ngữ
+  </label>
+  <p class="mt-2 text-xs text-gray-400 max-w-md text-center px-4">
+    Lưu ý: Để đổi sang ngôn ngữ khác khi bật "Nhớ ngôn ngữ", 
+    bạn phải xoá toàn bộ dữ liệu và cookie trang web 
+    <b>tuanphong3108.github.io</b>. Việc này có thể ảnh hưởng tới các chi nhánh khác như 
+    <code>/game</code>, <code>/newtab</code>, <code>/workspace-launcher</code>...
+  </p>
+
+  <script>
+    // Nếu đã lưu ngôn ngữ, redirect luôn
+    const savedLang = localStorage.getItem('preferredLang');
+    if (savedLang) {
+      window.location.href = savedLang;
+    }
+
+    function setLanguage(url) {
+      if (document.getElementById('rememberLang').checked) {
+        localStorage.setItem('preferredLang', url);
+      }
+      window.location.href = url;
+    }
+  </script>
 
 </body>
 </html>
