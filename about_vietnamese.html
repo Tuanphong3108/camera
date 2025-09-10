@@ -3,64 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About - Camera PWA</title>
+  <title>Giới thiệu - Ứng dụng Camera</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #000;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      min-height: 100vh;
-      margin: 0;
-      padding: 2rem;
-      text-align: center;
-    }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-    }
-    p {
-      max-width: 600px;
-      margin-bottom: 1rem;
-      line-height: 1.5;
-    }
-    a {
-      color: #4dabf7;
-      text-decoration: none;
-      font-weight: 500;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h1>📷 Camera PWA</h1>
-  <p>
-    Đây là ứng dụng camera PWA chạy trực tiếp trên web, 
-    được thiết kế để thay thế các app Camera mặc định 
-    cho những máy tính không có hoặc không cài được ứng dụng gốc.
-  </p>
-  <p>
-    Tính năng chính:
-    <br>• Chụp ảnh, quay video (có hẹn giờ ⏱️)
-    <br>• Bộ lọc ảnh cơ bản 🎨
-    <br>• Hoạt động offline thông qua Service Worker
-    <br>• Hỗ trợ đa ngôn ngữ (English / Vietnamese)
-  </p>
-  <p>
-    👨‍💻 Phát triển bởi <strong>Phong VN</strong><br>
-    🚀 Repo: <a href="https://github.com/tuanphong3108/camera" target="_blank">GitHub - Camera PWA</a>
-  </p>
-  <p>
-    © 2025 - Open source & free to use
-  </p>
-  <p>
-    <a href="index.html">⬅️ Quay lại Camera</a>
-  </p>
+<body class="bg-black text-white flex flex-col items-center justify-center min-h-screen font-['Inter'] p-6">
+  <div class="max-w-lg text-center">
+    <img src="icon.png" alt="Biểu tượng ứng dụng" class="w-24 h-24 mx-auto mb-6">
+    <h1 class="text-2xl font-bold mb-2">📷 Ứng dụng Camera Web</h1>
+    <p class="text-gray-300 mb-4">Ứng dụng camera đơn giản trên nền web dành cho các thiết bị không có sẵn ứng dụng camera.</p>
+
+    <div class="bg-gray-800 p-4 rounded-2xl shadow mb-4">
+      <p><span class="font-semibold">Phiên bản:</span> 1.0.0</p>
+      <p><span class="font-semibold">Người phát triển:</span> Phong VN</p>
+      <p><span class="font-semibold">Kho mã nguồn:</span> 
+        <a href="https://github.com/tuanphong3108/camera" target="_blank" class="text-blue-400 underline">GitHub</a>
+      </p>
+    </div>
+
+    <p class="text-sm text-gray-400 mb-6">
+      Ứng dụng này cung cấp các chức năng cơ bản (chụp ảnh & quay video, hẹn giờ, bộ lọc) dưới dạng PWA.  
+      Hoạt động ngoại tuyến sau khi cài đặt.
+    </p>
+
+    <a href="vietnamese.html" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors">⬅ Quay lại</a>
+  </div>
 </body>
 </html>
