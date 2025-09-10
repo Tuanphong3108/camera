@@ -41,8 +41,7 @@
     Nhớ ngôn ngữ
   </label>
   <p class="mt-2 text-xs text-gray-400 max-w-md text-center px-4">
-    Lưu ý: Để đổi sang ngôn ngữ khác khi bật "Nhớ ngôn ngữ", 
-    bạn phải xoá toàn bộ dữ liệu và cookie trang web 
+    ⚠️ Lưu ý: Nếu bật "Nhớ ngôn ngữ", muốn đổi sang ngôn ngữ khác bạn phải xoá toàn bộ dữ liệu và cookie của 
     <b>tuanphong3108.github.io</b>. Việc này có thể ảnh hưởng tới các chi nhánh khác như 
     <code>/game</code>, <code>/newtab</code>, <code>/workspace-launcher</code>...
   </p>
@@ -60,6 +59,28 @@
       }
       window.location.href = url;
     }
+
+    // 🔧 Cheat code trong DevTools
+    window.changeLanguage = function(lang) {
+      let url;
+      if (lang === 'vi' || lang === 'vietnamese') {
+        url = 'vietnamese.html';
+      } else if (lang === 'en' || lang === 'english') {
+        url = 'english.html';
+      } else {
+        console.error("❌ Ngôn ngữ không hợp lệ. Dùng 'vi'/'vietnamese' hoặc 'en'/'english'.");
+        return;
+      }
+
+      localStorage.setItem('preferredLang', url);
+      console.log(`✅ Ngôn ngữ đã đổi sang: ${url}. Reload để áp dụng.`);
+    };
+
+    // 🗑 Reset ngôn ngữ đã lưu
+    window.resetLanguage = function() {
+      localStorage.removeItem('preferredLang');
+      console.log("🗑 Ngôn ngữ đã được reset. Reload để chọn lại.");
+    };
   </script>
 
 </body>
