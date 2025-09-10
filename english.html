@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+  // 🔄 Auto redirect về ngôn ngữ đã lưu (nếu đang ở trang khác)
+  (function () {
+    const pref = localStorage.getItem('preferredLang');
+    if (pref && !location.pathname.includes(pref)) {
+      console.log(`🌐 Redirecting to preferred language: ${pref}`);
+      window.location.href = pref;
+    }
+  })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Camera Web App</title>
