@@ -22,7 +22,7 @@
             gap: 1rem;
         }
 
-        /* Ẩn thanh cuộn */
+        /* Hide scrollbar */
         ::-webkit-scrollbar {
             display: none;
         }
@@ -303,6 +303,11 @@
         .sepia { filter: sepia(100%); }
         .grayscale { filter: grayscale(100%); }
         .vivid { filter: brightness(1.2) saturate(1.5); }
+        .invert { filter: invert(100%); }
+        .saturate { filter: saturate(200%); }
+        .contrast { filter: contrast(200%); }
+        .brightness { filter: brightness(150%); }
+
         
         .timer-section, .filter-section {
             display: none;
@@ -321,15 +326,15 @@
 </head>
 <body>
 
-    <!-- Màn hình chào (Splash Screen) -->
+    <!-- Splash Screen -->
     <div id="splash-screen">
-        <img id="splash-icon" src="icon.png" alt="Biểu tượng ứng dụng">
+        <img id="splash-icon" src="icon.png" alt="App Icon">
     </div>
 
-    <!-- Khu vực ứng dụng camera chính -->
+    <!-- Main Camera App Area -->
     <div id="camera-screen" class="container bg-black flex-col items-center opacity-0 transition-opacity duration-500 pointer-events-none">
         
-        <!-- Nút chuyển camera -->
+        <!-- Camera toggle button -->
         <button id="camera-toggle-button" class="hidden">
             <svg class="button-icon text-white" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M7 16V8a1 1 0 011-1h8a1 1 0 011 1v8a1 1 0 01-1 1H8a1 1 0 01-1-1zM5 12V8a3 3 0 013-3h8a3 3 0 013 3v4a3 3 0 01-3 3h-8a3 3 0 01-3-3zm2 0a5 5 0 015-5 5 5 0 015 5h-1a4 4 0 00-4-4 4 4 0 00-4 4H7zm0 0a5 5 0 01-5-5h1a4 4 0 004 4z" fill-rule="evenodd" clip-rule="evenodd"/>
@@ -343,13 +348,13 @@
             <div id="timer-countdown" class="hidden"></div>
         </div>
         
-        <!-- Ảnh đã chụp -->
+        <!-- Captured photo -->
         <div id="photo-container" class="w-full h-full bg-gray-900 flex items-center justify-center">
             <canvas id="photo-canvas" class="hidden"></canvas>
-            <img id="captured-image" class="w-full h-full object-contain hidden" alt="Ảnh đã chụp">
+            <img id="captured-image" class="w-full h-full object-contain hidden" alt="Captured Photo">
         </div>
 
-        <!-- Video đã quay -->
+        <!-- Recorded video -->
         <div id="recorded-video-container" class="w-full h-full bg-gray-900 flex items-center justify-content-center">
             <video id="recorded-video" class="hidden"></video>
             <div id="video-overlay">
@@ -364,30 +369,34 @@
             </div>
         </div>
 
-        <!-- Các nút điều khiển được di chuyển xuống cuối màn hình -->
+        <!-- Control buttons moved to the bottom of the screen -->
         <div class="control-buttons-wrapper">
-            <!-- Khu vực lựa chọn bộ lọc -->
+            <!-- Filter options area -->
             <div id="filter-section" class="filter-buttons text-white hidden">
-                <button class="filter-button active" data-filter="none">Thường</button>
+                <button class="filter-button active" data-filter="none">Bình thường</button>
                 <button class="filter-button" data-filter="sepia">Sepia</button>
                 <button class="filter-button" data-filter="grayscale">Trắng đen</button>
                 <button class="filter-button" data-filter="vivid">Sống động</button>
+                <button class="filter-button" data-filter="invert">Đảo màu</button>
+                <button class="filter-button" data-filter="saturate">Bão hoà</button>
+                <button class="filter-button" data-filter="contrast">Độ tương phản</button>
+                <button class="filter-button" data-filter="brightness">Độ sáng</button>
             </div>
             
-            <!-- Khu vực hẹn giờ -->
+            <!-- Timer options area -->
             <div id="timer-section" class="timer-buttons text-white hidden">
-                <button class="timer-button" data-timer="0">Tắt</button>
+                <button class="timer-button" data-timer="0">0s</button>
                 <button class="timer-button" data-timer="3">3s</button>
                 <button class="timer-button" data-timer="5">5s</button>
                 <button class="timer-button" data-timer="10">10s</button>
             </div>
 
             <div id="mode-buttons-container" class="flex justify-center gap-4 w-full text-white">
-                <button id="mode-photo-button" class="px-4 py-2 rounded-full font-medium transition-colors bg-blue-600">Ảnh</button>
-                <button id="mode-video-button" class="px-4 py-2 rounded-full font-medium transition-colors bg-gray-600 hover:bg-gray-700">Video</button>
+                <button id="mode-photo-button" class="px-4 py-2 rounded-full font-medium transition-colors bg-blue-600">Chụp Ảnh</button>
+                <button id="mode-video-button" class="px-4 py-2 rounded-full font-medium transition-colors bg-gray-600 hover:bg-gray-700">Quay Phim</button>
             </div>
 
-            <!-- Bộ đếm thời gian video mới -->
+            <!-- New video timer -->
             <div id="recording-timer" class="px-4 py-2 bg-white/20 text-white rounded-full text-sm">00:00</div>
             
             <div class="flex items-center justify-center w-full max-w-sm mt-4">
@@ -403,35 +412,35 @@
             </div>
             
             <div class="flex items-center justify-center gap-4 w-full mt-4">
-                <button id="download-button" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-colors hidden">Tải xuống</button>
+                <button id="download-button" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-colors hidden">Tải về</button>
                 <button id="retake-button" class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-full transition-colors hidden">Chụp lại</button>
             </div>
         </div>
-        <button id="restart-button" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-full transition-colors">🔄</button>
+        <button id="restart-button" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-full transition-colors">Khởi động lại</button>
         
         <div id="status-message" class="absolute top-2 px-4 py-2 bg-white/20 text-white rounded-full text-sm opacity-0 transition-opacity duration-300 pointer-events-none"></div>
     </div>
 
     <script>
-        // Đăng ký Service Worker để bật tính năng PWA
+        // Register Service Worker for PWA features
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/service-worker.js').then(registration => {
-                    console.log('Service Worker đã được đăng ký thành công:', registration.scope);
+                    console.log('Service Worker registered successfully:', registration.scope);
                 }).catch(err => {
-                    console.error('Đăng ký Service Worker thất bại:', err);
+                    console.error('Service Worker registration failed:', err);
                 });
             });
         }
     </script>
     
     <script>
-        // Chặn menu chuột phải trên toàn bộ trang
+        // Prevent right-click menu on the whole page
         document.addEventListener('contextmenu', (event) => {
             event.preventDefault();
         });
 
-        // Lấy các phần tử DOM
+        // Get DOM elements
         const cameraScreen = document.getElementById('camera-screen');
         const splashScreen = document.getElementById('splash-screen');
         
@@ -455,13 +464,13 @@
         const timerCountdown = document.getElementById('timer-countdown');
         const cameraToggleButton = document.getElementById('camera-toggle-button');
 
-        // Nút điều khiển video tùy chỉnh
+        // Custom video controls
         const videoOverlay = document.getElementById('video-overlay');
         const playPauseButton = document.getElementById('play-pause-button');
         const playIcon = document.getElementById('play-icon');
         const pauseIcon = document.getElementById('pause-icon');
         
-        // Nút bộ lọc và hẹn giờ
+        // Filter and timer buttons
         const filterSection = document.getElementById('filter-section');
         const filterButtons = document.querySelectorAll('.filter-button');
         const timerSection = document.getElementById('timer-section');
@@ -481,7 +490,7 @@
         let videoDevices = [];
         let currentCameraIndex = 0;
 
-        // --- CÁC BIẾN VÀ HÀM LIÊN QUAN ĐẾN ÂM THANH ---
+        // --- AUDIO VARIABLES AND FUNCTIONS ---
         let audioContext = null;
         let shutterBuffer = null;
         let beepBuffer = null;
@@ -520,12 +529,12 @@
                 shutterBuffer = createAudioBuffer(4400, 0.1, 0.5);
                 beepBuffer = createAudioBuffer(1000, 0.2, 0.8);
             } catch (e) {
-                console.error("Web Audio API không được hỗ trợ:", e);
+                console.error("Web Audio API not supported:", e);
             }
         };
-        // --- KẾT THÚC CÁC HÀM ÂM THANH ---
+        // --- END OF AUDIO FUNCTIONS ---
 
-        // Hàm hiển thị thông báo
+        // Function to show a status message
         const showMessage = (message) => {
             statusMessage.textContent = message;
             statusMessage.classList.remove('opacity-0');
@@ -536,10 +545,10 @@
             }, 3000);
         };
         
-        // Hàm bắt đầu camera
+        // Function to start the camera
         const startCamera = async () => {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showMessage('🚫Trình duyệt không hỗ trợ truy cập camera.');
+                showMessage('Your browser does not support camera access.');
                 setTimeout(() => {
                     splashScreen.style.opacity = '0';
                     splashScreen.style.pointerEvents = 'none';
@@ -551,26 +560,26 @@
             }
             
             try {
-                // Dừng stream hiện tại nếu có
+                // Stop the current stream if it exists
                 if (stream) {
                     stream.getTracks().forEach(track => track.stop());
                 }
 
-                // Lấy danh sách các thiết bị video
+                // Get a list of video devices
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 videoDevices = devices.filter(device => device.kind === 'videoinput');
 
-                // Hiển thị nút chuyển đổi nếu có nhiều hơn 1 camera
+                // Show the toggle button if there is more than 1 camera
                 if (videoDevices.length > 1) {
                     cameraToggleButton.classList.remove('hidden');
                 } else {
                     cameraToggleButton.classList.add('hidden');
                 }
 
-                // Lấy thiết bị camera hiện tại
+                // Get the current camera device
                 const currentCamera = videoDevices[currentCameraIndex];
                 
-                // Lấy cả video và audio stream
+                // Get both video and audio streams
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         deviceId: currentCamera.deviceId,
@@ -582,12 +591,12 @@
                     audio: true
                 });
 
-                // Tách track video ra để chỉ hiển thị live stream mà không có audio
+                // Separate the video track to only show the live stream without audio
                 const videoOnlyStream = new MediaStream(stream.getVideoTracks());
                 
-                videoElement.srcObject = videoOnlyStream; // Chỉ truyền stream video
+                videoElement.srcObject = videoOnlyStream; // Pass only the video stream
                 videoElement.play();
-                showMessage('📷Camera đã sẵn sàng.');
+                showMessage('Camera is ready.');
 
                 setTimeout(() => {
                     splashScreen.style.opacity = '0';
@@ -598,8 +607,8 @@
                 }, 2000);
 
             } catch (err) {
-                console.error("Lỗi khi truy cập camera:", err);
-                showMessage(`Lỗi: Không thể truy cập camera. Vui lòng kiểm tra quyền.`);
+                console.error("Error accessing camera:", err);
+                showMessage(`Error: Cannot access camera. Please check permissions.`);
 
                 setTimeout(() => {
                     splashScreen.style.opacity = '0';
@@ -611,7 +620,7 @@
             }
         };
 
-        // Hàm chuyển đổi camera
+        // Function to switch cameras
         const switchCamera = () => {
             if (videoDevices.length > 1) {
                 currentCameraIndex = (currentCameraIndex + 1) % videoDevices.length;
@@ -619,7 +628,7 @@
             }
         };
 
-        // Hàm bắt đầu bộ đếm giờ video
+        // Function to start the video timer
         const startVideoTimer = () => {
             startTime = Date.now();
             recordingTimer.textContent = '00:00';
@@ -642,7 +651,7 @@
             }, 1000);
         };
 
-        // Hàm dừng bộ đếm giờ video
+        // Function to stop the video timer
         const stopVideoTimer = () => {
             if (timerInterval) {
                 clearInterval(timerInterval);
@@ -651,7 +660,7 @@
             }
         };
 
-        // Hàm chuyển chế độ
+        // Function to switch modes
         const switchMode = (mode) => {
             currentMode = mode;
             // Reset active timer to 0
@@ -666,7 +675,7 @@
                 captureButton.style.backgroundColor = 'white';
                 captureButton.innerHTML = `<div class="absolute inset-0 m-auto w-16 h-16 bg-white/20 rounded-full group-hover:bg-white/30 transition-all"></div>`;
                 stopVideoTimer();
-                // Bật các nút chức năng trong chế độ ảnh
+                // Enable features in photo mode
                 timerToggleButton.classList.remove('hidden');
                 filterToggleButton.classList.remove('hidden');
             } else { // 'video' mode
@@ -675,12 +684,12 @@
                 modePhotoButton.classList.add('bg-gray-600', 'hover:bg-gray-700');
                 captureButton.style.backgroundColor = 'red';
                 captureButton.innerHTML = `<div class="absolute inset-0 m-auto w-16 h-16 bg-red-500 rounded-full group-hover:bg-red-400 transition-all"></div>`;
-                // Chỉ bật nút hẹn giờ trong chế độ video, ẩn nút lọc
+                // Only enable timer button in video mode, hide filter button
                 filterSection.classList.add('hidden');
                 filterToggleButton.classList.add('hidden');
                 timerToggleButton.classList.remove('hidden');
             }
-            // Reset lại giao diện
+            // Reset UI
             videoContainer.style.display = 'flex';
             photoContainer.style.display = 'none';
             recordedVideoContainer.style.display = 'none';
@@ -688,7 +697,7 @@
             retakeButton.classList.add('hidden');
         };
 
-        // Hàm chụp ảnh
+        // Function to take a photo
         const takePhoto = () => {
             if (stream) {
                 playSound(shutterBuffer);
@@ -697,18 +706,57 @@
                 canvasElement.height = videoSettings.height;
                 
                 const context = canvasElement.getContext('2d');
-                context.filter = videoElement.style.filter;
-
+                context.filter = 'none'; // Clear filter on context to draw raw image
+                
                 context.save();
                 context.translate(canvasElement.width, 0);
                 context.scale(-1, 1);
                 context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
                 context.restore();
 
+                // Check for current filter and apply to canvas data
+                if (currentFilter === 'invert') {
+                    const imageData = context.getImageData(0, 0, canvasElement.width, canvasElement.height);
+                    const data = imageData.data;
+                    for (let i = 0; i < data.length; i += 4) {
+                        data[i] = 255 - data[i];     // Red
+                        data[i + 1] = 255 - data[i + 1]; // Green
+                        data[i + 2] = 255 - data[i + 2]; // Blue
+                    }
+                    context.putImageData(imageData, 0, 0);
+                } else if (currentFilter === 'grayscale') {
+                    const imageData = context.getImageData(0, 0, canvasElement.width, canvasElement.height);
+                    const data = imageData.data;
+                    for (let i = 0; i < data.length; i += 4) {
+                        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                        data[i] = avg;     // Red
+                        data[i + 1] = avg; // Green
+                        data[i + 2] = avg; // Blue
+                    }
+                    context.putImageData(imageData, 0, 0);
+                } else if (currentFilter === 'sepia') {
+                    const imageData = context.getImageData(0, 0, canvasElement.width, canvasElement.height);
+                    const data = imageData.data;
+                    for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i];
+                        const g = data[i + 1];
+                        const b = data[i + 2];
+                        data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189)); // Red
+                        data[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168)); // Green
+                        data[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131)); // Blue
+                    }
+                    context.putImageData(imageData, 0, 0);
+                }
+
                 const imageDataUrl = canvasElement.toDataURL('image/png');
                 capturedImage.src = imageDataUrl;
                 
-                capturedImage.style.filter = videoElement.style.filter;
+                // For other filters, apply to the captured image element
+                if (currentFilter !== 'invert' && currentFilter !== 'grayscale' && currentFilter !== 'sepia') {
+                    capturedImage.style.filter = videoElement.style.filter;
+                } else {
+                    capturedImage.style.filter = '';
+                }
 
                 videoContainer.style.display = 'none';
                 photoContainer.style.display = 'flex';
@@ -718,18 +766,18 @@
                 downloadButton.classList.remove('hidden');
                 retakeButton.classList.remove('hidden');
                 modeButtonsContainer.classList.add('hidden');
-                downloadButton.textContent = '⬇Tải xuống ảnh';
-                showMessage('📸Đã chụp ảnh!');
+                downloadButton.textContent = 'Tải về ảnh';
+                showMessage('Đã chụp ảnh!');
             }
         };
         
-        // Hàm hẹn giờ chụp ảnh
+        // Function to start photo timer
         const startPhotoTimer = (seconds) => {
             if (seconds === 0) {
                 takePhoto();
                 return;
             }
-            showMessage(`⏰Hẹn giờ ${seconds} giây`);
+            showMessage(`Bắt đầu đếm ngược ${seconds} giây`);
             timerCountdown.textContent = seconds;
             timerCountdown.classList.remove('hidden');
             timerCountdown.style.opacity = '1';
@@ -748,14 +796,14 @@
             }, 1000);
         };
         
-        // Hàm bắt đầu/dừng quay video
+        // Function to start/stop video recording
         const toggleRecording = () => {
             if (mediaRecorder && mediaRecorder.state === 'recording') {
                 mediaRecorder.stop();
                 recordingIndicator.style.display = 'none';
                 stopVideoTimer();
                 playSound(beepBuffer);
-                showMessage('📼Đã dừng quay video.');
+                showMessage('Đã dừng quay video.');
             } else {
                 recordedChunks = [];
                 mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
@@ -782,12 +830,12 @@
                     retakeButton.classList.remove('hidden');
                     modeButtonsContainer.classList.add('hidden');
                     
-                    downloadButton.textContent = 'Tải xuống video';
+                    downloadButton.textContent = 'Tải về video';
                     
                     recordedVideoElement.oncanplaythrough = () => {
                         recordedVideoElement.play().catch(e => {
-                            console.error("Lỗi tự động phát video:", e);
-                            showMessage("Bấm nút Play để xem video.");
+                            console.error("Autoplay failed:", e);
+                            showMessage("Nhấn nút Play để xem video.");
                             videoOverlay.classList.remove('hidden');
                             playIcon.classList.remove('hidden');
                             pauseIcon.classList.add('hidden');
@@ -799,16 +847,16 @@
                 recordingIndicator.style.display = 'block';
                 startVideoTimer();
                 playSound(beepBuffer);
-                showMessage('📹Đang quay video...');
+                showMessage('Đang quay...');
             }
         };
         
-        // Hàm hẹn giờ quay video
+        // Function to start video timer with countdown
         const startVideoTimerWithCountdown = (seconds) => {
             if (countdownRunning) return;
             countdownRunning = true;
             
-            showMessage(`⏰Hẹn giờ ${seconds} giây`);
+            showMessage(`Bắt đầu đếm ngược ${seconds} giây`);
             timerCountdown.textContent = seconds;
             timerCountdown.classList.remove('hidden');
             timerCountdown.style.opacity = '1';
@@ -828,7 +876,7 @@
             }, 1000);
         };
 
-        // Hàm quay lại
+        // Function to retake
         const retake = () => {
             videoContainer.style.display = 'flex';
             photoContainer.style.display = 'none';
@@ -850,7 +898,7 @@
             startCamera();
         };
 
-        // Hàm lưu file (ảnh hoặc video)
+        // Function to save file (photo or video)
         const saveFile = async () => {
             let fileBlob;
             let fileName;
@@ -869,10 +917,10 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            showMessage('⬇Đang tải về...');
+            showMessage('Đang tải về...');
         };
 
-        // Xử lý nút điều khiển video tùy chỉnh
+        // Handle custom video controls
         playPauseButton.addEventListener('click', () => {
             if (recordedVideoElement.paused || recordedVideoElement.ended) {
                 recordedVideoElement.play();
@@ -899,7 +947,7 @@
             pauseIcon.classList.add('hidden');
         });
         
-        // Xử lý nút hẹn giờ
+        // Handle timer button clicks
         timerButtons.forEach(button => {
             button.addEventListener('click', () => {
                 timerButtons.forEach(btn => btn.classList.remove('active'));
@@ -908,7 +956,7 @@
             });
         });
         
-        // Xử lý nút bộ lọc
+        // Handle filter button clicks
         filterButtons.forEach(button => {
             button.addEventListener('click', () => {
                 filterButtons.forEach(btn => btn.classList.remove('active'));
@@ -922,11 +970,19 @@
                     videoElement.style.filter = 'grayscale(100%)';
                 } else if (currentFilter === 'vivid') {
                     videoElement.style.filter = 'brightness(1.2) saturate(1.5)';
+                } else if (currentFilter === 'invert') {
+                    videoElement.style.filter = 'invert(100%)';
+                } else if (currentFilter === 'saturate') {
+                    videoElement.style.filter = 'saturate(200%)';
+                } else if (currentFilter === 'contrast') {
+                    videoElement.style.filter = 'contrast(200%)';
+                } else if (currentFilter === 'brightness') {
+                    videoElement.style.filter = 'brightness(150%)';
                 }
             });
         });
 
-        // Xử lý các sự kiện click
+        // Handle click events
         modePhotoButton.addEventListener('click', () => {
             switchMode('photo');
         });
@@ -946,7 +1002,7 @@
             timerSection.classList.add('hidden'); // Ensure timer section is hidden
         });
         
-        // Nút chuyển đổi camera
+        // Camera toggle button
         cameraToggleButton.addEventListener('click', switchCamera);
 
         captureButton.addEventListener('click', () => {
