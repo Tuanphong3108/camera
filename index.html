@@ -6,6 +6,7 @@
   <title>Chọn ngôn ngữ</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+  <script src="language-dev.js"></script>
     body {
       animation: fadeIn 0.6s ease-in-out;
     }
@@ -59,28 +60,6 @@
       }
       window.location.href = url;
     }
-
-    // 🔧 Cheat code trong DevTools
-    window.changeLanguage = function(lang) {
-      let url;
-      if (lang === 'vi' || lang === 'vietnamese') {
-        url = 'vietnamese.html';
-      } else if (lang === 'en' || lang === 'english') {
-        url = 'english.html';
-      } else {
-        console.error("❌ Ngôn ngữ không hợp lệ. Dùng 'vi'/'vietnamese' hoặc 'en'/'english'.");
-        return;
-      }
-
-      localStorage.setItem('preferredLang', url);
-      console.log(`✅ Ngôn ngữ đã đổi sang: ${url}. Reload để áp dụng.`);
-    };
-
-    // 🗑 Reset ngôn ngữ đã lưu
-    window.resetLanguage = function() {
-      localStorage.removeItem('preferredLang');
-      console.log("🗑 Ngôn ngữ đã được reset. Reload để chọn lại.");
-    };
   </script>
 
 </body>
