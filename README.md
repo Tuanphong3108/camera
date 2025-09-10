@@ -13,7 +13,6 @@ Hữu ích cho các máy không có sẵn ứng dụng camera, hoặc không bi�
 - 🌍 **Đa ngôn ngữ**: Tiếng Việt & English  
 - 💾 Tuỳ chọn **Nhớ ngôn ngữ** cho lần mở tiếp theo  
 - 📡 **Offline ready** nhờ cache PWA  
-- 🔄 Nút **Khởi động lại** thay thế reload (tiện cho PWA)  
 - ⚡ Giao diện gọn nhẹ, dễ dùng  
 
 ---
