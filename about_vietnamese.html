@@ -28,5 +28,15 @@
 
     <a href="vietnamese.html" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors">⬅ Quay lại</a>
   </div>
+  <!-- Nút đổi ngôn ngữ -->
+<div class="absolute bottom-4 right-4">
+  <button onclick="
+    localStorage.setItem('preferredLang', 'english.html');
+    window.location.href = 'about_english.html';
+  " class="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-full text-sm transition-colors">
+    Change language to English
+  </button>
+</div>
+
 </body>
 </html>
