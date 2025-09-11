@@ -20,6 +20,19 @@
         transform: translateY(0);
       }
     }
+    .fade-out {
+      animation: fadeOut 0.5s ease-in-out forwards;
+    }
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+    }
   </style>
 </head>
 <body class="flex flex-col justify-center items-center h-screen bg-gray-900 text-white">
@@ -37,17 +50,12 @@
     </button>
   </div>
 
-  <label class="flex items-center gap-2 text-sm">
-    <input type="checkbox" id="rememberLang" class="w-4 h-4">
-    Nhớ ngôn ngữ/Save Language
-  </label>
   <p class="mt-2 text-xs text-gray-400">
-  Note: You can change the language in the "About" section.
-</p>
-<p class="mt-2 text-xs text-gray-400">
-  Lưu ý: Bạn có thể đổi ngôn ngữ trong phần "Về ứng dụng".
-</p>
-
+    Note: You can change the language in the "About" section.
+  </p>
+  <p class="mt-2 text-xs text-gray-400">
+    Lưu ý: Bạn có thể đổi ngôn ngữ trong phần "Về ứng dụng".
+  </p>
 
   <script>
     // Nếu đã lưu ngôn ngữ, redirect luôn
@@ -57,10 +65,14 @@
     }
 
     function setLanguage(url) {
-      if (document.getElementById('rememberLang').checked) {
-        localStorage.setItem('preferredLang', url);
-      }
-      window.location.href = url;
+      // Luôn lưu ngôn ngữ khi chọn
+      localStorage.setItem('preferredLang', url);
+
+      // Thêm hiệu ứng fade-out trước khi chuyển trang
+      document.body.classList.add('fade-out');
+      setTimeout(() => {
+        window.location.href = url;
+      }, 500); // thời gian khớp với animation fadeOut
     }
   </script>
 
