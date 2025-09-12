@@ -1,16 +1,13 @@
 {
   "name": "Camera",
   "short_name": "Camera",
-  "description": "Ứng dụng camera đơn giản được cài đặt từ web.",
-  "start_url": "/camera/index.html",
-  "scope": "/camera/",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
   "icons": [
-
     {
-      "src": "/web-app-manifest-512x512.png",
+      "src": "web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
