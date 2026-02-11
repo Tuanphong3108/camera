@@ -185,7 +185,7 @@
 
     <script>
         function changeLang() {
-            localStorage.setItem('preferredLang', 'about.html');
+            localStorage.setItem('preferredLang', 'english.html');
             
             const content = document.getElementById('content');
             content.style.opacity = '0';
@@ -195,7 +195,7 @@
             setTimeout(() => {
                 document.getElementById('loading-screen').style.display = 'flex';
                 setTimeout(() => {
-                    window.location.href = 'about.html';
+                    window.location.href = 'about_english.html';
                 }, 1200);
             }, 300);
         }
