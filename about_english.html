@@ -1,47 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About - Camera Web App</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Camera Web App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@100..1000&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    
+    <style>
+        @font-face {
+            font-family: 'Minecraft';
+            src: url('https://tuanphong3108.github.io/google-sans-do-not-access/minecraft.ttf') format('truetype');
+            font-weight: normal; font-style: normal;
+        }
+
+        :root {
+            --md-sys-color-primary: #D0BCFF;
+            --md-sys-color-on-primary: #381E72;
+            --md-sys-color-surface: #1C1B1F;
+            --md-sys-color-on-surface: #E6E1E5;
+            --md-sys-color-surface-variant: #49454F;
+            --md-sys-color-on-surface-variant: #CAC4D0;
+            --md-sys-color-outline: #938F99;
+            --md-sys-color-secondary-container: #E8DEF8;
+            --md-sys-color-on-secondary-container: #1D192B;
+        }
+
+        body {
+            font-family: 'Google Sans Flex', sans-serif;
+            background-color: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mc-font { font-family: 'Minecraft', sans-serif; }
+
+        .about-card {
+            background-color: var(--md-sys-color-surface-variant);
+            border-radius: 28px;
+            padding: 32px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            animation: slideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .info-chip {
+            background-color: #313033;
+            border-radius: 16px;
+            padding: 16px;
+            margin: 12px 0;
+            border: 1px solid var(--md-sys-color-outline);
+        }
+
+        /* Nút quay lại chính */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 100px;
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(208, 188, 255, 0.4);
+        }
+
+        /* Container màu xám cho nút đổi ngôn ngữ */
+        .lang-switch-container {
+            background-color: #313033;
+            padding: 8px;
+            border-radius: 100px; /* Bắt đầu là Pill */
+            margin-top: 12px;
+            border: 1px solid transparent;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .lang-switch-container:hover {
+            border-radius: 16px; /* Chuyển sang Rectangle bo góc */
+            background-color: #3c3b3f;
+            border-color: var(--md-sys-color-outline);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400;
+            transition: font-variation-settings 0.3s;
+        }
+
+        .lang-switch-container:hover .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1;
+        }
+
+        /* Loading Screen đồng bộ index.html */
+        #loading-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--md-sys-color-surface);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-gif {
+            width: 80px;
+            filter: brightness(1.2) sepia(0.3) hue-rotate(240deg) saturate(2);
+        }
+    </style>
 </head>
-<body class="bg-black text-white flex flex-col items-center justify-center min-h-screen font-['Inter'] p-6">
-  <div class="max-w-lg text-center">
-    <img src="icon.png" alt="App Icon" class="w-24 h-24 mx-auto mb-6">
-    <h1 class="text-2xl font-bold mb-2">📷 Camera Web App</h1>
-    <p class="text-gray-300 mb-4">A simple web-based camera app for devices without a native camera application.</p>
+<body>
 
-    <div class="bg-gray-800 p-4 rounded-2xl shadow mb-4">
-      <p><span class="font-semibold">Version:</span> 2025.09.10</p>
-      <p><span class="font-semibold">Developer:</span> Phong VN</p>
-      <p><span class="font-semibold">Repository:</span> 
-        <a href="https://github.com/tuanphong3108/camera" target="_blank" class="text-blue-400 underline">GitHub</a>
-      </p>
+    <!-- Loading Screen khi đổi ngôn ngữ -->
+    <div id="loading-screen">
+        <img src="https://tuanphong3108.github.io/md3-loading/Loading_Indicator.gif" alt="Loading" class="loading-gif">
+        <div class="mt-4 mc-font text-[#D0BCFF] tracking-widest text-sm uppercase">Switching Language...</div>
     </div>
-    <p>This is the English translation based on the original Vietnamese version.</p>
-    <p class="text-sm text-gray-400 mb-6">
-      This app is designed to provide basic camera functions (photo & video, timer, filters) as a PWA.  
-      Works offline after installation.
-    </p>
 
-    <a href="english.html" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors">⬅ Back</a>
-  </div>
-  <!-- Language switch button -->
-<div class="absolute bottom-4 right-4">
-  <button onclick="
-    localStorage.setItem('preferredLang', 'vietnamese.html');
-    window.location.href = 'vietnamese.html';
-  " class="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-full text-sm transition-colors">
-    Đổi ngôn ngữ sang 🇻🇳 Tiếng Việt
-  </button>
-</div>
+    <div class="about-card" id="content">
+        <div class="text-center">
+            <!-- App Icon Placeholder -->
+            <div class="w-20 h-20 bg-[#D0BCFF] rounded-[24px] mx-auto mb-6 flex items-center justify-center shadow-lg">
+                <span class="material-symbols-outlined text-5xl text-[#381E72]" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+            </div>
+            
+            <h1 class="text-2xl font-bold mb-1">Camera Web App</h1>
+            <p class="mc-font text-[10px] uppercase tracking-[3px] text-gray-400 mb-6">Development Phase</p>
 
-<script>
-  document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-  });
-</script>
+            <p class="text-sm text-gray-300 leading-relaxed mb-6">
+                A modern, lightweight PWA designed for devices needing a robust camera interface. 
+                Built with passion by <span class="text-[#D0BCFF] font-semibold">Phong VN</span>.
+            </p>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-chip">
+            <div class="flex justify-between items-center mb-3 text-sm">
+                <span class="text-gray-400 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">verified</span> Version
+                </span>
+                <span class="font-mono text-[#D0BCFF]">2025.09.10</span>
+            </div>
+            <div class="flex justify-between items-center mb-3 text-sm">
+                <span class="text-gray-400 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">code</span> Developer
+                </span>
+                <span class="font-medium text-white">Phong VN</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+                <span class="text-gray-400 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">terminal</span> Source
+                </span>
+                <a href="https://github.com/tuanphong3108/camera" target="_blank" class="text-blue-400 underline decoration-blue-400/30">GitHub</a>
+            </div>
+        </div>
+
+        <p class="text-[11px] text-gray-500 italic mb-8 text-center">
+            Translation based on the original Vietnamese version. 
+            Supports offline mode & advanced filters.
+        </p>
+
+        <!-- Navigation & Language Switcher -->
+        <div class="flex flex-col gap-3">
+            <a href="english.html" class="action-btn justify-center">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span>Back to App</span>
+            </a>
+
+            <!-- Nút đổi ngôn ngữ bọc trong container xám, hiệu ứng biến hình Pill -> Rect -->
+            <div onclick="changeLang()" class="lang-switch-container flex items-center justify-center gap-3">
+                <span class="material-symbols-outlined text-xl text-[#D0BCFF]">translate</span>
+                <span class="text-xs font-medium text-gray-300">Đổi sang Tiếng Việt 🇻🇳</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function changeLang() {
+            localStorage.setItem('preferredLang', 'vietnamese.html');
+            
+            // Hiệu ứng mờ dần nội dung cũ
+            const content = document.getElementById('content');
+            content.style.opacity = '0';
+            content.style.transform = 'translateY(10px) scale(0.98)';
+            content.style.transition = '0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'flex';
+                setTimeout(() => {
+                    window.location.href = 'vietnamese.html';
+                }, 1200);
+            }, 300);
+        }
+
+        // Chặn menu chuột phải
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        // Chặn drag
+        document.addEventListener('dragstart', e => e.preventDefault());
+    </script>
 </body>
 </html>
