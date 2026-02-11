@@ -1,47 +1,207 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Giới thiệu - Ứng dụng Camera</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giới thiệu - Camera Web App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@100..1000&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    
+    <style>
+        @font-face {
+            font-family: 'Minecraft';
+            src: url('https://tuanphong3108.github.io/google-sans-do-not-access/minecraft.ttf') format('truetype');
+            font-weight: normal; font-style: normal;
+        }
+
+        :root {
+            --md-sys-color-primary: #D0BCFF;
+            --md-sys-color-on-primary: #381E72;
+            --md-sys-color-surface: #1C1B1F;
+            --md-sys-color-on-surface: #E6E1E5;
+            --md-sys-color-surface-variant: #49454F;
+            --md-sys-color-on-surface-variant: #CAC4D0;
+            --md-sys-color-outline: #938F99;
+        }
+
+        body {
+            font-family: 'Google Sans Flex', sans-serif;
+            background-color: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mc-font { font-family: 'Minecraft', sans-serif; }
+
+        .about-card {
+            background-color: var(--md-sys-color-surface-variant);
+            border-radius: 28px;
+            padding: 32px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            animation: slideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .info-chip {
+            background-color: #313033;
+            border-radius: 16px;
+            padding: 16px;
+            margin: 12px 0;
+            border: 1px solid var(--md-sys-color-outline);
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 100px;
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(208, 188, 255, 0.4);
+        }
+
+        /* Container đổi ngôn ngữ - Hiệu ứng Pill -> Rect */
+        .lang-switch-container {
+            background-color: #313033;
+            padding: 8px;
+            border-radius: 100px;
+            margin-top: 12px;
+            border: 1px solid transparent;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .lang-switch-container:hover {
+            border-radius: 16px;
+            background-color: #3c3b3f;
+            border-color: var(--md-sys-color-outline);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400;
+            transition: font-variation-settings 0.3s;
+        }
+
+        .lang-switch-container:hover .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1;
+        }
+
+        #loading-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--md-sys-color-surface);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-gif {
+            width: 80px;
+            filter: brightness(1.2) sepia(0.3) hue-rotate(240deg) saturate(2);
+        }
+    </style>
 </head>
-<body class="bg-black text-white flex flex-col items-center justify-center min-h-screen font-['Inter'] p-6">
-  <div class="max-w-lg text-center">
-    <img src="icon.png" alt="Biểu tượng ứng dụng" class="w-24 h-24 mx-auto mb-6">
-    <h1 class="text-2xl font-bold mb-2">📷 Ứng dụng Camera Web</h1>
-    <p class="text-gray-300 mb-4">Ứng dụng camera đơn giản trên nền web dành cho các thiết bị không có sẵn ứng dụng camera.</p>
+<body>
 
-    <div class="bg-gray-800 p-4 rounded-2xl shadow mb-4">
-      <p><span class="font-semibold">Phiên bản:</span> 2025.09.10</p>
-      <p><span class="font-semibold">Người phát triển:</span> Phong VN</p>
-      <p><span class="font-semibold">Kho mã nguồn:</span> 
-        <a href="https://github.com/tuanphong3108/camera" target="_blank" class="text-blue-400 underline">GitHub</a>
-      </p>
+    <div id="loading-screen">
+        <img src="https://tuanphong3108.github.io/md3-loading/Loading_Indicator.gif" alt="Loading" class="loading-gif">
+        <div class="mt-4 mc-font text-[#D0BCFF] tracking-widest text-sm uppercase text-center">Đang chuyển ngôn ngữ...</div>
     </div>
-    <p>Đây là bản gốc bằng tiếng Việt, bản tiếng Anh là bản dịch dựa trên nội dung này.</p>
-    <p class="text-sm text-gray-400 mb-6">
-      Ứng dụng này cung cấp các chức năng cơ bản (chụp ảnh & quay video, hẹn giờ, bộ lọc) dưới dạng PWA.  
-      Hoạt động ngoại tuyến sau khi cài đặt.
-    </p>
 
-    <a href="vietnamese.html" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors">⬅ Quay lại</a>
-  </div>
-  <!-- Nút đổi ngôn ngữ -->
-<div class="absolute bottom-4 right-4">
-  <button onclick="
-    localStorage.setItem('preferredLang', 'english.html');
-    window.location.href = 'english.html';
-  " class="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-full text-sm transition-colors">
-    Change language to 🇺🇲 English
-  </button>
-</div>
+    <div class="about-card" id="content">
+        <div class="text-center">
+            <div class="w-20 h-20 bg-[#D0BCFF] rounded-[24px] mx-auto mb-6 flex items-center justify-center shadow-lg">
+                <span class="material-symbols-outlined text-5xl text-[#381E72]" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+            </div>
+            
+            <h1 class="text-2xl font-bold mb-1">Ứng dụng Camera Web</h1>
+            <p class="mc-font text-[10px] uppercase tracking-[3px] text-gray-400 mb-6">Giai đoạn phát triển</p>
 
-<script>
-  document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-  });
-</script>
+            <p class="text-sm text-gray-300 leading-relaxed mb-6">
+                Một ứng dụng PWA hiện đại, nhẹ nhàng dành cho các thiết bị cần giao diện camera mạnh mẽ. 
+                Được phát triển bởi <span class="text-[#D0BCFF] font-semibold">Phong VN</span>.
+            </p>
+        </div>
+
+        <div class="info-chip">
+            <div class="flex justify-between items-center mb-3 text-sm">
+                <span class="text-gray-400 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">verified</span> Phiên bản
+                </span>
+                <span class="font-mono text-[#D0BCFF]">2025.09.10</span>
+            </div>
+            <div class="flex justify-between items-center mb-3 text-sm">
+                <span class="text-gray-400 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">code</span> Người phát triển
+                </span>
+                <span class="font-medium text-white">Phong VN</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+                <span class="text-gray-400 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">terminal</span> Mã nguồn
+                </span>
+                <a href="https://github.com/tuanphong3108/camera" target="_blank" class="text-blue-400 underline decoration-blue-400/30">GitHub</a>
+            </div>
+        </div>
+
+        <p class="text-[11px] text-gray-500 italic mb-8 text-center px-4">
+            Đây là bản gốc tiếng Việt. Hỗ trợ chế độ ngoại tuyến và các bộ lọc nâng cao.
+        </p>
+
+        <div class="flex flex-col gap-3">
+            <a href="vietnamese.html" class="action-btn justify-center">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span>Quay lại ứng dụng</span>
+            </a>
+
+            <div onclick="changeLang()" class="lang-switch-container flex items-center justify-center gap-3">
+                <span class="material-symbols-outlined text-xl text-[#D0BCFF]">translate</span>
+                <span class="text-xs font-medium text-gray-300">Switch to English 🇺🇸</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function changeLang() {
+            localStorage.setItem('preferredLang', 'about.html');
+            
+            const content = document.getElementById('content');
+            content.style.opacity = '0';
+            content.style.transform = 'translateY(10px) scale(0.98)';
+            content.style.transition = '0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'flex';
+                setTimeout(() => {
+                    window.location.href = 'about.html';
+                }, 1200);
+            }, 300);
+        }
+
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('dragstart', e => e.preventDefault());
+    </script>
 </body>
 </html>
