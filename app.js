@@ -478,7 +478,11 @@ async function openInPhotos() {
   });
   try { bc && bc.postMessage({ type: 'open', id, items }); } catch (e) { /* bỏ qua */ }
   if (await ack) {
-    if (photosInstalled()) openLink(PHOTOS_URL + '?handoff=focus'); else toast(t('msg.opened_photos'));
+    if (photosInstalled()) {
+      /* launch_handler navigate-existing của Photos sẽ tải lại cửa sổ đang mở → để sẵn ảnh trong hàng đợi, trang tải lại sẽ mở lại đúng ảnh */
+      try { await handoffSave(id, items); } catch (e) { /* bỏ qua */ }
+      openLink(PHOTOS_URL + '?handoff=focus');
+    } else toast(t('msg.opened_photos'));
     bc.close(); return;
   }
   try { await handoffSave(id, items); } catch (e) { toast(t('msg.photos_fail')); bc && bc.close(); openLink(PHOTOS_URL); return; }
