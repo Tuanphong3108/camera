@@ -1,0 +1,149 @@
+# =========================================================
+#  Camera — Language file: English
+#  Format: key=value, one entry per line.
+#  Lines starting with "#" are comments. "\n" is a line break.
+#  {name} is a placeholder filled in at runtime.
+#  To add a language: create language/<code>.lang and add the code to LANGS in i18n.js.
+# =========================================================
+
+## --- Common ---
+common.close=Close
+common.done=Done
+
+## --- Three-dot menu ---
+menu.open=Menu
+menu.folders=Save folders
+menu.language=Language
+menu.getting_started=Getting started
+menu.about=About
+
+## --- Modes ---
+mode.video=Video
+mode.photo=Photo
+mode.scan=Scan
+sub.normal=Normal
+sub.gif=GIF
+sub.timelapse=Time Lapse
+sub.document=Document
+sub.qr=QR Code
+
+## --- Tools ---
+tool.mirror=Mirror
+tool.grid=Grid
+tool.timer=Timer
+tool.switch=Switch camera
+tool.mic=Microphone
+tool.filter=Filters
+timer.off=Off
+timer.sec={n} seconds
+filter.none=Normal
+filter.sepia=Sepia
+filter.grayscale=Grayscale
+filter.vivid=Vivid
+filter.invert=Invert
+filter.saturate=Saturate
+filter.contrast=Contrast
+filter.brightness=Brightness
+
+## --- Shutter ---
+shutter.photo=Take photo
+shutter.record=Start recording
+shutter.stop=Stop recording
+shutter.cancel=Cancel countdown
+thumb.open=Open Photos
+
+## --- Messages ---
+msg.no_camera=Your browser does not support camera access.
+msg.cam_error=Cannot access the camera. Please check permissions.
+msg.countdown=Starting countdown for {n} seconds
+msg.recording=Recording…
+msg.gif_encoding=Creating GIF…
+msg.tl_rendering=Creating time lapse video…
+msg.saved_folder=Saved to “{folder}”: {name}
+msg.saved_download=Downloaded: {name}
+msg.perm_denied=Write access to the folder was not granted, so the file was downloaded instead.
+msg.save_failed=Could not save the file.
+msg.no_qr=This browser does not support QR code scanning.
+msg.copied=Copied
+qr.copy=Copy
+qr.open=Open link
+
+## --- Save folders dialog ---
+folders.title=Save folders
+folders.desc=Photos and videos are saved to the selected folder. Photos will also watch this folder automatically.
+folders.empty=No folders yet. If you don't pick one, files are downloaded as usual.
+folders.add=Add folder
+folders.remove=Remove from list
+folders.active=Saving here
+folders.select=Save to this folder
+folders.reauth=Access needs to be granted again
+folders.added=Added folder “{name}”
+folders.dup=This folder is already in the list
+folders.fail=Could not open the folder
+folders.unsupported=This browser can't pick a save folder. Files are downloaded as usual.
+
+## --- Language dialog ---
+lang.title=Language
+lang.vi=Tiếng Việt
+lang.en=English
+
+## --- About ---
+about.title=Camera
+about.sub=A camera app that runs right in your browser
+about.desc=A lightweight PWA styled after the ChromeOS Camera app, for devices without a camera app. Developed by Phong VN.
+about.version=Version
+about.developer=Developer
+about.source=Source code
+
+## --- Getting started (getting_started.html) ---
+gs.title=Getting started - Camera
+gs.sub=Getting started
+gs.skip=Skip
+gs.back=Back
+gs.next=Next
+gs.finish=Start shooting
+gs.step=Step {n} of {t}
+gs.name1=Welcome
+gs.name2=Modes
+gs.name3=Tools
+gs.name4=Where to save
+gs.s1_title=Welcome to Camera
+gs.s1_desc=Camera runs right in your browser: take photos, record video, make GIFs, scan documents and QR codes, even without a connection.
+gs.s1_pick=Choose your language
+gs.s1_note=Photos and videos stay on your device and are never uploaded to any server.
+gs.s2_chip=Modes
+gs.s2_title=Shoot, record and scan
+gs.s2_desc=Switch between the three modes on the bottom bar.
+gs.s2_c1t=Video
+gs.s2_c1d=Record normal video, make a GIF (up to 5 seconds) or a Time Lapse video.
+gs.s2_c2t=Photo
+gs.s2_c2d=Take photos with a timer, with filters applied straight to the picture.
+gs.s2_c3t=Scan
+gs.s2_c3d=Capture a clearer document or scan a QR code; the result appears right away to copy or open.
+gs.s2_note=The timer also works while recording video, which the default Camera app doesn't offer.
+gs.s3_chip=Tools
+gs.s3_title=Handy buttons on the side
+gs.s3_c1t=Timer
+gs.s3_c1d=Pick 3, 5 or 10 seconds. Press the shutter again during the countdown to cancel.
+gs.s3_c2t=Mirror
+gs.s3_c2d=Flip the preview and the photo like a mirror.
+gs.s3_c3t=Grid
+gs.s3_c3d=Turn on a 3×3 grid to compose your shot.
+gs.s3_c4t=Filters
+gs.s3_c4d=Sepia, grayscale, vivid... preview live and apply them to your photo.
+gs.s3_c5t=Switch camera
+gs.s3_c5d=Appears when your device has more than one camera.
+gs.s3_c6t=Microphone
+gs.s3_c6d=Mute or unmute while recording video.
+gs.s4_chip=Storage
+gs.s4_title=Choose where to save
+gs.s4_desc=Pick a folder for Camera to save photos and videos into. You can add or change folders any time from the three-dot menu > Save folders.
+gs.s4_c1t=Save straight to a folder
+gs.s4_c1d=No need to download each file: photos and videos are written directly into the folder you choose.
+gs.s4_c2t=Connected to Photos
+gs.s4_c2d=This folder is also added to Photos, and the small photo button at the bottom right opens Photos directly.
+gs.s4_pick=Choose save folder
+gs.s4_more=Add another folder
+gs.s4_picked=Selected: {names}
+gs.s4_unsupported=This browser can't pick folders
+gs.s4_note=If you skip this step, files are downloaded as usual.

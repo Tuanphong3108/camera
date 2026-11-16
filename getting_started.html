@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Getting started - Camera</title>
+<script src="i18n.js"></script>
+<script src="icons.js"></script>
+<style>
+  @font-face { font-family: "Google Sans Flex"; src: url(fonts/gsf-latin.woff2) format("woff2"); font-weight: 100 1000; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  @font-face { font-family: "Google Sans Flex"; src: url(fonts/gsf-vietnamese.woff2) format("woff2"); font-weight: 100 1000; font-display: swap; unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB; }
+  @font-face { font-family: "Material Symbols Outlined"; src: url(fonts/symbols-subset.woff2) format("woff2"); font-weight: 100 700; }
+  :root {
+    color-scheme: dark;
+    --primary:#b1d18a; --on-primary:#1f3701; --pc:#354e16; --on-pc:#cdeda3; --sc:#3f4a31; --on-sc:#dbe7c8;
+    --surface:#11140e; --on-surface:#e1e4d8; --on-var:#c4c9b8; --c1:#1a1d15; --c2:#272b21; --c3:#32362b; --outline:#8e9383; --glow:#2c4310;
+    --spring:cubic-bezier(.34,1.56,.64,1); --ease:cubic-bezier(.2,0,0,1);
+    --font:"Google Sans Flex","Google Sans",Roboto,system-ui,sans-serif;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; height:100%; }
+  body { font-family:var(--font); color:var(--on-surface); background:var(--surface); overflow:hidden; user-select:none; letter-spacing:.1px; }
+  .ms { font-family:"Material Symbols Outlined"; font-weight:400; font-style:normal; line-height:1; display:inline-block; vertical-align:middle; font-variation-settings:"FILL" 1,"wght" 400,"opsz" 24; font-size:24px; }
+  .app { position:fixed; inset:0; display:flex; flex-direction:column; background:radial-gradient(circle at 85% 10%, color-mix(in srgb,var(--glow) 70%,transparent) 0, transparent 55%), var(--surface); }
+  header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px clamp(16px,4vw,40px) 6px; }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .badge { width:44px; height:44px; border-radius:16px; background:var(--pc); display:grid; place-items:center; }
+  .badge img { width:28px; height:28px; border-radius:8px; display:block; }
+  .brand h1 { margin:0; font-size:16px; font-weight:700; line-height:1.2; } .brand p { margin:0; font-size:12px; color:var(--on-var); }
+  .btn-text { border:none; background:transparent; color:var(--on-var); font:600 13px var(--font); padding:10px 16px; border-radius:19px; cursor:pointer; transition:background .2s, border-radius .3s var(--ease); }
+  .btn-text:hover { background:color-mix(in srgb,var(--primary) 14%,transparent); color:var(--on-surface); border-radius:14px; }
+  .stepper { display:flex; gap:8px; padding:8px clamp(16px,4vw,40px) 0; }
+  .pill { flex:1; height:8px; border-radius:99px; background:var(--c3); position:relative; overflow:hidden; cursor:pointer; transition:flex .4s var(--spring); }
+  .pill.done::after,.pill.active::after { content:""; position:absolute; inset:0; background:var(--primary); border-radius:inherit; }
+  .pill.active { flex:2.4; } .pill.done { opacity:.55; }
+  .meta { display:flex; justify-content:space-between; padding:8px clamp(18px,4vw,42px) 0; font-size:12px; font-weight:600; color:var(--on-var); }
+  .meta b { color:var(--primary); }
+  main { position:relative; flex:1; min-height:0; overflow:hidden; }
+  .slide { position:absolute; inset:0; overflow-y:auto; padding:20px clamp(16px,4vw,40px); display:flex; flex-direction:column; align-items:center; opacity:0; pointer-events:none; transform:translateX(60px) scale(.97); transition:opacity .35s var(--ease), transform .5s var(--spring); }
+  .slide.active { opacity:1; pointer-events:auto; transform:none; } .slide.before { transform:translateX(-60px) scale(.97); }
+  .inner { width:100%; max-width:920px; margin:auto 0; display:flex; flex-direction:column; gap:22px; }
+  .center { align-items:center; text-align:center; }
+  ::-webkit-scrollbar { width:8px; } ::-webkit-scrollbar-thumb { background:var(--c3); border-radius:99px; }
+  .chip { display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:999px; background:var(--sc); color:var(--on-sc); font-size:12px; font-weight:700; letter-spacing:.4px; }
+  .chip .ms { font-size:18px; color:var(--primary); }
+  h2 { margin:0; font-size:clamp(26px,4.2vw,42px); font-weight:800; line-height:1.1; letter-spacing:-.5px; }
+  .lead { margin:0; font-size:clamp(14px,1.7vw,17px); color:var(--on-var); line-height:1.6; max-width:640px; } .center .lead { margin-inline:auto; }
+  .hero { width:112px; height:112px; border-radius:36px; background:var(--pc); display:grid; place-items:center; margin:0 auto; animation:float 4s ease-in-out infinite; }
+  .hero img { width:68px; height:68px; border-radius:18px; display:block; }
+  @keyframes float { 50% { transform:translateY(-8px) rotate(-3deg); border-radius:44px 30px 44px 30px; } }
+  .grid { display:grid; gap:14px; } .g3 { grid-template-columns:repeat(3,1fr); } .g2 { grid-template-columns:repeat(2,1fr); }
+  .card { background:var(--c1); border-radius:28px; padding:20px; display:flex; flex-direction:column; gap:10px; transition:border-radius .35s var(--ease), transform .3s var(--spring), background .2s; }
+  .card:hover { border-radius:20px; transform:translateY(-3px); background:var(--c2); }
+  .ico { width:48px; height:48px; border-radius:16px; background:var(--pc); color:var(--on-pc); display:grid; place-items:center; }
+  .card h3 { margin:0; font-size:16px; font-weight:700; } .card p { margin:0; font-size:13px; line-height:1.55; color:var(--on-var); }
+  .note { display:flex; align-items:center; gap:12px; padding:14px 18px; border-radius:22px; background:var(--sc); color:var(--on-sc); font-size:13px; line-height:1.5; }
+  .note .ms { color:var(--primary); flex-shrink:0; }
+  footer { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px clamp(16px,4vw,40px) 22px; }
+  .btn { border:none; font:700 14px var(--font); padding:14px 26px; border-radius:25px; cursor:pointer; display:inline-flex; align-items:center; gap:10px; justify-content:center; transition:border-radius .35s var(--ease), transform .25s var(--spring), opacity .2s; }
+  .btn .ms { font-size:20px; } .btn:hover { border-radius:18px; } .btn:active { transform:scale(.95); }
+  .btn.tonal { background:var(--sc); color:var(--on-sc); color-scheme:dark; } .btn.filled { background:var(--primary); color:var(--on-primary); box-shadow:0 8px 24px color-mix(in srgb,var(--primary) 28%,transparent); }
+  .btn[disabled] { opacity:.35; pointer-events:none; }
+  .dots { display:flex; gap:6px; } .dot { width:8px; height:8px; border-radius:99px; background:var(--c3); transition:width .35s var(--spring), background .2s; } .dot.active { width:26px; background:var(--primary); }
+  .pick { align-self:center; }
+  .lang { display:flex; gap:8px; justify-content:center; } .lang .btn { padding:10px 20px; } .lang .btn[aria-pressed=true] { background:var(--primary); color:var(--on-primary); }
+  .picked { display:none; align-items:center; gap:10px; padding:12px 18px; border-radius:20px; background:var(--pc); color:var(--on-pc); font-weight:600; font-size:14px; align-self:center; }
+  .picked.show { display:inline-flex; } .picked .ms { color:var(--primary); }
+  @media (max-width:720px) { .g3,.g2 { grid-template-columns:1fr; } .dots { display:none; } .btn { padding:13px 20px; } .hero { width:88px; height:88px; border-radius:30px; } .hero img { width:52px; height:52px; } }
+  @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition-duration:.01ms !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><div class="badge"><img src="icon.png" alt=""></div><div><h1>Camera</h1><p data-i18n="gs.sub"></p></div></div>
+    <button class="btn-text" id="skip" data-i18n="gs.skip"></button>
+  </header>
+  <div class="stepper" id="stepper"></div>
+  <div class="meta"><span id="count"></span><b id="name"></b></div>
+  <main>
+    <section class="slide center"><div class="inner center">
+      <div class="hero"><img src="icon.png" alt=""></div>
+      <h2 data-i18n="gs.s1_title"></h2>
+      <p class="lead" data-i18n="gs.s1_desc"></p>
+      <div class="lang" role="group" aria-label="Language"><button class="btn tonal" data-l="vi">Tiếng Việt</button><button class="btn tonal" data-l="en">English</button></div>
+      <div class="note"><span class="ms" data-i="lock"></span><span data-i18n="gs.s1_note"></span></div>
+    </div></section>
+
+    <section class="slide"><div class="inner">
+      <div><span class="chip"><span class="ms" data-i="photo_camera"></span><span data-i18n="gs.s2_chip"></span></span></div>
+      <h2 data-i18n="gs.s2_title"></h2>
+      <p class="lead" data-i18n="gs.s2_desc"></p>
+      <div class="grid g3">
+        <div class="card"><div class="ico"><span class="ms" data-i="videocam"></span></div><h3 data-i18n="gs.s2_c1t"></h3><p data-i18n="gs.s2_c1d"></p></div>
+        <div class="card"><div class="ico"><span class="ms" data-i="photo_camera"></span></div><h3 data-i18n="gs.s2_c2t"></h3><p data-i18n="gs.s2_c2d"></p></div>
+        <div class="card"><div class="ico"><span class="ms" data-i="document_scanner"></span></div><h3 data-i18n="gs.s2_c3t"></h3><p data-i18n="gs.s2_c3d"></p></div>
+      </div>
+      <div class="note"><span class="ms" data-i="timer"></span><span data-i18n="gs.s2_note"></span></div>
+    </div></section>
+
+    <section class="slide"><div class="inner">
+      <div><span class="chip"><span class="ms" data-i="tune"></span><span data-i18n="gs.s3_chip"></span></span></div>
+      <h2 data-i18n="gs.s3_title"></h2>
+      <div class="grid g3">
+        <div class="card"><div class="ico"><span class="ms" data-i="timer"></span></div><h3 data-i18n="gs.s3_c1t"></h3><p data-i18n="gs.s3_c1d"></p></div>
+        <div class="card"><div class="ico"><span class="ms" data-i="flip"></span></div><h3 data-i18n="gs.s3_c2t"></h3><p data-i18n="gs.s3_c2d"></p></div>
+        <div class="card"><div class="ico"><span class="ms" data-i="grid_on"></span></div><h3 data-i18n="gs.s3_c3t"></h3><p data-i18n="gs.s3_c3d"></p></div>
+        <div class="card"><div class="ico"><span class="ms" data-i="filter_vintage"></span></div><h3 data-i18n="gs.s3_c4t"></h3><p data-i18n="gs.s3_c4d"></p></div>
+        <div class="card"><div class="ico"><span class="ms" data-i="cameraswitch"></span></div><h3 data-i18n="gs.s3_c5t"></h3><p data-i18n="gs.s3_c5d"></p></div>
+        <div class="card"><div class="ico"><span class="ms" data-i="mic"></span></div><h3 data-i18n="gs.s3_c6t"></h3><p data-i18n="gs.s3_c6d"></p></div>
+      </div>
+    </div></section>
+
+    <section class="slide center"><div class="inner center">
+      <div class="hero"><span class="ms" data-i="folder_open" style="font-size:60px;color:var(--on-pc)"></span></div>
+      <h2 data-i18n="gs.s4_title"></h2>
+      <p class="lead" data-i18n="gs.s4_desc"></p>
+      <div class="grid g2" style="width:100%;text-align:left">
+        <div class="card"><div class="ico"><span class="ms" data-i="folder"></span></div><h3 data-i18n="gs.s4_c1t"></h3><p data-i18n="gs.s4_c1d"></p></div>
+        <div class="card"><div class="ico"><span class="ms" data-i="photo_library"></span></div><h3 data-i18n="gs.s4_c2t"></h3><p data-i18n="gs.s4_c2d"></p></div>
+      </div>
+      <button class="btn tonal pick" id="pick"><span class="ms" data-i="create_new_folder"></span><span id="pickText"></span></button>
+      <div class="picked" id="picked"><span class="ms" data-i="check_circle"></span><span id="pickedName"></span></div>
+      <div class="note"><span class="ms" data-i="info"></span><span data-i18n="gs.s4_note"></span></div>
+    </div></section>
+  </main>
+  <footer>
+    <button class="btn tonal" id="back"><span class="ms" data-i="arrow_back"></span><span data-i18n="gs.back"></span></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn filled" id="next"><span id="nextText"></span><span class="ms" id="nextIco" data-i="arrow_forward"></span></button>
+  </footer>
+</div>
+<script>
+(function () {
+  var TOTAL = 4, KEY = 'camera.gsDraft', st = { step: 0 }, picked = [];
+  var $ = function (s) { return document.querySelector(s); }, $$ = function (s) { return [].slice.call(document.querySelectorAll(s)); };
+  try { var d = JSON.parse(localStorage.getItem(KEY)); if (d && d.step >= 0 && d.step < TOTAL) st.step = d.step; } catch (e) {}
+  function toParent(m) { try { (window.parent !== window ? window.parent : window).postMessage(m, '*'); } catch (e) {} }
+  var slides = $$('.slide');
+  for (var i = 0; i < TOTAL; i++) {
+    var p = document.createElement('div'); p.className = 'pill'; (function (n) { p.onclick = function () { go(n); }; })(i); $('#stepper').appendChild(p);
+    var dt = document.createElement('div'); dt.className = 'dot'; $('#dots').appendChild(dt);
+  }
+  function ui() {
+    $$('.pill').forEach(function (p, i) { p.classList.toggle('active', i === st.step); p.classList.toggle('done', i < st.step); });
+    $$('.dot').forEach(function (p, i) { p.classList.toggle('active', i === st.step); });
+    slides.forEach(function (s, i) { s.classList.toggle('active', i === st.step); s.classList.toggle('before', i < st.step); if (i === st.step) s.scrollTop = 0; });
+    $('#count').textContent = I18N.t('gs.step', { n: st.step + 1, t: TOTAL });
+    $('#name').textContent = I18N.t('gs.name' + (st.step + 1));
+    $('#back').disabled = st.step === 0;
+    var last = st.step === TOTAL - 1;
+    $('#nextText').textContent = I18N.t(last ? 'gs.finish' : 'gs.next');
+    $('#nextIco').dataset.i = last ? 'play_arrow' : 'arrow_forward'; paintIcons($('#nextIco').parentNode);
+    $$('.lang .btn').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.l === I18N.lang); });
+    var names = picked.map(function (x) { return x.name; }).join(', ');
+    $('#pickText').textContent = !window.showDirectoryPicker ? I18N.t('gs.s4_unsupported') : I18N.t(picked.length ? 'gs.s4_more' : 'gs.s4_pick');
+    $('#pickedName').textContent = I18N.t('gs.s4_picked', { names: names });
+    $('#picked').classList.toggle('show', picked.length > 0);
+  }
+  function go(n) { st.step = Math.max(0, Math.min(TOTAL - 1, n)); ui(); try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  function finish() { try { localStorage.removeItem(KEY); } catch (e) {} toParent({ type: 'gs-done', dirs: picked, lang: I18N.lang }); }
+  $('#next').onclick = function () { st.step === TOTAL - 1 ? finish() : go(st.step + 1); };
+  $('#back').onclick = function () { go(st.step - 1); };
+  $('#skip').onclick = finish;
+  $('#pick').onclick = async function () {
+    if (!window.showDirectoryPicker) return;
+    try {
+      var h = await window.showDirectoryPicker({ mode: 'readwrite', id: 'camera', startIn: 'pictures' });
+      for (var i = 0; i < picked.length; i++) { try { if (await picked[i].isSameEntry(h)) return; } catch (e) {} }
+      picked.push(h); ui();
+    } catch (e) {}
+  };
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' && st.step < TOTAL - 1) go(st.step + 1);
+    else if (e.key === 'ArrowLeft' && st.step > 0) go(st.step - 1);
+  });
+  $$('.lang .btn').forEach(function (b) { b.onclick = function () { if (b.dataset.l !== I18N.lang) I18N.set(b.dataset.l).then(ui); }; });
+  document.addEventListener('i18n', ui);
+  I18N.ready.then(function () { paintIcons(); ui(); });
+})();
+</script>
+</body>
+</html>

@@ -1,272 +1,152 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Language Selection | MD3 Expressive</title>
-    <!-- Thêm Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Import Google Sans Flex từ Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@100..1000&display=swap" rel="stylesheet">
-    <!-- Import Material Symbols Outlined -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
-    
-    <style>
-        /* Import font Minecraft cho đúng chất Phong */
-        @font-face {
-            font-family: 'Minecraft';
-            src: url('https://tuanphong3108.github.io/google-sans-do-not-access/minecraft.ttf') format('truetype');
-            font-weight: normal; 
-            font-style: normal;
-        }
-
-        /* Định nghĩa biến màu theo chuẩn Material Design 3 (Dark Theme) */
-        :root {
-            --md-sys-color-primary: #D0BCFF;
-            --md-sys-color-on-primary: #381E72;
-            --md-sys-color-surface: #1C1B1F;
-            --md-sys-color-on-surface: #E6E1E5;
-            --md-sys-color-surface-variant: #49454F;
-            --md-sys-color-on-surface-variant: #CAC4D0;
-            --md-sys-color-outline: #938F99;
-            --md-sys-color-secondary-container: #4A4458;
-            --md-sys-color-on-secondary-container: #E8DEF8;
-        }
-
-        body {
-            font-family: 'Google Sans Flex', sans-serif;
-            background-color: var(--md-sys-color-surface);
-            color: var(--md-sys-color-on-surface);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .mc-font {
-            font-family: 'Minecraft', sans-serif;
-        }
-
-        /* Hiệu ứng mờ dần khi tải trang */
-        .fade-in {
-            animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px) scale(0.9); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        /* Card Container chuẩn MD3 */
-        .main-card {
-            background-color: var(--md-sys-color-surface-variant);
-            border-radius: 28px;
-            padding: 32px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-            z-index: 10;
-        }
-
-        /* Button phong cách Expressive */
-        .lang-btn {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            padding: 18px 24px;
-            margin-bottom: 12px;
-            border-radius: 16px;
-            background-color: #313033;
-            border: 1.5px solid var(--md-sys-color-outline);
-            transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .lang-btn:hover {
-            background-color: var(--md-sys-color-primary);
-            color: var(--md-sys-color-on-primary);
-            border-color: transparent;
-            transform: scale(1.03);
-        }
-
-        /* Material Symbols Outlined + FILL on hover */
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'grad' 0, 'opsz' 24;
-            transition: font-variation-settings 0.3s ease;
-        }
-
-        .lang-btn:hover .material-symbols-outlined {
-            font-variation-settings: 'FILL' 1;
-        }
-
-        /* Loading Overlay Custom */
-        #loading-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--md-sys-color-surface);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .loading-gif-container {
-            width: 120px; /* Tăng độ rộng container để GIF thoải mái */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .loading-gif {
-            width: 100%; /* Chiều ngang chính xác theo container */
-            height: auto;
-            object-fit: contain;
-            /* Tinh chỉnh filter để đồng bộ màu và làm nổi bật */
-            filter: brightness(1.2) sepia(0.3) hue-rotate(240deg) saturate(2);
-            drop-shadow: 0 0 10px rgba(208, 188, 255, 0.3);
-        }
-
-        .loading-text {
-            margin-top: 24px;
-            color: var(--md-sys-color-primary);
-            letter-spacing: 4px;
-            font-size: 14px;
-            opacity: 0.8;
-            animation: pulse 1.5s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.4; transform: scale(0.98); }
-            50% { opacity: 1; transform: scale(1.05); }
-        }
-
-        /* Exit Animation */
-        .fade-exit {
-            animation: fadeExit 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-
-        @keyframes fadeExit {
-            to { opacity: 0; transform: translateY(-20px) scale(0.95); }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Camera</title>
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#11140e">
+<meta name="description" content="Camera - ứng dụng camera chạy ngay trên trình duyệt, giao diện Material 3 Expressive">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon-96x96.png">
+<link rel="apple-touch-icon" href="web-app-manifest-192x192.png">
+<link rel="preload" href="fonts/symbols-subset.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/gsf-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+<script src="i18n.js"></script>
+<script src="icons.js"></script>
+<script src="gif-encoder.js" defer></script>
+<script type="module" src="vendor/mwc.js"></script>
+<script type="module" src="app.js"></script>
 </head>
-<body class="fade-in">
+<body>
 
-    <!-- Loading Screen -->
-    <div id="loading-screen">
-        <div class="loading-gif-container">
-            <img src="https://tuanphong3108.github.io/md3-loading/Loading_Indicator.gif" alt="Loading" class="loading-gif">
-        </div>
-        <div class="loading-text mc-font text-center">INITIALIZING...</div>
+<div id="splash"><img src="icon.png" alt=""></div>
+
+<div id="app" data-mode="photo" data-sub="">
+
+  <!-- ============ Thanh trái: menu 3 chấm + công cụ ============ -->
+  <aside id="railL">
+    <div class="menu-wrap">
+      <md-icon-button id="btnMenu" data-i18n-aria="menu.open"><md-icon data-i="more_vert"></md-icon></md-icon-button>
+      <md-menu id="menu" anchor="btnMenu" positioning="popover">
+        <md-menu-item id="miFolders"><md-icon slot="start" data-i="folder"></md-icon><div slot="headline" data-i18n="menu.folders"></div></md-menu-item>
+        <md-menu-item id="miLang"><md-icon slot="start" data-i="language"></md-icon><div slot="headline" data-i18n="menu.language"></div></md-menu-item>
+        <md-menu-item id="miGs"><md-icon slot="start" data-i="help"></md-icon><div slot="headline" data-i18n="menu.getting_started"></div></md-menu-item>
+        <md-menu-item id="miAbout"><md-icon slot="start" data-i="info"></md-icon><div slot="headline" data-i18n="menu.about"></div></md-menu-item>
+      </md-menu>
     </div>
 
-    <!-- Main UI Card -->
-    <div class="main-card" id="app-container">
-        <!-- Icon To -->
-        <div class="flex justify-center mb-6">
-            <div class="w-16 h-16 rounded-full flex items-center justify-center bg-[#E8DEF8] text-[#381E72]">
-                <span class="material-symbols-outlined text-4xl">language</span>
-            </div>
-        </div>
-
-        <h1 class="text-2xl font-semibold mb-2 tracking-tight">Select Language</h1>
-        <p class="mc-font text-xs text-gray-400 mb-8 uppercase tracking-widest">Chọn ngôn ngữ để tiếp tục</p>
-
-        <!-- Nút chọn ngôn ngữ -->
-        <div class="space-y-3">
-            <button onclick="saveAndGo('vietnamese.html')" class="lang-btn">
-                <span class="flex items-center gap-4">
-                    <span class="text-2xl">🇻🇳</span>
-                    <span class="font-medium text-lg">Tiếng Việt</span>
-                </span>
-                <span class="material-symbols-outlined">arrow_circle_right</span>
-            </button>
-
-            <button onclick="saveAndGo('english.html')" class="lang-btn">
-                <span class="flex items-center gap-4">
-                    <span class="text-2xl">🇬🇧</span>
-                    <span class="font-medium text-lg">English</span>
-                </span>
-                <span class="material-symbols-outlined">arrow_circle_right</span>
-            </button>
-        </div>
-
-        <!-- Lưu ý nhỏ -->
-        <div class="mt-10 pt-6 border-t border-gray-700 opacity-50 text-left text-[11px] leading-relaxed">
-            <div class="flex items-start gap-2 mb-1">
-                <span class="material-symbols-outlined text-sm">info</span>
-                <p>Note: You can change the language in the "About" section later.</p>
-            </div>
-            <div class="flex items-start gap-2">
-                <span class="material-symbols-outlined text-sm">info</span>
-                <p>Lưu ý: Bạn có thể đổi ngôn ngữ trong phần "Về ứng dụng" sau này.</p>
-            </div>
-        </div>
+    <div class="tools">
+      <md-icon-button id="btnSwitch" class="tool" hidden data-i18n-aria="tool.switch"><md-icon data-i="cameraswitch"></md-icon></md-icon-button>
+      <md-icon-button id="btnFilter" class="tool" data-i18n-aria="tool.filter"><md-icon data-i="filter_vintage"></md-icon></md-icon-button>
+      <md-icon-button id="btnMirror" class="tool" data-i18n-aria="tool.mirror"><md-icon data-i="flip"></md-icon></md-icon-button>
+      <md-icon-button id="btnGrid" class="tool" data-i18n-aria="tool.grid"><md-icon data-i="grid_off"></md-icon><md-icon slot="selected" data-i="grid_on"></md-icon></md-icon-button>
+      <md-icon-button id="btnTimer" class="tool" data-i18n-aria="tool.timer"><md-icon data-i="timer"></md-icon><span id="timerBadge"></span></md-icon-button>
     </div>
+  </aside>
 
-    <script>
-        const STORAGE_KEY = 'preferredLang';
-        const loadingScreen = document.getElementById('loading-screen');
-        const appContainer = document.getElementById('app-container');
+  <!-- ============ Khung xem trước ============ -->
+  <main id="stage">
+    <div id="viewfinder">
+      <video id="video" playsinline muted autoplay></video>
+      <div id="gridLines"></div>
+      <div id="docFrame"></div>
+      <div id="flash"></div>
+      <div id="count"></div>
+      <div id="recTimer"><span class="rec-dot"></span><span id="recTime">00:00</span></div>
+      <div id="toast" role="status" aria-live="polite"></div>
 
-        // KIỂM TRA BỘ NHỚ TRÌNH DUYỆT NGAY KHI LOAD
-        (function checkStorage() {
-            try {
-                const savedLang = localStorage.getItem(STORAGE_KEY);
-                if (savedLang) {
-                    // Nếu đã có ngôn ngữ, ẩn UI và nhảy thẳng vào loading
-                    appContainer.style.display = 'none';
-                    showLoadingAndRedirect(savedLang);
-                }
-            } catch (e) {
-                console.error("Storage access denied:", e);
-            }
-        })();
+      <div id="qrChip">
+        <span id="qrText"></span>
+        <md-text-button id="qrCopy" data-i18n="qr.copy"></md-text-button>
+        <md-text-button id="qrOpen" data-i18n="qr.open"></md-text-button>
+      </div>
 
-        /**
-         * Lưu ngôn ngữ và thực hiện hiệu ứng chuyển cảnh
-         */
-        function saveAndGo(url) {
-            try {
-                // LƯU VÀO TRÌNH DUYỆT
-                localStorage.setItem(STORAGE_KEY, url);
-                
-                // Hiệu ứng thoát cho card
-                appContainer.classList.add('fade-exit');
-                
-                setTimeout(() => {
-                    showLoadingAndRedirect(url);
-                }, 400);
-            } catch (e) {
-                window.location.href = url;
-            }
-        }
+      <md-chip-set id="filters" aria-label="Filters">
+        <md-filter-chip data-f="none" selected data-i18n-label="filter.none" label="Bình thường"></md-filter-chip>
+        <md-filter-chip data-f="sepia" data-i18n-label="filter.sepia" label="Sepia"></md-filter-chip>
+        <md-filter-chip data-f="grayscale" data-i18n-label="filter.grayscale" label="Trắng đen"></md-filter-chip>
+        <md-filter-chip data-f="vivid" data-i18n-label="filter.vivid" label="Sống động"></md-filter-chip>
+        <md-filter-chip data-f="invert" data-i18n-label="filter.invert" label="Đảo màu"></md-filter-chip>
+        <md-filter-chip data-f="saturate" data-i18n-label="filter.saturate" label="Bão hòa"></md-filter-chip>
+        <md-filter-chip data-f="contrast" data-i18n-label="filter.contrast" label="Tương phản"></md-filter-chip>
+        <md-filter-chip data-f="brightness" data-i18n-label="filter.brightness" label="Độ sáng"></md-filter-chip>
+      </md-chip-set>
 
-        /**
-         * Hiển thị màn hình loading rồi mới chuyển trang
-         */
-        function showLoadingAndRedirect(url) {
-            loadingScreen.style.display = 'flex';
-            
-            // Giả lập thời gian load để nhìn GIF cho sướng
-            setTimeout(() => {
-                window.location.href = url;
-            }, 1500);
-        }
+      <div id="subModes">
+        <div class="sub" data-for="video" role="tablist">
+          <button data-sub="normal" role="tab"><span data-i18n="sub.normal"></span><md-ripple></md-ripple></button>
+          <button data-sub="gif" role="tab"><span data-i18n="sub.gif"></span><md-ripple></md-ripple></button>
+          <button data-sub="timelapse" role="tab"><span data-i18n="sub.timelapse"></span><md-ripple></md-ripple></button>
+        </div>
+        <div class="sub" data-for="scan" role="tablist">
+          <button data-sub="document" role="tab"><span data-i18n="sub.document"></span><md-ripple></md-ripple></button>
+          <button data-sub="qr" role="tab"><span data-i18n="sub.qr"></span><md-ripple></md-ripple></button>
+        </div>
+      </div>
+    </div>
+  </main>
 
-        // Chặn chuột phải
-        document.addEventListener('contextmenu', e => e.preventDefault());
+  <!-- ============ Thanh phải: micrô + nút chụp ============ -->
+  <aside id="railR">
+    <md-icon-button id="btnMic" data-i18n-aria="tool.mic"><md-icon data-i="mic"></md-icon><md-icon slot="selected" data-i="mic_off"></md-icon></md-icon-button>
+    <button id="shutter" aria-label="Chụp ảnh"><span class="ring"></span><span class="core"></span><md-ripple></md-ripple></button>
+  </aside>
 
-        // Chặn kéo thả
-        document.addEventListener('dragstart', e => e.preventDefault());
-    </script>
+  <!-- ============ Thanh dưới: chế độ + nút mở Photos ============ -->
+  <footer id="bar">
+    <nav id="modes" role="tablist">
+      <button class="mode" data-mode="video" role="tab"><span data-i18n="mode.video"></span><md-ripple></md-ripple></button>
+      <button class="mode" data-mode="photo" role="tab"><span data-i18n="mode.photo"></span><md-ripple></md-ripple></button>
+      <button class="mode" data-mode="scan" role="tab"><span data-i18n="mode.scan"></span><md-ripple></md-ripple></button>
+    </nav>
+    <button id="thumb" data-i18n-aria="thumb.open"><img id="thumbImg" alt="" hidden><md-icon id="thumbIcon" data-i="photo_library"></md-icon><md-ripple></md-ripple></button>
+  </footer>
+</div>
+
+<!-- ============ Hộp thoại: thư mục lưu ảnh ============ -->
+<md-dialog id="dlgFolders">
+  <div slot="headline" data-i18n="folders.title"></div>
+  <div slot="content">
+    <p class="dlg-text" data-i18n="folders.desc"></p>
+    <md-list id="folderList"></md-list>
+    <p class="dlg-text" id="folderEmpty" data-i18n="folders.empty"></p>
+  </div>
+  <div slot="actions">
+    <md-text-button id="btnAddFolder"><md-icon slot="icon" data-i="create_new_folder"></md-icon><span data-i18n="folders.add"></span></md-text-button>
+    <md-filled-button id="btnFoldersDone" data-i18n="common.done"></md-filled-button>
+  </div>
+</md-dialog>
+
+<!-- ============ Hộp thoại: ngôn ngữ ============ -->
+<md-dialog id="dlgLang">
+  <div slot="headline" data-i18n="lang.title"></div>
+  <div slot="content">
+    <md-list>
+      <md-list-item type="button" data-lang="vi"><md-radio slot="start" name="lang" value="vi" touch-target="wrapper"></md-radio><div slot="headline" data-i18n="lang.vi"></div></md-list-item>
+      <md-list-item type="button" data-lang="en"><md-radio slot="start" name="lang" value="en" touch-target="wrapper"></md-radio><div slot="headline" data-i18n="lang.en"></div></md-list-item>
+    </md-list>
+  </div>
+  <div slot="actions"><md-filled-button id="btnLangDone" data-i18n="common.done"></md-filled-button></div>
+</md-dialog>
+
+<!-- ============ Hộp thoại: về ứng dụng ============ -->
+<md-dialog id="dlgAbout">
+  <div slot="headline" data-i18n="about.title"></div>
+  <div slot="content">
+    <p class="dlg-text" data-i18n="about.desc"></p>
+    <div class="about-rows">
+      <div><md-icon data-i="verified"></md-icon><span data-i18n="about.version"></span><b>2026.11.15</b></div>
+      <div><md-icon data-i="code"></md-icon><span data-i18n="about.developer"></span><b>Phong VN</b></div>
+      <div><md-icon data-i="terminal"></md-icon><span data-i18n="about.source"></span><a href="https://github.com/tuanphong3108/camera" target="_blank" rel="noopener noreferrer">GitHub</a></div>
+    </div>
+  </div>
+  <div slot="actions"><md-filled-button id="btnAboutDone" data-i18n="common.close"></md-filled-button></div>
+</md-dialog>
+
+<!-- ============ Hướng dẫn bắt đầu (iframe, giống music-player / photos) ============ -->
+<div id="gs" hidden><iframe id="gsFrame" title="Getting started"></iframe></div>
+
 </body>
 </html>

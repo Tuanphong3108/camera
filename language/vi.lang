@@ -1,0 +1,149 @@
+# =========================================================
+#  Camera — File ngôn ngữ: Tiếng Việt (mặc định)
+#  Định dạng: key=value, mỗi dòng một mục.
+#  Dòng bắt đầu bằng "#" là chú thích. "\n" là xuống dòng.
+#  {tên} là chỗ thay giá trị khi chạy.
+#  Thêm ngôn ngữ mới: tạo language/<mã>.lang rồi thêm mã đó vào LANGS trong i18n.js.
+# =========================================================
+
+## --- Chung ---
+common.close=Đóng
+common.done=Xong
+
+## --- Menu 3 chấm ---
+menu.open=Menu
+menu.folders=Thư mục lưu ảnh
+menu.language=Ngôn ngữ
+menu.getting_started=Hướng dẫn bắt đầu
+menu.about=Về ứng dụng
+
+## --- Chế độ ---
+mode.video=Video
+mode.photo=Ảnh
+mode.scan=Quét
+sub.normal=Thường
+sub.gif=GIF
+sub.timelapse=Tua nhanh
+sub.document=Tài liệu
+sub.qr=Mã QR
+
+## --- Công cụ ---
+tool.mirror=Phản chiếu hình ảnh
+tool.grid=Lưới
+tool.timer=Hẹn giờ
+tool.switch=Đổi camera
+tool.mic=Micrô
+tool.filter=Bộ lọc
+timer.off=Tắt
+timer.sec={n} giây
+filter.none=Bình thường
+filter.sepia=Sepia
+filter.grayscale=Trắng đen
+filter.vivid=Sống động
+filter.invert=Đảo màu
+filter.saturate=Bão hòa
+filter.contrast=Tương phản
+filter.brightness=Độ sáng
+
+## --- Nút chụp / quay ---
+shutter.photo=Chụp ảnh
+shutter.record=Bắt đầu quay
+shutter.stop=Dừng quay
+shutter.cancel=Hủy đếm ngược
+thumb.open=Mở Photos
+
+## --- Thông báo ---
+msg.no_camera=Trình duyệt không hỗ trợ truy cập camera.
+msg.cam_error=Không thể truy cập camera. Hãy kiểm tra quyền truy cập.
+msg.countdown=Bắt đầu đếm ngược {n} giây
+msg.recording=Đang quay…
+msg.gif_encoding=Đang tạo GIF…
+msg.tl_rendering=Đang tạo video tua nhanh…
+msg.saved_folder=Đã lưu vào “{folder}”: {name}
+msg.saved_download=Đã tải về: {name}
+msg.perm_denied=Chưa được cấp quyền ghi vào thư mục, tệp sẽ được tải về thay thế.
+msg.save_failed=Không thể lưu tệp.
+msg.no_qr=Trình duyệt này chưa hỗ trợ quét mã QR.
+msg.copied=Đã sao chép
+qr.copy=Sao chép
+qr.open=Mở liên kết
+
+## --- Hộp thoại thư mục lưu ảnh ---
+folders.title=Thư mục lưu ảnh
+folders.desc=Ảnh và video được lưu vào thư mục đang chọn. Photos cũng sẽ tự theo dõi thư mục này.
+folders.empty=Chưa có thư mục nào. Nếu không chọn, tệp sẽ được tải về như bình thường.
+folders.add=Thêm thư mục
+folders.remove=Xóa khỏi danh sách
+folders.active=Đang lưu vào đây
+folders.select=Lưu vào thư mục này
+folders.reauth=Cần cấp lại quyền truy cập
+folders.added=Đã thêm thư mục “{name}”
+folders.dup=Thư mục này đã có trong danh sách
+folders.fail=Không thể mở thư mục
+folders.unsupported=Trình duyệt này không hỗ trợ chọn thư mục lưu. Tệp sẽ được tải về như bình thường.
+
+## --- Hộp thoại ngôn ngữ ---
+lang.title=Ngôn ngữ
+lang.vi=Tiếng Việt
+lang.en=English
+
+## --- Về ứng dụng ---
+about.title=Camera
+about.sub=Ứng dụng camera chạy ngay trên trình duyệt
+about.desc=Một ứng dụng PWA nhẹ, mô phỏng giao diện Camera của ChromeOS, dành cho thiết bị chưa có ứng dụng camera. Phát triển bởi Phong VN.
+about.version=Phiên bản
+about.developer=Người phát triển
+about.source=Mã nguồn
+
+## --- Hướng dẫn bắt đầu (getting_started.html) ---
+gs.title=Bắt đầu - Camera
+gs.sub=Hướng dẫn bắt đầu
+gs.skip=Bỏ qua
+gs.back=Quay lại
+gs.next=Tiếp theo
+gs.finish=Bắt đầu chụp
+gs.step=Bước {n} / {t}
+gs.name1=Chào mừng
+gs.name2=Chế độ
+gs.name3=Công cụ
+gs.name4=Nơi lưu ảnh
+gs.s1_title=Chào mừng đến với Camera
+gs.s1_desc=Camera chạy ngay trong trình duyệt: chụp ảnh, quay video, tạo GIF, quét tài liệu và mã QR, kể cả khi không có mạng.
+gs.s1_pick=Chọn ngôn ngữ
+gs.s1_note=Ảnh và video luôn ở trên máy của bạn, không được tải lên máy chủ nào cả.
+gs.s2_chip=Chế độ
+gs.s2_title=Chụp, quay và quét
+gs.s2_desc=Chuyển qua lại giữa ba chế độ ở thanh dưới cùng.
+gs.s2_c1t=Video
+gs.s2_c1d=Quay video thường, tạo ảnh GIF (tối đa 5 giây) hoặc video tua nhanh Time Lapse.
+gs.s2_c2t=Ảnh
+gs.s2_c2d=Chụp ảnh có hẹn giờ, bộ lọc được áp dụng thẳng lên ảnh chụp.
+gs.s2_c3t=Quét
+gs.s2_c3d=Chụp tài liệu rõ nét hơn hoặc quét mã QR, kết quả hiện ngay để sao chép hoặc mở.
+gs.s2_note=Hẹn giờ dùng được cả khi quay video, điều mà ứng dụng Camera mặc định không có.
+gs.s3_chip=Công cụ
+gs.s3_title=Những nút hữu ích bên cạnh
+gs.s3_c1t=Hẹn giờ
+gs.s3_c1d=Chọn 3, 5 hoặc 10 giây. Bấm nút chụp lần nữa khi đang đếm để hủy.
+gs.s3_c2t=Phản chiếu
+gs.s3_c2d=Lật hình xem trước và ảnh chụp như soi gương.
+gs.s3_c3t=Lưới
+gs.s3_c3d=Bật lưới 3×3 để căn bố cục cho đẹp.
+gs.s3_c4t=Bộ lọc
+gs.s3_c4d=Sepia, trắng đen, sống động... xem trước trực tiếp và áp dụng vào ảnh chụp.
+gs.s3_c5t=Đổi camera
+gs.s3_c5d=Hiện khi thiết bị có nhiều hơn một camera.
+gs.s3_c6t=Micrô
+gs.s3_c6d=Tắt hoặc bật tiếng khi quay video.
+gs.s4_chip=Lưu trữ
+gs.s4_title=Chọn nơi lưu ảnh
+gs.s4_desc=Chọn một thư mục để Camera lưu ảnh và video vào đó. Bạn có thể thêm hoặc đổi thư mục bất cứ lúc nào ở menu 3 chấm > Thư mục lưu ảnh.
+gs.s4_c1t=Lưu thẳng vào thư mục
+gs.s4_c1d=Không cần tải về từng tệp: ảnh và video được ghi trực tiếp vào thư mục bạn chọn.
+gs.s4_c2t=Kết nối với Photos
+gs.s4_c2d=Thư mục này cũng được thêm vào Photos, và nút ảnh nhỏ ở góc dưới bên phải sẽ mở thẳng Photos.
+gs.s4_pick=Chọn thư mục lưu ảnh
+gs.s4_more=Thêm thư mục khác
+gs.s4_picked=Đã chọn: {names}
+gs.s4_unsupported=Trình duyệt này không hỗ trợ chọn thư mục
+gs.s4_note=Bỏ qua bước này thì ảnh sẽ được tải về như bình thường.

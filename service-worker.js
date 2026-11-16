@@ -1,52 +1,21 @@
-// Tên cache
-const CACHE_NAME = 'camera-pwa-cache-v2';
-
-// Các file cần cache
-const urlsToCache = [
-  'index.html',
-  'manifest.json',
-  'favicon-96x96.png',
-  'web-app-manifest-192x192.png',
-  'icon.png',
-  'english.html',
-  'vietnamese.html',
-  'about_english.html',
-  'about_vietnamese.html',
-  'web-app-manifest-512x512.png'
+const CACHE = 'camera-v3';
+const ASSETS = [
+  './', 'index.html', 'style.css', 'app.js', 'i18n.js', 'icons.js', 'gif-encoder.js', 'getting_started.html',
+  'language/vi.lang', 'language/en.lang', 'vendor/mwc.js',
+  'fonts/gsf-latin.woff2', 'fonts/gsf-vietnamese.woff2', 'fonts/symbols-subset.woff2',
+  'manifest.json', 'icon.png', 'favicon-96x96.png', 'web-app-manifest-192x192.png', 'web-app-manifest-512x512.png'
 ];
-
-// Install: cache các file cần thiết
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Cache opened');
-      return cache.addAll(urlsToCache);
-    })
-  );
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
-
-// Fetch: ưu tiên cache trước, mạng sau
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
-  );
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
-
-// Activate: xóa cache cũ
-self.addEventListener('activate', (event) => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (!cacheWhitelist.includes(cacheName)) {
-            console.log('[SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+/* Mạng trước (luôn lấy bản mới), mất mạng thì dùng cache */
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    fetch(e.request, { cache: 'no-cache' }).then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r; })
+      .catch(() => caches.match(e.request).then(r => r || caches.match('index.html')))
   );
 });

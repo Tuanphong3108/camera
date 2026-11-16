@@ -1,41 +1,46 @@
-# 📸 Camera PWA
+# 📸 Camera
 
-Ứng dụng camera đơn giản chạy trực tiếp trên trình duyệt, có thể cài như một ứng dụng độc lập (**PWA**).  
-Hữu ích cho các máy không có sẵn ứng dụng camera, hoặc không biết tải về app camera.
+Ứng dụng camera chạy ngay trên trình duyệt, cài được như một ứng dụng độc lập (**PWA**). Giao diện lấy cảm hứng từ **Camera của ChromeOS**, thiết kế theo **Material 3 Expressive**.
+
+👉 [tuanphong3108.github.io/camera](https://tuanphong3108.github.io/camera/)
 
 ---
 
 ## 🚀 Tính năng
-- 📷 Chụp ảnh và 🎥 quay video trực tiếp từ trình duyệt  
-- ⏱ **Hẹn giờ** chụp (0s, 3s, 5s, 10s)  
-- ⏱ **Hẹn giờ quay video** *(không có trong app Camera mặc định)*  
-- 🎨 **Filter**: áp dụng trực tiếp vào ảnh chụp, có preview trước khi tải về  
-- 🌍 **Đa ngôn ngữ**: Tiếng Việt & English  
-- 💾 Tuỳ chọn **Nhớ ngôn ngữ** cho lần mở tiếp theo  
-- 📡 **Offline ready** nhờ cache PWA  
-- ⚡ Giao diện gọn nhẹ, dễ dùng  
+
+- 🎥 **Video**: quay thường, tạo **GIF** (tối đa 5 giây) hoặc video **Time Lapse**
+- 📷 **Ảnh**: chụp ảnh, bộ lọc áp dụng thẳng vào ảnh chụp
+- 📄 **Quét**: chụp **tài liệu** rõ nét hơn, quét **mã QR** (sao chép / mở liên kết)
+- ⏱ **Hẹn giờ** 3 / 5 / 10 giây, dùng được cả khi quay video
+- 🪞 Phản chiếu, lưới 3×3, đổi camera, tắt/bật micrô
+- 📂 **Thư mục lưu ảnh**: menu 3 chấm → *Thư mục lưu ảnh*; ảnh và video ghi thẳng vào thư mục đã chọn (không có thì tải về như bình thường)
+- 🖼 **Kết nối với Photos**: thư mục lưu ảnh được thêm luôn vào [Photos](https://github.com/Tuanphong3108/photos), nút ảnh nhỏ ở góc dưới bên phải mở thẳng Photos
+- 🚀 **Hướng dẫn bắt đầu** (giống Media Player), xem lại ở menu 3 chấm
+- 🌍 Tiếng Việt & English, đổi ngay trong app (menu 3 chấm → *Ngôn ngữ*)
+- 📡 Dùng được offline nhờ cache PWA
+
+> Lưu thẳng vào thư mục dùng File System Access API (Chrome / Edge / Chromium). Trình duyệt không hỗ trợ thì ảnh được tải về.
+
+---
+
+## 🗂 Cấu trúc
+
+| Tệp | Vai trò |
+| --- | --- |
+| `index.html`, `style.css`, `app.js` | Giao diện và logic chính |
+| `i18n.js` + `language/vi.lang`, `language/en.lang` | Đa ngôn ngữ (file `.lang` dạng `key=value`, giống Media Player) |
+| `getting_started.html` | Hướng dẫn bắt đầu (nhúng bằng iframe) |
+| `gif-encoder.js` | Bộ mã hóa GIF nhỏ gọn, không phụ thuộc thư viện |
+| `icons.js` + `fonts/symbols-subset.woff2` | Material Symbols (font con) |
+| `vendor/mwc.js` | Material Web Components (đóng gói sẵn, chạy offline) |
+
+**Thêm ngôn ngữ:** tạo `language/<mã>.lang` (sao chép `en.lang`), rồi thêm mã đó vào `LANGS` trong `i18n.js` và một dòng trong hộp thoại ngôn ngữ ở `index.html`.
 
 ---
 
 ## ⚠️ Lưu ý
-- Nếu bật *“Nhớ ngôn ngữ”* và muốn đổi sang ngôn ngữ khác, bạn cần **xoá toàn bộ dữ liệu và cookie** của `tuanphong3108.github.io`.  
-- Việc này có thể ảnh hưởng tới các nhánh khác của cùng domain như:  
-  - `/game`  
-  - `/newtab`  
-  - `/workspace-launcher`  
 
----
+- Các ứng dụng cùng `tuanphong3108.github.io` dùng chung bộ nhớ trình duyệt, nên cài đặt của Camera được đặt tiền tố `camera.` để không đụng nhau.
+- Người dùng bản cũ: lựa chọn ngôn ngữ trước đây được chuyển sang cài đặt mới tự động.
 
-## 📦 Cài đặt
-1. Truy cập:  
-   👉 [tuanphong3108.github.io/camera/index.html](https://tuanphong3108.github.io/camera/index.html)  
-2. Trên thanh địa chỉ của Chrome / Edge / Chromium-based browser sẽ hiện nút **Install** (hoặc **Cài đặt**).  
-3. Bấm cài đặt để dùng như app riêng.
-
----
-
-
-💡 Đây là dự án cá nhân, phát triển để **đủ xài, nhẹ, tiện**.  
-Không thay thế các app camera full-feature, nhưng mạnh ở chỗ:  
-
-> “Chỉ cần trình duyệt, không cần cài gì thêm.”  
+💡 Dự án cá nhân, mục tiêu **đủ xài, nhẹ, tiện**: chỉ cần trình duyệt, không cần cài gì thêm.
