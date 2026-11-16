@@ -1,4 +1,4 @@
-const CACHE = 'camera-v7';
+const CACHE = 'camera-v8';
 const ASSETS = [
   './', 'index.html', 'style.css', 'app.js', 'i18n.js', 'icons.js', 'gif-encoder.js', 'scanner.js', 'getting_started.html',
   'language/vi.lang', 'language/en.lang', 'vendor/mwc.js',

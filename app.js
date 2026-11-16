@@ -27,7 +27,7 @@ const GIF_MAX_S = 5, GIF_FPS = 10, GIF_W = 480;
 const TL_EVERY_MS = 1000, TL_MAX_FRAMES = 600, TL_PLAY_FPS = 15;
 
 const S = {
-  mode: store.get('camera.mode') || 'photo',
+  mode: 'photo',   /* mở app luôn vào chế độ Ảnh */
   sub: { video: store.get('camera.sub.video') || 'normal', scan: store.get('camera.sub.scan') || 'document' },
   filter: 'none',
   mirror: store.get('camera.mirror') !== '0',
@@ -60,7 +60,7 @@ function paintState() {
 }
 function setMode(m) {
   if (S.rec || S.counting) return;
-  S.mode = m; store.set('camera.mode', m);
+  S.mode = m;
   if (m === 'scan') app.classList.remove('filters');
   $('#btnFilter').selected = app.classList.contains('filters');
   paintState(); qrReset(); scanSync();
