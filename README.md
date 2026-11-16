@@ -10,10 +10,10 @@
 
 - 🎥 **Video**: quay thường, tạo **GIF** (tối đa 5 giây) hoặc video **Time Lapse**
 - 📷 **Ảnh**: chụp ảnh, bộ lọc áp dụng thẳng vào ảnh chụp
-- 📄 **Quét**: chụp **tài liệu** rõ nét hơn, quét **mã QR** (sao chép / mở liên kết)
+- 📄 **Quét tài liệu** kiểu ChromeOS: khung vàng tự bám tờ giấy, chụp xong được nắn phẳng, xem lại, **thêm nhiều trang**, chỉnh góc, lưu thành **ảnh** hoặc **PDF** (hoặc chia sẻ); quét **mã QR** (sao chép / mở liên kết)
 - ⏱ **Hẹn giờ** 3 / 5 / 10 giây, dùng được cả khi quay video
 - 🪞 Phản chiếu, lưới 3×3, đổi camera, tắt/bật micrô
-- 📂 **Thư mục lưu ảnh**: menu 3 chấm → *Thư mục lưu ảnh*; ảnh và video ghi thẳng vào thư mục đã chọn (không có thì tải về như bình thường)
+- 📂 **Thư mục lưu ảnh**: menu 3 chấm → *Thư mục lưu ảnh*; ảnh và video ghi thẳng vào thư mục đã chọn (không có thì tải về như bình thường). Danh sách thư mục **đồng bộ hai chiều với Photos** (thêm / hủy theo dõi ở đâu thì bên kia theo); thư mục mới hoặc thư mục đang lưu bị xóa thì Camera hỏi lại lưu vào đâu
 - 🖼 **Kết nối với Photos**: thư mục lưu ảnh được thêm luôn vào [Photos](https://github.com/Tuanphong3108/photos), nút ảnh nhỏ ở góc dưới bên phải mở Photos (dạng PWA nếu đã cài) và phóng to đúng tấm vừa chụp
 - 🚀 **Hướng dẫn bắt đầu** (giống Media Player), xem lại ở menu 3 chấm
 - 🌍 Tiếng Việt & English, đổi ngay trong app (menu 3 chấm → *Ngôn ngữ*)
@@ -30,6 +30,7 @@
 | `index.html`, `style.css`, `app.js` | Giao diện và logic chính |
 | `i18n.js` + `language/vi.lang`, `language/en.lang` | Đa ngôn ngữ (file `.lang` dạng `key=value`, giống Media Player) |
 | `getting_started.html` | Hướng dẫn bắt đầu (nhúng bằng iframe) |
+| `scanner.js` | Lõi quét tài liệu: nhận diện góc giấy, nắn phẳng, ghi PDF |
 | `gif-encoder.js` | Bộ mã hóa GIF nhỏ gọn, không phụ thuộc thư viện |
 | `icons.js` + `fonts/symbols-subset.woff2` | Material Symbols (font con) |
 | `vendor/mwc.js` | Material Web Components (đóng gói sẵn, chạy offline) |

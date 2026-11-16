@@ -16,6 +16,7 @@
 <script src="i18n.js"></script>
 <script src="icons.js"></script>
 <script src="gif-encoder.js" defer></script>
+<script src="scanner.js" defer></script>
 <script type="module" src="vendor/mwc.js"></script>
 <script type="module" src="app.js"></script>
 </head>
@@ -52,6 +53,8 @@
       <video id="video" playsinline muted autoplay></video>
       <div id="gridLines"></div>
       <div id="docFrame"></div>
+      <canvas id="docCanvas"></canvas>
+      <div id="scanBadge"></div>
       <div id="flash"></div>
       <div id="count"></div>
       <div id="recTimer"><span class="rec-dot"></span><span id="recTime">00:00</span></div>
@@ -105,6 +108,33 @@
   </footer>
 </div>
 
+<!-- ============ Quét tài liệu: xem lại / chỉnh góc ============ -->
+<div id="scanView" hidden>
+  <div id="svRail">
+    <md-icon-button id="svCancel" data-i18n-aria="scan.cancel"><md-icon data-i="close"></md-icon></md-icon-button>
+    <div class="grow"></div>
+    <md-icon-button id="svAdd" data-i18n-aria="scan.add"><md-icon data-i="library_add"></md-icon></md-icon-button>
+    <md-icon-button id="svEditBtn" data-i18n-aria="scan.edit"><md-icon data-i="crop_free"></md-icon></md-icon-button>
+    <md-icon-button id="svDel" data-i18n-aria="scan.delete"><md-icon data-i="delete"></md-icon></md-icon-button>
+    <md-icon-button id="svShare" data-i18n-aria="scan.share"><md-icon data-i="share"></md-icon></md-icon-button>
+  </div>
+  <div id="svThumbs"></div>
+  <div id="svStage">
+    <img id="svImg" alt="">
+    <div id="edBox" hidden>
+      <svg id="edSvg"><polygon id="edPoly"></polygon></svg>
+      <i class="hd" data-k="0"></i><i class="hd" data-k="1"></i><i class="hd" data-k="2"></i><i class="hd" data-k="3"></i>
+    </div>
+    <div id="svTitle"></div>
+  </div>
+  <div id="svActions">
+    <md-filled-button id="svPhoto"><md-icon slot="icon" data-i="image"></md-icon><span data-i18n="scan.save_photo"></span></md-filled-button>
+    <md-filled-tonal-button id="svPdf"><md-icon slot="icon" data-i="picture_as_pdf"></md-icon><span data-i18n="scan.save_pdf"></span></md-filled-tonal-button>
+    <md-text-button id="svEdCancel" data-i18n="scan.edit_cancel"></md-text-button>
+    <md-filled-button id="svEdDone" data-i18n="scan.edit_done"></md-filled-button>
+  </div>
+</div>
+
 <!-- ============ Hộp thoại: thư mục lưu ảnh ============ -->
 <md-dialog id="dlgFolders">
   <div slot="headline" data-i18n="folders.title"></div>
@@ -117,6 +147,16 @@
     <md-text-button id="btnAddFolder"><md-icon slot="icon" data-i="create_new_folder"></md-icon><span data-i18n="folders.add"></span></md-text-button>
     <md-filled-button id="btnFoldersDone" data-i18n="common.done"></md-filled-button>
   </div>
+</md-dialog>
+
+<!-- ============ Hộp thoại: chọn thư mục lưu ảnh ============ -->
+<md-dialog id="dlgPick">
+  <div slot="headline" data-i18n="pick.title"></div>
+  <div slot="content">
+    <p class="dlg-text" id="pickMsg"></p>
+    <md-list id="pickList"></md-list>
+  </div>
+  <div slot="actions"><md-filled-button id="btnPickOk" data-i18n="pick.ok"></md-filled-button></div>
 </md-dialog>
 
 <!-- ============ Hộp thoại: ngôn ngữ ============ -->

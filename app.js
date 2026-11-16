@@ -22,7 +22,6 @@ const FILTERS = {
   none: '', sepia: 'sepia(100%)', grayscale: 'grayscale(100%)', vivid: 'brightness(1.2) saturate(1.5)',
   invert: 'invert(100%)', saturate: 'saturate(200%)', contrast: 'contrast(200%)', brightness: 'brightness(150%)'
 };
-const DOC_FILTER = 'grayscale(100%) contrast(150%) brightness(110%)';
 const TIMERS = [0, 3, 5, 10];
 const GIF_MAX_S = 5, GIF_FPS = 10, GIF_W = 480;
 const TL_EVERY_MS = 1000, TL_MAX_FRAMES = 600, TL_PLAY_FPS = 15;
@@ -64,13 +63,13 @@ function setMode(m) {
   S.mode = m; store.set('camera.mode', m);
   if (m === 'scan') app.classList.remove('filters');
   $('#btnFilter').selected = app.classList.contains('filters');
-  paintState(); qrReset();
+  paintState(); qrReset(); scanSync();
   if (m === 'scan' && S.sub.scan === 'qr') qrStart();
 }
 function setSub(sub) {
   if (S.rec || S.counting) return;
   S.sub[S.mode] = sub; store.set('camera.sub.' + S.mode, sub);
-  paintState(); qrReset();
+  paintState(); qrReset(); scanSync();
   if (S.mode === 'scan' && sub === 'qr') qrStart();
 }
 $$('.mode').forEach(b => b.onclick = () => setMode(b.dataset.mode));
@@ -142,28 +141,85 @@ const idbTx = async (name, mode, fn) => {
     tx.oncomplete = () => { db.close(); res(rq && rq.result); }; tx.onerror = tx.onabort = () => rej(tx.error);
   });
 };
-const camDB = {
+const camDB = {   /* DB cũ của Camera: chỉ còn dùng để chuyển sang danh sách chung với Photos */
   all: () => idbTx('camera', 'readonly', s => s.getAll()),
-  add: h => idbTx('camera', 'readwrite', s => s.add({ handle: h })),
   del: id => idbTx('camera', 'readwrite', s => s.delete(id))
 };
-/* Photos nằm cùng origin (tuanphong3108.github.io) nên đọc/ghi thẳng DB 'photos' để nó tự theo dõi thư mục */
-async function addToPhotos(handle) {
-  try {
-    const rows = await idbTx('photos', 'readonly', s => s.getAll());
-    for (const r of rows) {
-      try { if (await r.handle.isSameEntry(handle)) return; } catch (e) { /* bỏ qua */ }
-      try { if (await r.handle.resolve(handle)) return; } catch (e) { /* bỏ qua */ }   /* đã nằm trong thư mục cha được theo dõi → thêm nữa sẽ bị trùng ảnh */
-    }
-    await idbTx('photos', 'readwrite', s => s.add({ handle }));
-    const bc = new BroadcastChannel('photos-handoff'); bc.postMessage({ type: 'dirs-changed' }); setTimeout(() => bc.close(), 500);
-  } catch (e) { console.warn('Không thể thêm thư mục vào Photos:', e); }
-}
+/* Danh sách thư mục = danh sách thư mục theo dõi của Photos (cùng origin → dùng chung DB 'photos').
+   Thêm / bỏ ở app nào thì app kia đổi theo; thư mục nào đang lưu ảnh thì Camera nhớ riêng (camera.saveDir). */
+const phDB = {
+  all: () => idbTx('photos', 'readonly', s => s.getAll()),
+  add: h => idbTx('photos', 'readwrite', s => s.add({ handle: h })),
+  del: id => idbTx('photos', 'readwrite', s => s.delete(id))
+};
+let dirsBC = null; try { dirsBC = new BroadcastChannel('photos-handoff'); } catch (e) { /* bỏ qua */ }
+const notifyPhotos = (what, id) => { try { dirsBC && dirsBC.postMessage({ type: 'dirs-changed', src: 'camera', what, id }); } catch (e) { /* bỏ qua */ } };
 
 let FOLDERS = [];
 const activeId = () => +store.get('camera.saveDir') || 0;
 const activeFolder = () => FOLDERS.find(f => f.id === activeId()) || null;
-async function loadFolders() { try { FOLDERS = await camDB.all(); } catch (e) { FOLDERS = []; } if (!activeFolder() && FOLDERS.length) store.set('camera.saveDir', FOLDERS[0].id); }
+const knownIds = () => { try { return JSON.parse(store.get('camera.knownDirs') || 'null'); } catch (e) { return null; } };
+const setKnown = () => store.set('camera.knownDirs', JSON.stringify(FOLDERS.map(f => f.id)));
+const sameDir = async (a, b) => { try { return await a.isSameEntry(b); } catch (e) { return false; } };
+
+/* Bản cũ lưu thư mục riêng trong DB 'camera': gộp sang danh sách chung rồi xóa */
+async function migrateFolders() {
+  if (store.get('camera.mig') === '1') return;
+  let old = []; try { old = await camDB.all(); } catch (e) { /* bỏ qua */ }
+  const oldAct = activeId();
+  const rows = await phDB.all();
+  for (const o of old) {
+    let hit = null;
+    for (const r of rows) if (await sameDir(r.handle, o.handle)) { hit = r; break; }
+    if (!hit) { const id = await phDB.add(o.handle); hit = { id, handle: o.handle }; rows.push(hit); }
+    if (o.id === oldAct) store.set('camera.saveDir', hit.id);
+    try { await camDB.del(o.id); } catch (e) { /* bỏ qua */ }
+  }
+  store.set('camera.mig', '1');
+  if (old.length) notifyPhotos('added');
+}
+async function loadFolders() {
+  try { await migrateFolders(); } catch (e) { console.warn('Chuyển thư mục:', e); }
+  try { FOLDERS = (await phDB.all()).map(r => ({ id: r.id, handle: r.handle })); } catch (e) { FOLDERS = []; }
+  if (!activeFolder()) FOLDERS.length ? store.set('camera.saveDir', FOLDERS[0].id) : store.del('camera.saveDir');
+  if (!knownIds()) setKnown();
+}
+
+/* Hộp thoại hỏi lưu ảnh vào thư mục nào (xếp hàng nếu có nhiều yêu cầu) */
+let askChain = Promise.resolve();
+function askFolder(msg, pre) {
+  const run = () => new Promise(res => {
+    if (FOLDERS.length <= 1) { FOLDERS[0] ? store.set('camera.saveDir', FOLDERS[0].id) : store.del('camera.saveDir'); return res(); }
+    const dlg = $('#dlgPick'), list = $('#pickList'); let sel = FOLDERS.some(f => f.id === pre) ? pre : (activeFolder() || FOLDERS[0]).id;
+    $('#pickMsg').textContent = msg; list.textContent = '';
+    const sync = () => $$('md-radio', list).forEach(r => { r.checked = +r.value === sel; });
+    for (const f of FOLDERS) {
+      const li = document.createElement('md-list-item'); li.type = 'button';
+      li.innerHTML = '<md-radio slot="start" name="pickdir" touch-target="wrapper"></md-radio><div slot="headline"></div>';
+      $('md-radio', li).value = String(f.id); $('[slot=headline]', li).textContent = f.handle.name;
+      li.onclick = () => { sel = f.id; sync(); };
+      list.appendChild(li);
+    }
+    sync();
+    const done = () => { dlg.removeEventListener('closed', done); store.set('camera.saveDir', sel); if (dlgFolders.open) drawFolders(); res(); };
+    dlg.addEventListener('closed', done); dlg.show();
+  });
+  askChain = askChain.then(run, run); return askChain;
+}
+/* Đồng bộ với Photos: thư mục mới → hỏi lưu vào đâu; thư mục đang lưu bị bỏ → hỏi lại */
+async function syncFolders() {
+  let rows; try { rows = await phDB.all(); } catch (e) { return; }
+  const was = knownIds() || FOLDERS.map(f => f.id), hadActive = activeId();
+  FOLDERS = rows.map(r => ({ id: r.id, handle: r.handle })); setKnown();
+  const added = FOLDERS.filter(f => !was.includes(f.id));
+  if (!FOLDERS.length) { store.del('camera.saveDir'); if (dlgFolders.open) drawFolders(); return; }
+  if (added.length) await askFolder(t('pick.added', { names: added.map(f => '“' + f.handle.name + '”').join(', ') }), added[added.length - 1].id);
+  else if (!FOLDERS.some(f => f.id === hadActive)) await askFolder(t('pick.removed'), FOLDERS[0].id);
+  else if (dlgFolders.open) drawFolders();
+  if (!activeFolder()) store.set('camera.saveDir', FOLDERS[0].id);
+}
+if (dirsBC) dirsBC.addEventListener('message', e => { if (e.data && e.data.type === 'dirs-changed' && e.data.src === 'photos') syncFolders(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && $('#splash').classList.contains('out')) syncFolders(); });
 
 async function perm(handle, ask) {
   try {
@@ -173,11 +229,11 @@ async function perm(handle, ask) {
   } catch (e) { return false; }
 }
 async function addFolderHandle(dh) {
-  for (const f of FOLDERS) { try { if (await f.handle.isSameEntry(dh)) { store.set('camera.saveDir', f.id); toast(t('folders.dup')); return 'dup'; } } catch (e) { /* bỏ qua */ } }
-  let id; try { id = await camDB.add(dh); } catch (e) { id = Date.now(); }
-  FOLDERS.push({ id, handle: dh });
+  for (const f of FOLDERS) { if (await sameDir(f.handle, dh)) { store.set('camera.saveDir', f.id); toast(t('folders.dup')); return 'dup'; } }
+  let id; try { id = await phDB.add(dh); } catch (e) { id = Date.now(); }
+  FOLDERS.push({ id, handle: dh }); setKnown();
   store.set('camera.saveDir', id);
-  addToPhotos(dh);
+  notifyPhotos('added', id);
   toast(t('folders.added', { name: dh.name }));
   return 'added';
 }
@@ -215,9 +271,10 @@ $('#folderList').addEventListener('click', async e => {
   const id = +row.dataset.id;
   if (b.dataset.act === 'select') store.set('camera.saveDir', id);
   else {
-    try { await camDB.del(id); } catch (err) { /* bỏ qua */ }
-    FOLDERS = FOLDERS.filter(f => f.id !== id);
-    if (activeId() === id) { FOLDERS.length ? store.set('camera.saveDir', FOLDERS[0].id) : store.del('camera.saveDir'); }
+    const wasActive = activeId() === id;
+    try { await phDB.del(id); } catch (err) { /* bỏ qua */ }
+    FOLDERS = FOLDERS.filter(f => f.id !== id); setKnown(); notifyPhotos('removed', id);
+    if (wasActive) { if (FOLDERS.length) await askFolder(t('pick.removed'), FOLDERS[0].id); else store.del('camera.saveDir'); }
   }
   drawFolders();
 });
@@ -227,11 +284,26 @@ async function openFolders() { await drawFolders(); dlgFolders.show(); }
 
 /* ---------- Lưu tệp ---------- */
 let lastThumb = null;
-function setThumb(blob) {
-  if (!blob || !/^image\//.test(blob.type)) return;
+function setThumbImg(blob) {
   if (lastThumb) URL.revokeObjectURL(lastThumb);
   lastThumb = URL.createObjectURL(blob);
   $('#thumbImg').src = lastThumb; $('#thumbImg').hidden = false; $('#thumbIcon').hidden = true;
+}
+function setThumb(blob) {
+  if (!blob) return;
+  if (/^image\//.test(blob.type)) return setThumbImg(blob);
+  if (!/^video\//.test(blob.type)) return;
+  /* Video: lấy một khung hình làm ảnh nhỏ */
+  const v = document.createElement('video'), u = URL.createObjectURL(blob); v.muted = true; v.preload = 'auto'; v.src = u;
+  const end = () => URL.revokeObjectURL(u);
+  v.onloadeddata = () => { try { v.currentTime = 0.05; } catch (e) { end(); } };
+  v.onseeked = () => {
+    try {
+      const c = document.createElement('canvas'); c.width = 160; c.height = Math.round(160 * (v.videoHeight || 90) / (v.videoWidth || 160)) || 90;
+      c.getContext('2d').drawImage(v, 0, 0, c.width, c.height); c.toBlob(b => { if (b) setThumbImg(b); end(); }, 'image/jpeg', .8);
+    } catch (e) { end(); }
+  };
+  v.onerror = end;
 }
 const stamp = () => { const d = new Date(), p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`; };
 function download(blob, name) {
@@ -249,7 +321,7 @@ async function uniqueName(dir, name) {
 let lastSaved = null;   /* { handle | file, name } của ảnh / GIF vừa lưu: nút ảnh gửi nó sang Photos */
 async function saveBlob(blob, name) {
   setThumb(blob);
-  const isImg = /^image\//.test(blob.type);
+  const isImg = /^image\//.test(blob.type), isVid = /^video\//.test(blob.type);
   const f = activeFolder();
   if (f) {
     if (await perm(f.handle, true)) {
@@ -257,13 +329,13 @@ async function saveBlob(blob, name) {
         name = await uniqueName(f.handle, name);
         const fh = await f.handle.getFileHandle(name, { create: true });
         const w = await fh.createWritable(); await w.write(blob); await w.close();
-        if (isImg) lastSaved = { handle: fh, name };
+        if (isImg || isVid) lastSaved = { handle: fh, name };
         toast(t('msg.saved_folder', { folder: f.handle.name, name })); return;
       } catch (e) { console.error('Ghi tệp:', e); }
     }
     toast(t('msg.perm_denied'), 4500);
   }
-  if (isImg) lastSaved = { file: new File([blob], name, { type: blob.type }), name };
+  if (isImg || isVid) lastSaved = { file: new File([blob], name, { type: blob.type }), name };
   try { download(blob, name); if (!f) toast(t('msg.saved_download', { name })); } catch (e) { toast(t('msg.save_failed')); }
 }
 
@@ -278,12 +350,12 @@ function drawFrame(ctx, w, h, filter) {
 const vsize = () => ({ w: video.videoWidth || 1280, h: video.videoHeight || 720 });
 const canvasBlob = (c, type, q) => new Promise(r => c.toBlob(r, type, q));
 
-async function takePhoto(isDoc) {
+async function takePhoto() {
   const { w, h } = vsize(), c = document.createElement('canvas'); c.width = w; c.height = h;
-  drawFrame(c.getContext('2d'), w, h, isDoc ? DOC_FILTER : FILTERS[S.filter]);
+  drawFrame(c.getContext('2d'), w, h, FILTERS[S.filter]);
   const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
   const blob = await canvasBlob(c, 'image/jpeg', .95);
-  await saveBlob(blob, `${isDoc ? 'scan' : 'photo'}-${stamp()}.jpg`);
+  await saveBlob(blob, `photo-${stamp()}.jpg`);
 }
 
 /* ---------- Đồng hồ khi quay ---------- */
@@ -385,7 +457,7 @@ let shooting = false;   /* chống bấm chồng: một lần chụp chỉ lưu 
 async function shutter() {
   if (S.counting) { S.counting.cancel(); return; }
   if (S.rec) { S.rec.stop(); return; }
-  if (shooting) return;
+  if (shooting || SC.open) return;
   shooting = true;
   try { await shutterRun(); } finally { shooting = false; }
 }
@@ -394,8 +466,8 @@ async function shutterRun() {
   const f = activeFolder(); if (f) await perm(f.handle, true);   /* xin quyền ngay lúc bấm (cần thao tác của người dùng) */
   if (S.mode === 'scan' && S.sub.scan === 'qr') return;
   if (S.timer > 0 && !(await countdown(S.timer))) return;
-  if (S.mode === 'photo') await takePhoto(false);
-  else if (S.mode === 'scan') await takePhoto(true);
+  if (S.mode === 'photo') await takePhoto();
+  else if (S.mode === 'scan') await docShoot();
   else if (S.sub.video === 'gif') await startGif();
   else if (S.sub.video === 'timelapse') await startTimeLapse();
   else await startVideo();
@@ -406,6 +478,161 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape' && S.counting) S.counting.cancel();
   else if ((e.key === ' ' || e.key === 'Enter') && !e.target.closest('button, md-icon-button, md-menu-item')) { e.preventDefault(); shutter(); }
 });
+
+
+/* ---------- Quét tài liệu (kiểu ChromeOS): khung bám tờ giấy → nắn phẳng → xem lại → thêm trang → lưu ảnh / PDF ---------- */
+const SC = { pages: [], cur: 0, quad: null, miss: 0, timer: null, open: false, edit: null };
+const dcv = $('#docCanvas'), dsmall = document.createElement('canvas'), scanView = $('#scanView');
+function scanSync() {
+  const on = S.mode === 'scan' && S.sub.scan === 'document';
+  if (!on) {
+    clearInterval(SC.timer); SC.timer = null; SC.quad = null; docDraw();
+    if (S.mode !== 'scan') scanReset();
+  } else if (!SC.timer) SC.timer = setInterval(docTick, 280);
+  paintBadge();
+}
+function scanReset() { SC.pages.forEach(p => p.url && URL.revokeObjectURL(p.url)); SC.pages = []; SC.cur = 0; }
+function paintBadge() {
+  const b = $('#scanBadge'), on = S.mode === 'scan' && S.sub.scan === 'document' && !SC.open;
+  const txt = SC.pages.length ? t('scan.page', { n: SC.pages.length + 1 }) : (SC.quad ? '' : t('scan.hint'));
+  b.textContent = txt; b.classList.toggle('show', on && !!txt);
+}
+function docTick() {
+  if (SC.open || video.readyState < 2 || !video.videoWidth || !window.Scanner) return;
+  const w = 320, h = Math.round(w * video.videoHeight / video.videoWidth);
+  dsmall.width = w; dsmall.height = h;
+  const x = dsmall.getContext('2d', { willReadFrequently: true }); x.drawImage(video, 0, 0, w, h);
+  let q = null; try { q = Scanner.findQuad(x.getImageData(0, 0, w, h).data, w, h); } catch (e) { /* bỏ qua */ }
+  if (q) {
+    q = q.map(p => [p[0] / w, p[1] / h]); SC.miss = 0;
+    if (SC.quad && SC.quad.every((p, i) => Math.hypot(p[0] - q[i][0], p[1] - q[i][1]) < .15)) q = q.map((p, i) => [(SC.quad[i][0] + p[0]) / 2, (SC.quad[i][1] + p[1]) / 2]);
+    SC.quad = q;
+  } else if (++SC.miss >= 3) SC.quad = null;
+  docDraw(); paintBadge();
+}
+function docDraw() {
+  const r = $('#viewfinder').getBoundingClientRect(), dpr = window.devicePixelRatio || 1, W = Math.round(r.width * dpr), H = Math.round(r.height * dpr);
+  if (dcv.width !== W || dcv.height !== H) { dcv.width = W; dcv.height = H; }
+  const c = dcv.getContext('2d'); c.clearRect(0, 0, W, H);
+  if (!SC.quad || !video.videoWidth) return;
+  const vw = video.videoWidth, vh = video.videoHeight, s = Math.min(W / vw, H / vh), ox = (W - vw * s) / 2, oy = (H - vh * s) / 2;
+  const P = SC.quad.map(p => [ox + p[0] * vw * s, oy + p[1] * vh * s]);
+  c.beginPath(); P.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.closePath();
+  c.fillStyle = 'rgba(255,193,7,.18)'; c.fill(); c.lineWidth = 2 * dpr; c.strokeStyle = 'rgba(255,193,7,.85)'; c.stroke();
+  /* Dấu góc đậm như ChromeOS */
+  const side = Math.min(...P.map((p, i) => Math.hypot(p[0] - P[(i + 1) % 4][0], p[1] - P[(i + 1) % 4][1]))), L = Math.max(14 * dpr, side * .12);
+  c.lineWidth = 6 * dpr; c.lineCap = 'round'; c.lineJoin = 'round'; c.strokeStyle = '#ffc107';
+  P.forEach((p, i) => {
+    const a = P[(i + 1) % 4], b = P[(i + 3) % 4], da = Math.hypot(a[0] - p[0], a[1] - p[1]) || 1, db = Math.hypot(b[0] - p[0], b[1] - p[1]) || 1;
+    c.beginPath(); c.moveTo(p[0] + (a[0] - p[0]) / da * L, p[1] + (a[1] - p[1]) / da * L); c.lineTo(p[0], p[1]); c.lineTo(p[0] + (b[0] - p[0]) / db * L, p[1] + (b[1] - p[1]) / db * L); c.stroke();
+  });
+}
+window.addEventListener('resize', () => { if (SC.timer) docDraw(); });
+
+async function renderPage(pg) {
+  const raw = pg.raw, id = raw.getContext('2d').getImageData(0, 0, raw.width, raw.height);
+  const o = Scanner.enhance(Scanner.warp(id.data, raw.width, raw.height, pg.quad, 2200));
+  const c = document.createElement('canvas'); c.width = o.w; c.height = o.h;
+  c.getContext('2d').putImageData(new ImageData(o.data, o.w, o.h), 0, 0);
+  const blob = await canvasBlob(c, 'image/jpeg', .92);
+  if (pg.url) URL.revokeObjectURL(pg.url);
+  pg.blob = blob; pg.url = URL.createObjectURL(blob); pg.w = o.w; pg.h = o.h;
+}
+async function docShoot() {
+  const { w, h } = vsize(), raw = document.createElement('canvas'); raw.width = w; raw.height = h;
+  raw.getContext('2d', { willReadFrequently: true }).drawImage(video, 0, 0, w, h);            /* tài liệu luôn chụp không lật gương */
+  const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
+  const quad = SC.quad ? SC.quad.map(p => [p[0] * w, p[1] * h]) : [[0, 0], [w - 1, 0], [w - 1, h - 1], [0, h - 1]];
+  const pg = { raw, quad }; await renderPage(pg);
+  SC.pages.push(pg); SC.cur = SC.pages.length - 1; openScan();
+}
+function openScan() { SC.open = true; scanView.hidden = false; paintScan(); paintBadge(); }
+function closeScan(discard) {
+  SC.open = false; scanView.hidden = true; SC.edit = null; scanView.removeAttribute('data-edit'); $('#edBox').hidden = true; $('#svImg').hidden = false;
+  if (discard) scanReset(); paintBadge();
+}
+function paintScan() {
+  const n = SC.pages.length, pg = SC.pages[SC.cur]; if (!pg) return closeScan(true);
+  $('#svImg').src = pg.url; scanView.classList.toggle('multi', n > 1);
+  $('#svDel').hidden = n < 2; $('#svTitle').textContent = n > 1 ? t('scan.title', { n: SC.cur + 1, m: n }) : '';
+  const box = $('#svThumbs'); box.textContent = '';
+  SC.pages.forEach((p, i) => {
+    const b = document.createElement('button'); b.className = i === SC.cur ? 'on' : '';
+    b.innerHTML = '<img alt=""><b></b>'; $('img', b).src = p.url; $('b', b).textContent = i + 1;
+    b.onclick = () => { SC.cur = i; paintScan(); }; box.appendChild(b);
+  });
+}
+$('#svCancel').onclick = () => { if (SC.edit) endEdit(false); else closeScan(true); };
+$('#svAdd').onclick = () => closeScan(false);
+$('#svDel').onclick = () => { const p = SC.pages.splice(SC.cur, 1)[0]; if (p && p.url) URL.revokeObjectURL(p.url); SC.cur = Math.max(0, Math.min(SC.cur, SC.pages.length - 1)); paintScan(); };
+async function scanSaveAs(kind) {
+  const pages = SC.pages.slice(), st = stamp(); if (!pages.length) return;
+  closeScan(false);
+  if (kind === 'pdf') {
+    const list = [];
+    for (const p of pages) list.push({ jpeg: new Uint8Array(await p.blob.arrayBuffer()), w: p.w, h: p.h });
+    await saveBlob(new Blob([Scanner.pdf(list)], { type: 'application/pdf' }), `scan-${st}.pdf`);
+  } else {
+    for (let i = 0; i < pages.length; i++) await saveBlob(pages[i].blob, `scan-${st}${pages.length > 1 ? '-' + (i + 1) : ''}.jpg`);
+    if (pages.length > 1) toast(t('scan.saved_n', { n: pages.length }));
+  }
+  scanReset(); paintBadge();
+}
+$('#svPhoto').onclick = () => scanSaveAs('photo');
+$('#svPdf').onclick = () => scanSaveAs('pdf');
+$('#svShare').onclick = async () => {
+  try {
+    const pages = SC.pages, st = stamp(); let files;
+    if (pages.length > 1) {
+      const list = []; for (const p of pages) list.push({ jpeg: new Uint8Array(await p.blob.arrayBuffer()), w: p.w, h: p.h });
+      files = [new File([Scanner.pdf(list)], `scan-${st}.pdf`, { type: 'application/pdf' })];
+    } else files = [new File([pages[SC.cur].blob], `scan-${st}.jpg`, { type: 'image/jpeg' })];
+    if (navigator.canShare && navigator.canShare({ files })) await navigator.share({ files }); else toast(t('scan.share_fail'), 4500);
+  } catch (e) { if (e.name !== 'AbortError') toast(t('scan.share_fail'), 4500); }
+};
+
+/* Chỉnh góc: kéo 4 chấm vàng trên ảnh gốc, bấm Xong thì nắn phẳng lại */
+function fitEdit() {
+  const ed = SC.edit; if (!ed) return;
+  const st = $('#svStage').getBoundingClientRect(), pad = 40, raw = ed.pg.raw;
+  const s = Math.min((st.width - pad) / raw.width, (st.height - pad) / raw.height), box = $('#edBox');
+  box.style.width = Math.round(raw.width * s) + 'px'; box.style.height = Math.round(raw.height * s) + 'px';
+  paintEdit();
+}
+function paintEdit() {
+  const ed = SC.edit, raw = ed.pg.raw;
+  $$('#edBox .hd').forEach((el, i) => { el.style.left = ed.q[i][0] / raw.width * 100 + '%'; el.style.top = ed.q[i][1] / raw.height * 100 + '%'; });
+  const b = $('#edBox').getBoundingClientRect();
+  $('#edPoly').setAttribute('points', ed.q.map(p => `${p[0] / raw.width * b.width},${p[1] / raw.height * b.height}`).join(' '));
+}
+function startEdit() {
+  const pg = SC.pages[SC.cur]; if (!pg) return;
+  SC.edit = { pg, q: pg.quad.map(p => p.slice()) };
+  const box = $('#edBox'); let cv = $('canvas', box); if (cv) cv.remove();
+  cv = pg.raw; cv.style.cssText = ''; box.insertBefore(cv, box.firstChild);
+  scanView.dataset.edit = '1'; $('#svImg').hidden = true; box.hidden = false; fitEdit();
+}
+async function endEdit(apply) {
+  const ed = SC.edit; if (!ed) return; SC.edit = null;
+  if (apply) { ed.pg.quad = ed.q; try { await renderPage(ed.pg); } catch (e) { /* giữ bản cũ */ } }
+  scanView.removeAttribute('data-edit'); $('#edBox').hidden = true; $('#svImg').hidden = false; paintScan();
+}
+$('#svEditBtn').onclick = startEdit;
+$('#svEdDone').onclick = () => endEdit(true);
+$('#svEdCancel').onclick = () => endEdit(false);
+$$('#edBox .hd').forEach(el => {
+  el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); el.dataset.drag = '1'; e.preventDefault(); });
+  el.addEventListener('pointermove', e => {
+    if (!el.dataset.drag || !SC.edit) return;
+    const b = $('#edBox').getBoundingClientRect(), raw = SC.edit.pg.raw;
+    SC.edit.q[+el.dataset.k] = [Math.max(0, Math.min(raw.width - 1, (e.clientX - b.left) / b.width * raw.width)), Math.max(0, Math.min(raw.height - 1, (e.clientY - b.top) / b.height * raw.height))];
+    paintEdit();
+  });
+  const up = () => { delete el.dataset.drag; };
+  el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+});
+window.addEventListener('resize', () => { if (SC.edit) fitEdit(); });
+window.addEventListener('keydown', e => { if (e.key === 'Escape' && SC.open && !e.target.closest('md-dialog')) { SC.edit ? endEdit(false) : closeScan(true); } });
 
 /* ---------- Quét mã QR ---------- */
 let qrTimer = null, qrDet = null, qrHide;
@@ -459,7 +686,8 @@ async function newestInFolder() {
   let best = null;
   try {
     for await (const h of f.handle.values()) {
-      if (h.kind === 'file' && /^(photo|scan|gif)-\d{8}-\d{6}.*\.(jpe?g|gif)$/i.test(h.name) && (!best || h.name > best.name)) best = h;
+      const m = h.kind === 'file' && /^(photo|scan|gif|video|timelapse)-(\d{8}-\d{6}).*\.(jpe?g|gif|webm|mp4)$/i.exec(h.name);
+      if (m && (!best || m[2] > best.ts)) best = h, best.ts = m[2];
     }
   } catch (e) { return null; }
   return best ? { handle: best, name: best.name } : null;
@@ -504,7 +732,8 @@ function syncLangRadios() { $$('md-radio', dlgLang).forEach(r => { r.checked = r
 $('#miLang').onclick = () => { syncLangRadios(); dlgLang.show(); };
 $$('md-list-item[data-lang]', dlgLang).forEach(li => li.onclick = async () => { await I18N.set(li.dataset.lang); syncLangRadios(); });
 $('#btnLangDone').onclick = () => dlgLang.close();
-document.addEventListener('i18n', () => { paintState(); paintIcons(); });
+document.addEventListener('i18n', () => { paintState(); paintIcons(); paintBadge(); if (SC.open) paintScan(); });
+$('#btnPickOk').onclick = () => $('#dlgPick').close();
 
 /* ---------- Hướng dẫn bắt đầu (iframe, giống music-player / photos) ---------- */
 const gsBox = $('#gs'), gsFrame = $('#gsFrame');
@@ -522,7 +751,9 @@ window.addEventListener('message', async e => {
   if (e.source !== gsFrame.contentWindow || !e.data || e.data.type !== 'gs-done') return;
   store.set('camera.gsDone', '1'); store.del('camera.gsPending');
   closeGettingStarted();
-  for (const h of e.data.dirs || []) { try { await addFolderHandle(h); } catch (err) { /* bỏ qua */ } }
+  const picked = e.data.dirs || [];
+  for (const h of picked) { try { await addFolderHandle(h); } catch (err) { /* bỏ qua */ } }
+  if (picked.length > 1) await askFolder(t('pick.multi'), activeId());   /* chọn nhiều thư mục → hỏi lưu ảnh vào cái nào */
   if (e.data.lang && e.data.lang !== I18N.lang) await I18N.set(e.data.lang);
 });
 
@@ -538,8 +769,9 @@ document.addEventListener('dragstart', e => e.preventDefault());
   const t0 = performance.now();
   await startCamera();
   if (S.mode === 'scan' && S.sub.scan === 'qr') qrStart();
+  scanSync();
   await sleep(Math.max(0, 900 - (performance.now() - t0)));
   $('#splash').classList.add('out');
   const first = store.get('camera.gsPending') === '1' || (store.get('camera.gsDone') !== '1' && !FOLDERS.length);
-  if (first) openGettingStarted(); else if (FOLDERS.length) store.set('camera.gsDone', '1');
+  if (first) openGettingStarted(); else { if (FOLDERS.length) store.set('camera.gsDone', '1'); syncFolders(); }
 })();

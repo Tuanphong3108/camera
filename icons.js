@@ -49,7 +49,13 @@
   radio_button_checked: 59447,
   tune: 58409,
   auto_awesome: 58975,
-  history_toggle_off: 61821
+  history_toggle_off: 61821,
+  share: 59405,
+  edit: 57680,
+  library_add: 57390,
+  picture_as_pdf: 58389,
+  image: 57937,
+  crop_free: 58306
   };
   window.paintIcons = function (root) {
     (root || document).querySelectorAll('[data-i]').forEach(function (el) {
