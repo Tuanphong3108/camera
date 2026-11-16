@@ -14,7 +14,7 @@
 - ⏱ **Hẹn giờ** 3 / 5 / 10 giây, dùng được cả khi quay video
 - 🪞 Phản chiếu, lưới 3×3, đổi camera, tắt/bật micrô
 - 📂 **Thư mục lưu ảnh**: menu 3 chấm → *Thư mục lưu ảnh*; ảnh và video ghi thẳng vào thư mục đã chọn (không có thì tải về như bình thường)
-- 🖼 **Kết nối với Photos**: thư mục lưu ảnh được thêm luôn vào [Photos](https://github.com/Tuanphong3108/photos), nút ảnh nhỏ ở góc dưới bên phải mở thẳng Photos
+- 🖼 **Kết nối với Photos**: thư mục lưu ảnh được thêm luôn vào [Photos](https://github.com/Tuanphong3108/photos), nút ảnh nhỏ ở góc dưới bên phải mở Photos (dạng PWA nếu đã cài) và phóng to đúng tấm vừa chụp
 - 🚀 **Hướng dẫn bắt đầu** (giống Media Player), xem lại ở menu 3 chấm
 - 🌍 Tiếng Việt & English, đổi ngay trong app (menu 3 chấm → *Ngôn ngữ*)
 - 📡 Dùng được offline nhờ cache PWA

@@ -151,8 +151,12 @@ const camDB = {
 async function addToPhotos(handle) {
   try {
     const rows = await idbTx('photos', 'readonly', s => s.getAll());
-    for (const r of rows) { try { if (await r.handle.isSameEntry(handle)) return; } catch (e) { /* bỏ qua */ } }
+    for (const r of rows) {
+      try { if (await r.handle.isSameEntry(handle)) return; } catch (e) { /* bỏ qua */ }
+      try { if (await r.handle.resolve(handle)) return; } catch (e) { /* bỏ qua */ }   /* đã nằm trong thư mục cha được theo dõi → thêm nữa sẽ bị trùng ảnh */
+    }
     await idbTx('photos', 'readwrite', s => s.add({ handle }));
+    const bc = new BroadcastChannel('photos-handoff'); bc.postMessage({ type: 'dirs-changed' }); setTimeout(() => bc.close(), 500);
   } catch (e) { console.warn('Không thể thêm thư mục vào Photos:', e); }
 }
 
@@ -234,19 +238,32 @@ function download(blob, name) {
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.style.display = 'none';
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 10000);
 }
+async function uniqueName(dir, name) {
+  const dot = name.lastIndexOf('.'), stem = name.slice(0, dot), ext = name.slice(dot);
+  for (let i = 1; i < 100; i++) {
+    const n = i === 1 ? name : `${stem}-${i}${ext}`;
+    try { await dir.getFileHandle(n); } catch (e) { if (e.name === 'NotFoundError') return n; throw e; }
+  }
+  return name;
+}
+let lastSaved = null;   /* { handle | file, name } của ảnh / GIF vừa lưu: nút ảnh gửi nó sang Photos */
 async function saveBlob(blob, name) {
   setThumb(blob);
+  const isImg = /^image\//.test(blob.type);
   const f = activeFolder();
   if (f) {
     if (await perm(f.handle, true)) {
       try {
+        name = await uniqueName(f.handle, name);
         const fh = await f.handle.getFileHandle(name, { create: true });
         const w = await fh.createWritable(); await w.write(blob); await w.close();
+        if (isImg) lastSaved = { handle: fh, name };
         toast(t('msg.saved_folder', { folder: f.handle.name, name })); return;
       } catch (e) { console.error('Ghi tệp:', e); }
     }
     toast(t('msg.perm_denied'), 4500);
   }
+  if (isImg) lastSaved = { file: new File([blob], name, { type: blob.type }), name };
   try { download(blob, name); if (!f) toast(t('msg.saved_download', { name })); } catch (e) { toast(t('msg.save_failed')); }
 }
 
@@ -364,9 +381,15 @@ function countdown(sec) {
     const iv = setInterval(() => { n--; n > 0 ? show() : end(true); }, 1000);
   });
 }
+let shooting = false;   /* chống bấm chồng: một lần chụp chỉ lưu một tệp */
 async function shutter() {
   if (S.counting) { S.counting.cancel(); return; }
   if (S.rec) { S.rec.stop(); return; }
+  if (shooting) return;
+  shooting = true;
+  try { await shutterRun(); } finally { shooting = false; }
+}
+async function shutterRun() {
   if (!S.stream) { if (!(await startCamera())) return; }
   const f = activeFolder(); if (f) await perm(f.handle, true);   /* xin quyền ngay lúc bấm (cần thao tác của người dùng) */
   if (S.mode === 'scan' && S.sub.scan === 'qr') return;
@@ -412,7 +435,57 @@ function openLink(url) {
   const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.style.display = 'none';
   document.body.appendChild(a); a.click(); a.remove();
 }
-$('#thumb').onclick = () => openLink(PHOTOS_URL);
+
+/* Mở ảnh trong Photos (cùng origin github.io nên dùng chung BroadcastChannel / IndexedDB), giống cách Photos mở video bằng Media Player:
+   1) Photos đang mở: gửi handle qua BroadcastChannel 'photos-handoff', Photos trả "ack" và phóng to ảnh đó.
+   2) Chưa mở: lưu vào IndexedDB 'photos-handoff' rồi mở Photos?handoff=1, Photos tự đọc và mở ảnh.
+   Photos đã cài thành PWA (cờ photos_pwa) thì link cũng mở thẳng cửa sổ ứng dụng. */
+const photosInstalled = () => { try { return localStorage.getItem('photos_pwa') === '1'; } catch (e) { return false; } };
+function handoffSave(id, items) {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('photos-handoff', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('queue', { autoIncrement: true });
+    r.onerror = () => rej(r.error);
+    r.onsuccess = () => {
+      const db = r.result, tx = db.transaction('queue', 'readwrite');
+      tx.objectStore('queue').add({ id, t: Date.now(), items });
+      tx.oncomplete = () => { db.close(); res(); }; tx.onerror = tx.onabort = () => rej(tx.error);
+    };
+  });
+}
+/* Chưa chụp ảnh nào trong phiên này: lấy ảnh mới nhất trong thư mục lưu (tên có dạng photo-YYYYMMDD-HHMMSS nên xếp theo tên là ra mới nhất) */
+async function newestInFolder() {
+  const f = activeFolder(); if (!f || !(await perm(f.handle, true))) return null;
+  let best = null;
+  try {
+    for await (const h of f.handle.values()) {
+      if (h.kind === 'file' && /^(photo|scan|gif)-\d{8}-\d{6}.*\.(jpe?g|gif)$/i.test(h.name) && (!best || h.name > best.name)) best = h;
+    }
+  } catch (e) { return null; }
+  return best ? { handle: best, name: best.name } : null;
+}
+async function openInPhotos() {
+  const item = lastSaved || await newestInFolder();
+  if (!item) { openLink(PHOTOS_URL); return; }
+  const items = [item.handle || item.file];
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  let bc = null;
+  try { bc = new BroadcastChannel('photos-handoff'); } catch (e) { /* dùng cách 2 */ }
+  const ack = new Promise(res => {
+    if (!bc) return res(false);
+    const tm = setTimeout(() => res(false), 900);
+    bc.onmessage = e => { if (e.data && e.data.type === 'ack' && e.data.id === id) { clearTimeout(tm); res(true); } };
+  });
+  try { bc && bc.postMessage({ type: 'open', id, items }); } catch (e) { /* bỏ qua */ }
+  if (await ack) {
+    if (photosInstalled()) openLink(PHOTOS_URL + '?handoff=focus'); else toast(t('msg.opened_photos'));
+    bc.close(); return;
+  }
+  try { await handoffSave(id, items); } catch (e) { toast(t('msg.photos_fail')); bc && bc.close(); openLink(PHOTOS_URL); return; }
+  openLink(PHOTOS_URL + '?handoff=1');
+  bc && setTimeout(() => bc.close(), 4000);
+}
+$('#thumb').onclick = openInPhotos;
 
 /* ---------- Menu 3 chấm + hộp thoại ---------- */
 const menu = $('#menu');
