@@ -538,7 +538,7 @@ function scanSync() {
   if (!on) {
     clearInterval(SC.timer); SC.timer = null; SC.quad = null; docDraw();
     if (S.mode !== 'scan') scanReset();
-  } else { loadCV(); if (!SC.timer) SC.timer = setInterval(docTick, 280); }
+  } else { loadCV(); if (!SC.timer) SC.timer = setInterval(docTick, 350); }
   paintBadge();
 }
 function scanReset() { SC.pages.forEach(p => p.url && URL.revokeObjectURL(p.url)); SC.pages = []; SC.cur = 0; }
@@ -549,7 +549,7 @@ function paintBadge() {
 }
 function docTick() {
   if (SC.open || video.readyState < 2 || !video.videoWidth || !window.Scanner) return;
-  const w = 320, h = Math.round(w * video.videoHeight / video.videoWidth);
+  const w = 480, h = Math.round(w * video.videoHeight / video.videoWidth);   /* ≥ 480px để bắt cạnh nhạt */
   dsmall.width = w; dsmall.height = h;
   const x = dsmall.getContext('2d', { willReadFrequently: true }); x.drawImage(video, 0, 0, w, h);
   let q = null; try { q = detectQuad(x.getImageData(0, 0, w, h).data, w, h); } catch (e) { /* bỏ qua */ }

@@ -200,45 +200,151 @@
     return out;
   }
 
-  /* ---------- Nhận diện bằng OpenCV.js (chính xác hơn; nạp lười ở app.js, không có thì dùng findQuad ở trên) ---------- */
+  /* ---------- Nhận diện bằng OpenCV.js ----------
+     Nhiều ứng viên (cạnh Canny nhiều ngưỡng, độ dốc màu Lab, Otsu, khác màu nền) → mỗi tứ giác chấm điểm theo độ tương phản
+     trong/ngoài dọc 4 cạnh → chọn cái chắc nhất → khớp lại từng cạnh bằng đường thẳng (chính xác dưới 1px). Nên chạy ở ≥ 480px chiều ngang. */
   function orderQuad(p) {
     const s = p.map(q => q[0] + q[1]), d = p.map(q => q[0] - q[1]);
     return [p[s.indexOf(Math.min(...s))], p[d.indexOf(Math.max(...d))], p[s.indexOf(Math.max(...s))], p[d.indexOf(Math.min(...d))]];
   }
+  function convexQuad(q) { for (let i = 0; i < 4; i++) if (cross(q[i], q[(i + 1) % 4], q[(i + 2) % 4]) <= 0) return false; return true; }
+  function percentile(arr, pc) {                           /* xấp xỉ bằng histogram 2048 ngăn */
+    let mx = 0; for (let i = 0; i < arr.length; i++) if (arr[i] > mx) mx = arr[i];
+    if (!mx) return 0;
+    const bins = new Uint32Array(2049), sc = 2048 / mx; for (let i = 0; i < arr.length; i++) bins[(arr[i] * sc) | 0]++;
+    let acc = 0, goal = arr.length * pc / 100; for (let i = 0; i <= 2048; i++) { acc += bins[i]; if (acc >= goal) return i / sc; }
+    return mx;
+  }
+  function labSupport(q, lab, w, h) {
+    const d = Math.max(3, Math.round(w * .012)), sides = [];
+    for (let i = 0; i < 4; i++) {
+      const a = q[i], b = q[(i + 1) % 4], L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      if (L < w * .12) return { s: 0, min: 0 };
+      const nx = (b[1] - a[1]) / L, ny = -(b[0] - a[0]) / L, N = Math.max(12, Math.floor(L / 4)); let ok = 0;
+      for (let k = 0; k < N; k++) {
+        const t = .04 + .92 * k / (N - 1), px = a[0] + (b[0] - a[0]) * t, py = a[1] + (b[1] - a[1]) * t;
+        const ox = px + nx * d, oy = py + ny * d, ix = px - nx * d, iy = py - ny * d;
+        if (ox < 0 || oy < 0 || ox >= w - 1 || oy >= h - 1 || ix < 0 || iy < 0 || ix >= w - 1 || iy >= h - 1) continue;
+        const po = ((oy | 0) * w + (ox | 0)) * 3, pi = ((iy | 0) * w + (ix | 0)) * 3;
+        if (Math.hypot(lab[po] - lab[pi], lab[po + 1] - lab[pi + 1], lab[po + 2] - lab[pi + 2]) > 3.5) ok++;
+      }
+      sides.push(ok / N);
+    }
+    return { s: sides.reduce((x, y) => x + y, 0) / 4, min: Math.min(...sides) };
+  }
+  /* Khớp đường thẳng bền vững (trọng số lại theo phần dư) */
+  function fitLine(pts) {
+    let mx = 0, my = 0; pts.forEach(p => { mx += p[0]; my += p[1]; }); mx /= pts.length; my /= pts.length;
+    let vx = 1, vy = 0, w = pts.map(() => 1);
+    for (let it = 0; it < 4; it++) {
+      let sw = 0, cx = 0, cy = 0; pts.forEach((p, i) => { sw += w[i]; cx += w[i] * p[0]; cy += w[i] * p[1]; }); cx /= sw; cy /= sw; mx = cx; my = cy;
+      let sxx = 0, sxy = 0, syy = 0; pts.forEach((p, i) => { const dx = p[0] - mx, dy = p[1] - my; sxx += w[i] * dx * dx; sxy += w[i] * dx * dy; syy += w[i] * dy * dy; });
+      const th = .5 * Math.atan2(2 * sxy, sxx - syy); vx = Math.cos(th); vy = Math.sin(th);
+      w = pts.map(p => { const r = Math.abs(-(p[0] - mx) * vy + (p[1] - my) * vx); return 1 / Math.max(1, r); });
+    }
+    return [vx, vy, mx, my];
+  }
+  function refineQuad(q, lab, w, h) {
+    const rad = Math.max(8, Math.round(w * .04)), lines = [];
+    for (let i = 0; i < 4; i++) {
+      const a = q[i], b = q[(i + 1) % 4], L = Math.hypot(b[0] - a[0], b[1] - a[1]), nx = (b[1] - a[1]) / L, ny = -(b[0] - a[0]) / L, pts = [];
+      const N = Math.max(16, Math.floor(L / 3));
+      for (let k = 0; k < N; k++) {
+        const t = .08 + .84 * k / (N - 1), px = a[0] + (b[0] - a[0]) * t, py = a[1] + (b[1] - a[1]) * t, ds = []; let mx = 0;
+        for (let off = -rad; off <= rad; off++) {
+          const ox = px + nx * (off + 2), oy = py + ny * (off + 2), ix = px + nx * (off - 2), iy = py + ny * (off - 2);
+          let dd = 0;
+          if (ox >= 0 && oy >= 0 && ox < w - 1 && oy < h - 1 && ix >= 0 && iy >= 0 && ix < w - 1 && iy < h - 1) {
+            const po = ((oy | 0) * w + (ox | 0)) * 3, pi = ((iy | 0) * w + (ix | 0)) * 3;
+            dd = Math.hypot(lab[po] - lab[pi], lab[po + 1] - lab[pi + 1], lab[po + 2] - lab[pi + 2]);
+          }
+          ds.push(dd); if (dd > mx) mx = dd;
+        }
+        if (mx > 4) { for (let j = 0; j < ds.length; j++) if (ds[j] >= .6 * mx) { const off = j - rad; pts.push([px + nx * off, py + ny * off]); break; } }   /* ưu tiên cạnh trong cùng: bỏ qua bóng đổ */
+      }
+      if (pts.length < Math.max(8, L / 12)) return q;
+      lines.push(fitLine(pts));
+    }
+    const out = [];
+    for (let i = 0; i < 4; i++) {
+      const l1 = lines[(i + 3) % 4], l2 = lines[i], det = -l1[0] * l2[1] + l2[0] * l1[1];
+      if (Math.abs(det) < 1e-6) return q;
+      const bx = l2[2] - l1[2], by = l2[3] - l1[3], t = (-bx * l2[1] + l2[0] * by) / det;
+      out.push([l1[2] + l1[0] * t, l1[3] + l1[1] * t]);
+    }
+    return out.every((p, i) => Math.hypot(p[0] - q[i][0], p[1] - q[i][1]) < rad * 2.2) ? out : q;
+  }
   function findQuadCV(cv, rgba, w, h) {
-    const mats = [], M = m => (mats.push(m), m);
+    const mats = [], M = m => (mats.push(m), m), N = w * h;
     try {
-      const src = M(cv.matFromImageData({ data: rgba, width: w, height: h })), gray = M(new cv.Mat()), blur = M(new cv.Mat());
-      cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY); cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0);
-      const total = w * h, k = M(cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3)));
-      let best = null;
-      /* Hai cách tìm đường bao: cạnh Canny nối liền, và ngưỡng Otsu (giấy sáng trên nền tối) */
-      const edges = M(new cv.Mat()), otsu = M(new cv.Mat());
-      cv.Canny(blur, edges, 50, 150); cv.dilate(edges, edges, k, new cv.Point(-1, -1), 2);
-      cv.threshold(blur, otsu, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU); cv.morphologyEx(otsu, otsu, cv.MORPH_CLOSE, k, new cv.Point(-1, -1), 2);
-      for (const bin of [edges, otsu]) {
+      const src = M(cv.matFromImageData({ data: rgba, width: w, height: h })), rgb = M(new cv.Mat()), gray = M(new cv.Mat()), lab8 = M(new cv.Mat());
+      cv.cvtColor(src, rgb, cv.COLOR_RGBA2RGB); cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY); cv.cvtColor(rgb, lab8, cv.COLOR_RGB2Lab);
+      /* Xoá chữ tối trên giấy: đóng (closing) với nhân lớn rồi làm mờ */
+      const kk = Math.max(5, Math.round(w * .03) | 1), gc = M(new cv.Mat());
+      cv.morphologyEx(gray, gc, cv.MORPH_CLOSE, M(cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(kk, kk))));
+      cv.GaussianBlur(gc, gc, new cv.Size(5, 5), 0);
+      const l8 = lab8.data, g8 = gc.data, f = new Float32Array(N * 3);
+      for (let i = 0; i < N; i++) { f[i * 3] = g8[i] * 100 / 255; f[i * 3 + 1] = l8[i * 3 + 1] - 128; f[i * 3 + 2] = l8[i * 3 + 2] - 128; }
+      const labM = M(cv.matFromArray(h, w, cv.CV_32FC3, f)); cv.GaussianBlur(labM, labM, new cv.Size(5, 5), 0);
+      const lab = labM.data32F, k3 = M(cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3))), anc = new cv.Point(-1, -1);
+      const bins = [], bin8 = (arr) => { const m = M(cv.matFromArray(h, w, cv.CV_8UC1, arr)); return m; };
+      const dil = (m, it) => { cv.dilate(m, m, k3, anc, it); bins.push(m); };
+      /* Canny nhiều ngưỡng */
+      const hist = new Uint32Array(256); for (let i = 0; i < N; i++) hist[g8[i]]++;
+      let acc = 0, med = 0; for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc >= N / 2) { med = i; break; } }
+      for (const [lo, hi] of [[20, 60], [40, 110], [Math.max(0, .5 * med), Math.min(255, 1.2 * med)]]) { const e = M(new cv.Mat()); cv.Canny(gc, e, lo, hi); dil(e, 2); }
+      /* Độ dốc Lab gộp 3 kênh, lấy top phần trăm → bắt cả cạnh rất nhạt */
+      const gx = M(new cv.Mat()), gy = M(new cv.Mat()); cv.Sobel(labM, gx, cv.CV_32F, 1, 0, 3); cv.Sobel(labM, gy, cv.CV_32F, 0, 1, 3);
+      const gxd = gx.data32F, gyd = gy.data32F, gm = new Float32Array(N);
+      for (let i = 0; i < N; i++) { let s = 0; for (let c = 0; c < 3; c++) { const a = gxd[i * 3 + c], b = gyd[i * 3 + c]; s += a * a + b * b; } gm[i] = Math.sqrt(s); }
+      for (const pc of [80, 88, 94]) {
+        const th = Math.max(percentile(gm, pc), 1), arr = new Uint8Array(N); for (let i = 0; i < N; i++) arr[i] = gm[i] > th ? 255 : 0;
+        const e = bin8(arr); cv.morphologyEx(e, e, cv.MORPH_CLOSE, k3); dil(e, 1);
+      }
+      /* Cạnh theo kênh màu a, b */
+      for (let ch = 1; ch <= 2; ch++) {
+        let lo = 1e9, hi = -1e9; for (let i = 0; i < N; i++) { const v = lab[i * 3 + ch]; if (v < lo) lo = v; if (v > hi) hi = v; }
+        const arr = new Uint8Array(N), sc = hi > lo ? 255 / (hi - lo) : 0; for (let i = 0; i < N; i++) arr[i] = (lab[i * 3 + ch] - lo) * sc;
+        const c8 = bin8(arr), e = M(new cv.Mat()); cv.Canny(c8, e, 30, 90); dil(e, 2);
+      }
+      /* Otsu (sáng / tối) */
+      const o = M(new cv.Mat()), oi = M(new cv.Mat()); cv.threshold(gc, o, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU); cv.bitwise_not(o, oi); bins.push(o, oi);
+      /* Khác màu nền (lấy mẫu ở viền ảnh) */
+      const bd = [[], [], []], pushPx = i => { for (let c = 0; c < 3; c++) bd[c].push(lab[i * 3 + c]); };
+      for (let y = 0; y < 6; y++) for (let x = 0; x < w; x++) { pushPx(y * w + x); pushPx((h - 1 - y) * w + x); }
+      for (let x = 0; x < 6; x++) for (let y = 6; y < h - 6; y++) { pushPx(y * w + x); pushPx(y * w + (w - 1 - x)); }
+      const bm = bd.map(a => { a.sort((x, y) => x - y); return a[a.length >> 1]; }), dist = new Uint8Array(N);
+      for (let i = 0; i < N; i++) dist[i] = Math.min(255, Math.hypot(lab[i * 3] - bm[0], lab[i * 3 + 1] - bm[1], lab[i * 3 + 2] - bm[2]) * 6);
+      const d8 = bin8(dist), d2 = M(new cv.Mat()); cv.threshold(d8, d2, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
+      cv.morphologyEx(d2, d2, cv.MORPH_CLOSE, M(cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(7, 7)))); bins.push(d2);
+
+      let best = null; const seen = new Set();
+      for (const bm0 of bins) {
         const cs = M(new cv.MatVector()), hi = M(new cv.Mat());
-        cv.findContours(bin, cs, hi, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+        cv.findContours(bm0, cs, hi, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
         for (let i = 0; i < cs.size(); i++) {
-          const c = cs.get(i); mats.push(c);
-          if (cv.contourArea(c) < total * .1) continue;
+          const c = M(cs.get(i)); if (cv.contourArea(c) < N * .08) continue;
           const hull = M(new cv.Mat()); cv.convexHull(c, hull, false, true);
           const peri = cv.arcLength(hull, true); let quad = null;
-          for (const eps of [.02, .03, .04, .06]) {
+          for (const eps of [.015, .02, .03, .045, .06]) {
             const ap = M(new cv.Mat()); cv.approxPolyDP(hull, ap, peri * eps, true);
             if (ap.rows === 4) { quad = []; for (let j = 0; j < 4; j++) quad.push([ap.data32S[j * 2], ap.data32S[j * 2 + 1]]); break; }
           }
+          if (!quad) {
+            const bx = cv.RotatedRect.points(cv.minAreaRect(hull)).map(p => [p.x, p.y]);
+            if (cv.contourArea(hull) / Math.max(1, polyArea(bx)) > .85) quad = bx;
+          }
           if (!quad) continue;
-          const area = polyArea(quad);
-          if (area < total * .1 || area > total * .97) continue;
-          /* Mép ảnh không phải mép giấy: bỏ khung bao quanh cả ảnh */
-          if (quad.every(q => q[0] <= 2 || q[1] <= 2 || q[0] >= w - 3 || q[1] >= h - 3)) continue;
-          const o = orderQuad(quad);
-          let ok = true; for (let j = 0; j < 4; j++) if (cross(o[j], o[(j + 1) % 4], o[(j + 2) % 4]) <= 0) ok = false;
-          if (ok && (!best || area > best.area)) best = { quad: o, area };
+          quad = orderQuad(quad); const area = polyArea(quad);
+          if (area < N * .1 || area > N * .95 || !convexQuad(quad)) continue;
+          const key = quad.map(p => Math.round(p[0] / 3) + ',' + Math.round(p[1] / 3)).join(';'); if (seen.has(key)) continue; seen.add(key);
+          const sp = labSupport(quad, lab, w, h); if (sp.min < .45) continue;
+          const score = sp.s * Math.pow(area / N, .35);
+          if (!best || score > best.score) best = { quad, score };
         }
       }
-      return best ? best.quad : null;
+      if (!best) return null;
+      return refineQuad(best.quad, lab, w, h);
     } catch (e) { return null; }
     finally { mats.forEach(m => { try { m.delete(); } catch (e) { /* bỏ qua */ } }); }
   }
