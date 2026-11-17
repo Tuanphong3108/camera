@@ -240,9 +240,9 @@ md-list { background: transparent; --md-list-container-color: transparent; paddi
 #svTitle { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 13px; color: var(--on-var); }
 #svActions { grid-area: act; display: flex; flex-direction: column; justify-content: center; gap: 12px; padding: 16px 20px 16px 8px; }
 #svActions md-filled-button, #svActions md-filled-tonal-button { --md-filled-button-container-height: 52px; --md-filled-tonal-button-container-height: 52px; }
-#svEdCancel, #svEdDone { display: none; }
-#scanView[data-edit] #svPhoto, #scanView[data-edit] #svPdf { display: none; }
-#scanView[data-edit] #svEdCancel, #scanView[data-edit] #svEdDone { display: inline-flex; }
+#svEdCancel, #svEdDone, #svEdAuto { display: none; }
+#scanView[data-edit] #svPhoto, #scanView[data-edit] #svPdf, #scanView[data-edit] #svEditBtn { display: none; }
+#scanView[data-edit] #svEdCancel, #scanView[data-edit] #svEdDone, #scanView[data-edit] #svEdAuto { display: inline-flex; }
 #scanView[data-edit] #svRail > :not(.grow):not(#svCancel), #scanView[data-edit] #svThumbs, #scanView[data-edit] #svTitle { display: none; }
 #edBox { position: relative; touch-action: none; }
 #edBox canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }

@@ -677,6 +677,13 @@ async function endEdit(apply) {
 $('#svEditBtn').onclick = startEdit;
 $('#svEdDone').onclick = () => endEdit(true);
 $('#svEdCancel').onclick = () => endEdit(false);
+$('#svEdAuto').onclick = () => {   /* dò lại góc trên ảnh gốc */
+  const ed = SC.edit; if (!ed) return; const raw = ed.pg.raw, rw = Math.min(raw.width, 800), rh = Math.round(rw * raw.height / raw.width);
+  const sm = document.createElement('canvas'); sm.width = rw; sm.height = rh; const sx = sm.getContext('2d', { willReadFrequently: true }); sx.drawImage(raw, 0, 0, rw, rh);
+  let q = null; try { q = detectQuad(sx.getImageData(0, 0, rw, rh).data, rw, rh); } catch (e) { /* bỏ qua */ }
+  ed.q = q ? q.map(p => [p[0] * raw.width / rw, p[1] * raw.height / rh]) : [[0, 0], [raw.width - 1, 0], [raw.width - 1, raw.height - 1], [0, raw.height - 1]];
+  paintEdit();
+};
 $$('#edBox .hd').forEach(el => {
   el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); el.dataset.drag = '1'; e.preventDefault(); });
   el.addEventListener('pointermove', e => {
