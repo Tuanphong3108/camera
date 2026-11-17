@@ -581,7 +581,7 @@ window.addEventListener('resize', () => { if (SC.timer) docDraw(); });
 
 async function renderPage(pg) {
   const raw = pg.raw, id = raw.getContext('2d').getImageData(0, 0, raw.width, raw.height);
-  const o = Scanner.enhance(Scanner.warp(id.data, raw.width, raw.height, pg.quad, 2200));
+  const o = Scanner.warp(id.data, raw.width, raw.height, pg.quad, 2200);   /* giữ nguyên màu, không chỉnh sáng/tương phản */
   const c = document.createElement('canvas'); c.width = o.w; c.height = o.h;
   c.getContext('2d').putImageData(new ImageData(o.data, o.w, o.h), 0, 0);
   const blob = await canvasBlob(c, 'image/jpeg', .92);
@@ -593,12 +593,12 @@ async function docShoot() {
   raw.getContext('2d', { willReadFrequently: true }).drawImage(video, 0, 0, w, h);            /* tài liệu luôn chụp không lật gương */
   const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
   let quad = SC.quad ? SC.quad.map(p => [p[0] * w, p[1] * h]) : [[0, 0], [w - 1, 0], [w - 1, h - 1], [0, h - 1]];
-  /* Dò lại trên ảnh to hơn để cắt chính xác từng góc; chỉ nhận nếu khớp với khung đang hiện (hoặc chưa có khung) */
+  /* Dò lại trên ảnh to hơn để cắt chính xác từng góc */
   try {
     const rw = Math.min(w, 800), rh = Math.round(rw * h / w), sm = document.createElement('canvas'); sm.width = rw; sm.height = rh;
     const sx = sm.getContext('2d', { willReadFrequently: true }); sx.drawImage(raw, 0, 0, rw, rh);
     const q2 = detectQuad(sx.getImageData(0, 0, rw, rh).data, rw, rh);
-    if (q2) { const n = q2.map(p => [p[0] * w / rw, p[1] * h / rh]); if (!SC.quad || n.every((p, i) => Math.hypot(p[0] - quad[i][0], p[1] - quad[i][1]) < w * .06)) quad = n; }
+    if (q2) quad = q2.map(p => [p[0] * w / rw, p[1] * h / rh]);   /* dò trên chính khung vừa chụp nên khớp hơn khung xem trước (có thể đã trễ vài trăm ms) */
   } catch (e) { /* giữ khung đang hiện */ }
   const pg = { raw, quad }; await renderPage(pg);
   SC.pages.push(pg); SC.cur = SC.pages.length - 1; openScan();
@@ -628,7 +628,7 @@ async function scanSaveAs(kind) {
   if (kind === 'pdf') {
     const list = [];
     for (const p of pages) list.push({ jpeg: new Uint8Array(await p.blob.arrayBuffer()), w: p.w, h: p.h });
-    await saveBlob(new Blob([Scanner.pdf(list)], { type: 'application/pdf' }), `scan-${st}.pdf`);
+    download(new Blob([Scanner.pdf(list)], { type: 'application/pdf' }), `scan-${st}.pdf`); toast(t('msg.saved_download', { name: `scan-${st}.pdf` }));   /* PDF: tải xuống, không ghi vào thư mục lưu ảnh */
   } else {
     for (let i = 0; i < pages.length; i++) await saveBlob(pages[i].blob, `scan-${st}${pages.length > 1 ? '-' + (i + 1) : ''}.jpg`);
     if (pages.length > 1) toast(t('scan.saved_n', { n: pages.length }));

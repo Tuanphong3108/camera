@@ -2,7 +2,6 @@
    Scanner — lõi quét tài liệu (không phụ thuộc thư viện)
    - findQuad(rgba, w, h): tìm 4 góc tờ giấy (TL, TR, BR, BL), toạ độ theo pixel ảnh; null nếu không thấy
    - warp(src, sw, sh, quad, maxSide): nắn phẳng tờ giấy bằng phép biến đổi phối cảnh → {data, w, h}
-   - enhance(img): kéo giãn độ sáng cho trang tài liệu rõ nét hơn
    - pdf(pages): ghép nhiều ảnh JPEG thành 1 file PDF; pages = [{jpeg: Uint8Array, w, h}]
    ========================================================= */
 (function (root) {
@@ -162,19 +161,6 @@
       out[o + 3] = 255;
     }
     return { data: out, w, h };
-  }
-
-  /* Kéo giãn độ sáng (2%–98%) cho giấy trắng, chữ đậm */
-  function enhance(img) {
-    const d = img.data, hist = new Uint32Array(256), n = d.length / 4;
-    for (let i = 0; i < d.length; i += 4) hist[(d[i] * .299 + d[i + 1] * .587 + d[i + 2] * .114) | 0]++;
-    let lo = 0, hi = 255, acc = 0;
-    for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc >= n * .02) { lo = i; break; } }
-    acc = 0; for (let i = 255; i >= 0; i--) { acc += hist[i]; if (acc >= n * .15) { hi = i; break; } }
-    if (hi - lo < 30) return img;
-    const s = 255 / (hi - lo);
-    for (let i = 0; i < d.length; i += 4) for (let c = 0; c < 3; c++) d[i + c] = (d[i + c] - lo) * s;
-    return img;
   }
 
   /* ---------- Ghi PDF ---------- */
@@ -349,6 +335,6 @@
     finally { mats.forEach(m => { try { m.delete(); } catch (e) { /* bỏ qua */ } }); }
   }
 
-  const api = { findQuad, findQuadCV, warp, enhance, pdf };
+  const api = { findQuad, findQuadCV, warp, pdf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Scanner = api;
 })(typeof window !== 'undefined' ? window : globalThis);
