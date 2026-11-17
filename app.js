@@ -481,14 +481,26 @@ window.addEventListener('keydown', e => {
 
 
 /* ---------- Quét tài liệu (kiểu ChromeOS): khung bám tờ giấy → nắn phẳng → xem lại → thêm trang → lưu ảnh / PDF ---------- */
-const SC = { pages: [], cur: 0, quad: null, miss: 0, timer: null, open: false, edit: null };
+const SC = { pages: [], cur: 0, quad: null, miss: 0, timer: null, open: false, edit: null, cv: null };
+/* OpenCV.js (vendor/opencv.js, ~10 MB) chỉ nạp khi vào chế độ quét tài liệu; chưa nạp xong thì dùng bộ nhận diện nhẹ trong scanner.js */
+let cvLoad = null;
+function loadCV() {
+  if (cvLoad) return cvLoad;
+  return cvLoad = new Promise(res => {
+    const sc = document.createElement('script'); sc.src = 'vendor/opencv.js';
+    sc.onload = () => { const c = window.cv; if (!c) return res(null); if (c.Mat) return res({ c }); c.onRuntimeInitialized = () => res({ c }); };   /* bọc lại: cv là thenable, resolve thẳng sẽ lặp vô hạn */
+    sc.onerror = () => { cvLoad = null; res(null); };
+    document.head.appendChild(sc);
+  }).then(r => { SC.cv = r && r.c; });   /* không trả cv ra khỏi then (thenable) */
+}
+const detectQuad = (data, w, h) => (SC.cv && Scanner.findQuadCV(SC.cv, data, w, h)) || Scanner.findQuad(data, w, h);
 const dcv = $('#docCanvas'), dsmall = document.createElement('canvas'), scanView = $('#scanView');
 function scanSync() {
   const on = S.mode === 'scan' && S.sub.scan === 'document';
   if (!on) {
     clearInterval(SC.timer); SC.timer = null; SC.quad = null; docDraw();
     if (S.mode !== 'scan') scanReset();
-  } else if (!SC.timer) SC.timer = setInterval(docTick, 280);
+  } else { loadCV(); if (!SC.timer) SC.timer = setInterval(docTick, 280); }
   paintBadge();
 }
 function scanReset() { SC.pages.forEach(p => p.url && URL.revokeObjectURL(p.url)); SC.pages = []; SC.cur = 0; }
@@ -502,7 +514,7 @@ function docTick() {
   const w = 320, h = Math.round(w * video.videoHeight / video.videoWidth);
   dsmall.width = w; dsmall.height = h;
   const x = dsmall.getContext('2d', { willReadFrequently: true }); x.drawImage(video, 0, 0, w, h);
-  let q = null; try { q = Scanner.findQuad(x.getImageData(0, 0, w, h).data, w, h); } catch (e) { /* bỏ qua */ }
+  let q = null; try { q = detectQuad(x.getImageData(0, 0, w, h).data, w, h); } catch (e) { /* bỏ qua */ }
   if (q) {
     q = q.map(p => [p[0] / w, p[1] / h]); SC.miss = 0;
     if (SC.quad && SC.quad.every((p, i) => Math.hypot(p[0] - q[i][0], p[1] - q[i][1]) < .15)) q = q.map((p, i) => [(SC.quad[i][0] + p[0]) / 2, (SC.quad[i][1] + p[1]) / 2]);
@@ -542,7 +554,14 @@ async function docShoot() {
   const { w, h } = vsize(), raw = document.createElement('canvas'); raw.width = w; raw.height = h;
   raw.getContext('2d', { willReadFrequently: true }).drawImage(video, 0, 0, w, h);            /* tài liệu luôn chụp không lật gương */
   const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
-  const quad = SC.quad ? SC.quad.map(p => [p[0] * w, p[1] * h]) : [[0, 0], [w - 1, 0], [w - 1, h - 1], [0, h - 1]];
+  let quad = SC.quad ? SC.quad.map(p => [p[0] * w, p[1] * h]) : [[0, 0], [w - 1, 0], [w - 1, h - 1], [0, h - 1]];
+  /* Dò lại trên ảnh to hơn để cắt chính xác từng góc; chỉ nhận nếu khớp với khung đang hiện (hoặc chưa có khung) */
+  try {
+    const rw = Math.min(w, 800), rh = Math.round(rw * h / w), sm = document.createElement('canvas'); sm.width = rw; sm.height = rh;
+    const sx = sm.getContext('2d', { willReadFrequently: true }); sx.drawImage(raw, 0, 0, rw, rh);
+    const q2 = detectQuad(sx.getImageData(0, 0, rw, rh).data, rw, rh);
+    if (q2) { const n = q2.map(p => [p[0] * w / rw, p[1] * h / rh]); if (!SC.quad || n.every((p, i) => Math.hypot(p[0] - quad[i][0], p[1] - quad[i][1]) < w * .06)) quad = n; }
+  } catch (e) { /* giữ khung đang hiện */ }
   const pg = { raw, quad }; await renderPage(pg);
   SC.pages.push(pg); SC.cur = SC.pages.length - 1; openScan();
 }

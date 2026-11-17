@@ -200,6 +200,49 @@
     return out;
   }
 
-  const api = { findQuad, warp, enhance, pdf };
+  /* ---------- Nhận diện bằng OpenCV.js (chính xác hơn; nạp lười ở app.js, không có thì dùng findQuad ở trên) ---------- */
+  function orderQuad(p) {
+    const s = p.map(q => q[0] + q[1]), d = p.map(q => q[0] - q[1]);
+    return [p[s.indexOf(Math.min(...s))], p[d.indexOf(Math.max(...d))], p[s.indexOf(Math.max(...s))], p[d.indexOf(Math.min(...d))]];
+  }
+  function findQuadCV(cv, rgba, w, h) {
+    const mats = [], M = m => (mats.push(m), m);
+    try {
+      const src = M(cv.matFromImageData({ data: rgba, width: w, height: h })), gray = M(new cv.Mat()), blur = M(new cv.Mat());
+      cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY); cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0);
+      const total = w * h, k = M(cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3)));
+      let best = null;
+      /* Hai cách tìm đường bao: cạnh Canny nối liền, và ngưỡng Otsu (giấy sáng trên nền tối) */
+      const edges = M(new cv.Mat()), otsu = M(new cv.Mat());
+      cv.Canny(blur, edges, 50, 150); cv.dilate(edges, edges, k, new cv.Point(-1, -1), 2);
+      cv.threshold(blur, otsu, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU); cv.morphologyEx(otsu, otsu, cv.MORPH_CLOSE, k, new cv.Point(-1, -1), 2);
+      for (const bin of [edges, otsu]) {
+        const cs = M(new cv.MatVector()), hi = M(new cv.Mat());
+        cv.findContours(bin, cs, hi, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+        for (let i = 0; i < cs.size(); i++) {
+          const c = cs.get(i); mats.push(c);
+          if (cv.contourArea(c) < total * .1) continue;
+          const hull = M(new cv.Mat()); cv.convexHull(c, hull, false, true);
+          const peri = cv.arcLength(hull, true); let quad = null;
+          for (const eps of [.02, .03, .04, .06]) {
+            const ap = M(new cv.Mat()); cv.approxPolyDP(hull, ap, peri * eps, true);
+            if (ap.rows === 4) { quad = []; for (let j = 0; j < 4; j++) quad.push([ap.data32S[j * 2], ap.data32S[j * 2 + 1]]); break; }
+          }
+          if (!quad) continue;
+          const area = polyArea(quad);
+          if (area < total * .1 || area > total * .97) continue;
+          /* Mép ảnh không phải mép giấy: bỏ khung bao quanh cả ảnh */
+          if (quad.every(q => q[0] <= 2 || q[1] <= 2 || q[0] >= w - 3 || q[1] >= h - 3)) continue;
+          const o = orderQuad(quad);
+          let ok = true; for (let j = 0; j < 4; j++) if (cross(o[j], o[(j + 1) % 4], o[(j + 2) % 4]) <= 0) ok = false;
+          if (ok && (!best || area > best.area)) best = { quad: o, area };
+        }
+      }
+      return best ? best.quad : null;
+    } catch (e) { return null; }
+    finally { mats.forEach(m => { try { m.delete(); } catch (e) { /* bỏ qua */ } }); }
+  }
+
+  const api = { findQuad, findQuadCV, warp, enhance, pdf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Scanner = api;
 })(typeof window !== 'undefined' ? window : globalThis);
