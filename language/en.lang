@@ -168,3 +168,6 @@ scan.edit_done=Done
 scan.title=Page {n} of {m}
 scan.share_fail=Sharing is not available here. Save it instead.
 scan.saved_n=Saved {n} pages
+dl.aria=Downloading libraries
+dl.title=Downloading libraries
+dl.opencv=OpenCV (document detection)

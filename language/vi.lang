@@ -168,3 +168,6 @@ scan.edit_done=Xong
 scan.title=Trang {n}/{m}
 scan.share_fail=Máy này không chia sẻ được, hãy lưu lại nhé.
 scan.saved_n=Đã lưu {n} trang
+dl.aria=Đang tải thư viện
+dl.title=Đang tải thư viện
+dl.opencv=OpenCV (nhận diện tài liệu)

@@ -28,6 +28,7 @@
 
   <!-- ============ Thanh trái: menu 3 chấm + công cụ ============ -->
   <aside id="railL">
+    <div class="top">
     <div class="menu-wrap">
       <md-icon-button id="btnMenu" data-i18n-aria="menu.open"><md-icon data-i="more_vert"></md-icon></md-icon-button>
       <md-menu id="menu" anchor="btnMenu" positioning="popover">
@@ -36,6 +37,11 @@
         <md-menu-item id="miGs"><md-icon slot="start" data-i="help"></md-icon><div slot="headline" data-i18n="menu.getting_started"></div></md-menu-item>
         <md-menu-item id="miAbout"><md-icon slot="start" data-i="info"></md-icon><div slot="headline" data-i18n="menu.about"></div></md-menu-item>
       </md-menu>
+    </div>
+    <div class="dl-wrap" id="dlWrap" hidden>
+      <button id="dlBtn" data-i18n-aria="dl.aria"><md-circular-progress id="dlRing" value="0"></md-circular-progress><span id="dlNum">1</span><md-ripple></md-ripple></button>
+      <div id="dlPop" hidden><div class="dl-title" data-i18n="dl.title"></div><div id="dlList"></div></div>
+    </div>
     </div>
 
     <div class="tools">

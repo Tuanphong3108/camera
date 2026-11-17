@@ -483,15 +483,53 @@ window.addEventListener('keydown', e => {
 /* ---------- Quét tài liệu (kiểu ChromeOS): khung bám tờ giấy → nắn phẳng → xem lại → thêm trang → lưu ảnh / PDF ---------- */
 const SC = { pages: [], cur: 0, quad: null, miss: 0, timer: null, open: false, edit: null, cv: null };
 /* OpenCV.js (vendor/opencv.js, ~10 MB) chỉ nạp khi vào chế độ quét tài liệu; chưa nạp xong thì dùng bộ nhận diện nhẹ trong scanner.js */
+/* ---------- Tải thư viện có hiện tiến trình (vòng tròn + số lượng dưới nút 3 chấm, bấm để xem chi tiết) ---------- */
+const DL = new Map();
+let dlRaf = 0;
+function dlPaint() {
+  if (dlRaf) return;
+  dlRaf = requestAnimationFrame(() => {
+    dlRaf = 0;
+    const act = [...DL.values()].filter(d => !d.done), wrap = $('#dlWrap');
+    wrap.hidden = !act.length;
+    if (!act.length) { $('#dlPop').hidden = true; return; }
+    const pct = d => Math.min(99, Math.round(d.loaded / d.total * 100));
+    const loaded = act.reduce((s, d) => s + d.loaded, 0), total = act.reduce((s, d) => s + d.total, 0), ring = $('#dlRing');
+    $('#dlNum').textContent = act.length;
+    ring.indeterminate = !loaded || !total; if (!ring.indeterminate) ring.value = Math.min(.99, loaded / total);
+    const list = $('#dlList'); list.textContent = '';
+    for (const d of act) {
+      const row = document.createElement('div'); row.className = 'dl-row';
+      row.innerHTML = '<div class="t"><span></span><b></b></div><div class="bar"><i></i></div>';
+      $('span', row).textContent = t('dl.' + d.id); $('b', row).textContent = d.total ? pct(d) + '%' : '…';
+      $('i', row).style.width = (d.total ? pct(d) : 0) + '%'; list.appendChild(row);
+    }
+  });
+}
+$('#dlBtn').onclick = e => { e.stopPropagation(); const p = $('#dlPop'); p.hidden = !p.hidden; };
+document.addEventListener('click', e => { if (!e.target.closest('#dlWrap')) $('#dlPop').hidden = true; });
+/* Tải về dạng blob để đếm byte; size = dung lượng dự kiến khi máy chủ nén/không báo Content-Length */
+async function fetchLib(id, url, size) {
+  const d = { id, loaded: 0, total: size || 0, done: false }; DL.set(id, d); dlPaint();
+  try {
+    const r = await fetch(url); if (!r.ok) throw new Error(r.status);
+    const len = +r.headers.get('content-length') || 0; if (len && !size) d.total = len;
+    if (!r.body) return URL.createObjectURL(await r.blob());
+    const rd = r.body.getReader(), parts = [];
+    for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); d.loaded += value.length; if (d.total && d.loaded > d.total) d.total = d.loaded + 1; dlPaint(); }
+    return URL.createObjectURL(new Blob(parts, { type: 'text/javascript' }));
+  } finally { d.done = true; dlPaint(); setTimeout(() => DL.delete(id), 0); }
+}
+/* OpenCV.js (vendor/opencv.js, ~10 MB) chỉ nạp khi vào chế độ quét tài liệu; chưa nạp xong thì dùng bộ nhận diện nhẹ trong scanner.js */
 let cvLoad = null;
 function loadCV() {
   if (cvLoad) return cvLoad;
-  return cvLoad = new Promise(res => {
-    const sc = document.createElement('script'); sc.src = 'vendor/opencv.js';
-    sc.onload = () => { const c = window.cv; if (!c) return res(null); if (c.Mat) return res({ c }); c.onRuntimeInitialized = () => res({ c }); };   /* bọc lại: cv là thenable, resolve thẳng sẽ lặp vô hạn */
-    sc.onerror = () => { cvLoad = null; res(null); };
+  return cvLoad = fetchLib('opencv', 'vendor/opencv.js', 10378215).then(u => new Promise(res => {
+    const sc = document.createElement('script'); sc.src = u;
+    sc.onload = () => { URL.revokeObjectURL(u); const c = window.cv; if (!c) return res(null); if (c.Mat) return res({ c }); c.onRuntimeInitialized = () => res({ c }); };   /* bọc lại: cv là thenable, resolve thẳng sẽ lặp vô hạn */
+    sc.onerror = () => res(null);
     document.head.appendChild(sc);
-  }).then(r => { SC.cv = r && r.c; });   /* không trả cv ra khỏi then (thenable) */
+  })).catch(() => null).then(r => { SC.cv = r && r.c; if (!SC.cv) cvLoad = null; });   /* không trả cv ra khỏi then (thenable) */
 }
 const detectQuad = (data, w, h) => (SC.cv && Scanner.findQuadCV(SC.cv, data, w, h)) || Scanner.findQuad(data, w, h);
 const dcv = $('#docCanvas'), dsmall = document.createElement('canvas'), scanView = $('#scanView');
@@ -751,7 +789,7 @@ function syncLangRadios() { $$('md-radio', dlgLang).forEach(r => { r.checked = r
 $('#miLang').onclick = () => { syncLangRadios(); dlgLang.show(); };
 $$('md-list-item[data-lang]', dlgLang).forEach(li => li.onclick = async () => { await I18N.set(li.dataset.lang); syncLangRadios(); });
 $('#btnLangDone').onclick = () => dlgLang.close();
-document.addEventListener('i18n', () => { paintState(); paintIcons(); paintBadge(); if (SC.open) paintScan(); });
+document.addEventListener('i18n', () => { paintState(); paintIcons(); paintBadge(); dlPaint(); if (SC.open) paintScan(); });
 $('#btnPickOk').onclick = () => $('#dlgPick').close();
 
 /* ---------- Hướng dẫn bắt đầu (iframe, giống music-player / photos) ---------- */

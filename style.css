@@ -257,3 +257,18 @@ md-list { background: transparent; --md-list-container-color: transparent; paddi
   #svThumbs { left: 8px; top: 72px; }
   #scanView.multi #svStage { padding-left: 88px; }
 }
+
+/* ---------- Tiến trình tải thư viện (dưới nút 3 chấm) ---------- */
+#railL .top { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.dl-wrap { position: relative; }
+#dlBtn { position: relative; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: var(--primary); }
+#dlRing { --md-circular-progress-size: 40px; --md-circular-progress-active-indicator-width: 10; --md-circular-progress-active-indicator-color: var(--primary); }
+#dlNum { position: absolute; inset: 0; display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--on-var); pointer-events: none; }
+#dlPop { position: absolute; left: 56px; top: 0; width: 264px; padding: 14px 16px; border-radius: 20px; background: var(--c3); box-shadow: 0 6px 24px rgba(0,0,0,.5); z-index: 40; }
+.dl-title { font-size: 13px; font-weight: 600; color: var(--on-var); margin-bottom: 10px; }
+.dl-row { margin-top: 10px; }
+.dl-row:first-of-type { margin-top: 0; }
+.dl-row .t { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; color: #e3e3d8; }
+.dl-row .t b { font-variant-numeric: tabular-nums; color: var(--primary); }
+.dl-row .bar { height: 4px; border-radius: 2px; background: var(--c2); margin-top: 6px; overflow: hidden; }
+.dl-row .bar i { display: block; height: 100%; width: 0; background: var(--primary); border-radius: 2px; transition: width .2s; }
