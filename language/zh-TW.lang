@@ -85,6 +85,9 @@ folders.dup=這個資料夾已在清單中
 folders.fail=無法開啟資料夾
 folders.unsupported=這個瀏覽器無法選取儲存資料夾。檔案會照常下載。
 
+## --- Page ---
+app.desc=Camera - 直接在瀏覽器中執行的相機應用程式，採用 Material 3 Expressive 設計
+
 ## --- Language dialog ---
 lang.title=語言
 lang.search=搜尋語言

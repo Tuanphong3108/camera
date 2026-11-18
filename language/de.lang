@@ -209,3 +209,5 @@ key.space=Leertaste
 key.enter=Eingabe
 key.esc=Esc
 key.del=Entf
+
+app.desc=Camera – eine Kamera-App, die direkt im Browser läuft, im Material-3-Expressive-Design

@@ -209,3 +209,5 @@ key.space=Boşluk
 key.enter=Enter
 key.esc=Esc
 key.del=Delete
+
+app.desc=Camera - doğrudan tarayıcınızda çalışan, Material 3 Expressive görünümlü bir kamera uygulaması

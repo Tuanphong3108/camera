@@ -85,6 +85,9 @@ folders.dup=Ten folder jest już na liście
 folders.fail=Nie można otworzyć folderu
 folders.unsupported=Ta przeglądarka nie może wybrać folderu zapisu. Pliki są pobierane jak zwykle.
 
+## --- Page ---
+app.desc=Camera - aplikacja aparatu działająca bezpośrednio w przeglądarce, w stylu Material 3 Expressive
+
 ## --- Language dialog ---
 lang.title=Język
 lang.search=Szukaj języków

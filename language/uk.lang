@@ -85,6 +85,9 @@ folders.dup=Ця папка вже є в списку
 folders.fail=Не вдалося відкрити папку
 folders.unsupported=Цей браузер не може вибрати папку збереження. Файли завантажуються як зазвичай.
 
+## --- Page ---
+app.desc=Camera — застосунок камери, що працює просто в браузері, у стилі Material 3 Expressive
+
 ## --- Language dialog ---
 lang.title=Мова
 lang.search=Пошук мов

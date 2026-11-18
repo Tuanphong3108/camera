@@ -85,6 +85,9 @@ folders.dup=यह फ़ोल्डर पहले से सूची मे
 folders.fail=फ़ोल्डर नहीं खोला जा सका
 folders.unsupported=यह ब्राउज़र सेव फ़ोल्डर नहीं चुन सकता। फ़ाइलें सामान्य रूप से डाउनलोड होती हैं।
 
+## --- Page ---
+app.desc=Camera - ब्राउज़र में सीधे चलने वाला कैमरा ऐप, Material 3 Expressive डिज़ाइन के साथ
+
 ## --- Language dialog ---
 lang.title=भाषा
 lang.search=भाषाएँ खोजें

@@ -209,3 +209,5 @@ key.space=Espace
 key.enter=Entrée
 key.esc=Échap
 key.del=Suppr
+
+app.desc=Camera : une application d'appareil photo qui fonctionne directement dans le navigateur, au style Material 3 Expressive

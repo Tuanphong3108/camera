@@ -77,6 +77,8 @@
     apply: function (root) {
       root = root || document;
       document.documentElement.lang = I18N.lang;
+      /* Thẻ gốc theo ngôn ngữ đang dùng (trang chính có <meta name=description data-i18n-desc>) */
+      var md = document.querySelector('meta[data-i18n-desc]'); if (md && dict['app.desc']) md.setAttribute('content', dict['app.desc']);
       root.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = I18N.t(el.dataset.i18n); });
       root.querySelectorAll('[data-i18n-html]').forEach(function (el) { el.innerHTML = I18N.t(el.dataset.i18nHtml); });
       root.querySelectorAll('[data-i18n-ph]').forEach(function (el) { el.setAttribute('placeholder', I18N.t(el.dataset.i18nPh)); });

@@ -85,6 +85,9 @@ folders.dup=โฟลเดอร์นี้อยู่ในรายกา�
 folders.fail=เปิดโฟลเดอร์ไม่ได้
 folders.unsupported=เบราว์เซอร์นี้เลือกโฟลเดอร์สำหรับบันทึกไม่ได้ ระบบจะดาวน์โหลดไฟล์ตามปกติ
 
+## --- Page ---
+app.desc=Camera - แอปกล้องที่ทำงานในเบราว์เซอร์ได้เลย ดีไซน์ Material 3 Expressive
+
 ## --- Language dialog ---
 lang.title=ภาษา
 lang.search=ค้นหาภาษา

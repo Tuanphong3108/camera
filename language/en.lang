@@ -85,6 +85,9 @@ folders.dup=This folder is already in the list
 folders.fail=Could not open the folder
 folders.unsupported=This browser can't pick a save folder. Files are downloaded as usual.
 
+## --- Page ---
+app.desc=Camera - a camera app that runs right in your browser, with a Material 3 Expressive look
+
 ## --- Language dialog ---
 lang.title=Language
 lang.search=Search languages

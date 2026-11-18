@@ -209,3 +209,5 @@ key.space=Spazio
 key.enter=Invio
 key.esc=Esc
 key.del=Canc
+
+app.desc=Camera: un'app fotocamera che funziona direttamente nel browser, con stile Material 3 Expressive

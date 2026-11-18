@@ -85,6 +85,9 @@ folders.dup=Esta pasta já está na lista
 folders.fail=Não foi possível abrir a pasta
 folders.unsupported=Este navegador não permite escolher uma pasta de salvamento. Os arquivos são baixados normalmente.
 
+## --- Page ---
+app.desc=Camera - um app de câmera que funciona direto no navegador, com visual Material 3 Expressive
+
 ## --- Language dialog ---
 lang.title=Idioma
 lang.search=Pesquisar idiomas

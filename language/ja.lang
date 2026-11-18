@@ -85,6 +85,9 @@ folders.dup=このフォルダはすでにリストにあります
 folders.fail=フォルダを開けませんでした
 folders.unsupported=このブラウザでは保存先フォルダを選択できません。ファイルは通常どおりダウンロードされます。
 
+## --- Page ---
+app.desc=Camera - ブラウザでそのまま使えるカメラアプリ。Material 3 Expressive デザイン
+
 ## --- Language dialog ---
 lang.title=言語
 lang.search=言語を検索

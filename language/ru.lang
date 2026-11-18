@@ -209,3 +209,5 @@ key.space=Пробел
 key.enter=Enter
 key.esc=Esc
 key.del=Delete
+
+app.desc=Camera — приложение камеры, которое работает прямо в браузере, в стиле Material 3 Expressive

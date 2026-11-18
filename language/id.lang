@@ -209,3 +209,5 @@ key.space=Spasi
 key.enter=Enter
 key.esc=Esc
 key.del=Delete
+
+app.desc=Camera - aplikasi kamera yang berjalan langsung di browser, dengan tampilan Material 3 Expressive

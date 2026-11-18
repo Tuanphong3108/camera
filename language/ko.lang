@@ -85,6 +85,9 @@ folders.dup=이 폴더는 이미 목록에 있습니다
 folders.fail=폴더를 열 수 없습니다
 folders.unsupported=이 브라우저에서는 저장 폴더를 선택할 수 없습니다. 파일이 평소처럼 다운로드됩니다.
 
+## --- Page ---
+app.desc=Camera - 브라우저에서 바로 실행되는 카메라 앱, Material 3 Expressive 디자인
+
 ## --- Language dialog ---
 lang.title=언어
 lang.search=언어 검색

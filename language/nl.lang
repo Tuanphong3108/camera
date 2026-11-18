@@ -85,6 +85,9 @@ folders.dup=Deze map staat al in de lijst
 folders.fail=Kan de map niet openen
 folders.unsupported=Deze browser kan geen opslagmap kiezen. Bestanden worden zoals gewoonlijk gedownload.
 
+## --- Page ---
+app.desc=Camera - een camera-app die direct in je browser draait, met een Material 3 Expressive-uiterlijk
+
 ## --- Language dialog ---
 lang.title=Taal
 lang.search=Talen zoeken

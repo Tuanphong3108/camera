@@ -85,6 +85,9 @@ folders.dup=此文件夹已在列表中
 folders.fail=无法打开文件夹
 folders.unsupported=此浏览器无法选择保存文件夹。文件将照常下载。
 
+## --- Page ---
+app.desc=Camera - 直接在浏览器中运行的相机应用，采用 Material 3 Expressive 设计
+
 ## --- Language dialog ---
 lang.title=语言
 lang.search=搜索语言
