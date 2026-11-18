@@ -31,6 +31,7 @@
 | `i18n.js` + `language/vi.lang`, `language/en.lang` | Đa ngôn ngữ (file `.lang` dạng `key=value`, giống Media Player) |
 | `getting_started.html` | Hướng dẫn bắt đầu (nhúng bằng iframe) |
 | `scanner.js` | Lõi quét tài liệu: nhận diện góc giấy, nắn phẳng, ghi PDF |
+| `ml-detect.js` + `vendor/ml/` | Mô hình AI nhẹ DocCornerNet (~3,5 MB, ONNX Runtime Web, MIT) tìm 4 góc tài liệu, chạy ngay trên máy; chỉ tải khi vào Quét → Tài liệu. AI không chắc thì dùng OpenCV |
 | `vendor/opencv.js` | OpenCV.js (~10 MB), chỉ nạp khi vào Quét → Tài liệu để cắt góc chính xác; chưa nạp xong thì dùng bộ nhận diện nhẹ trong `scanner.js` |
 | `gif-encoder.js` | Bộ mã hóa GIF nhỏ gọn, không phụ thuộc thư viện |
 | `icons.js` + `fonts/symbols-subset.woff2` | Material Symbols (font con) |

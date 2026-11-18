@@ -172,3 +172,4 @@ dl.aria=Downloading libraries
 dl.title=Downloading libraries
 dl.opencv=OpenCV (document detection)
 scan.auto=Auto-detect
+dl.ml=Document AI detector (DocCornerNet)
