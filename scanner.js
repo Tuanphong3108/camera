@@ -201,23 +201,46 @@
     let acc = 0, goal = arr.length * pc / 100; for (let i = 0; i <= 2048; i++) { acc += bins[i]; if (acc >= goal) return i / sc; }
     return mx;
   }
-  function labSupport(q, lab, w, h) {
-    const d = Math.max(3, Math.round(w * .012)), sides = [];
-    for (let i = 0; i < 4; i++) {
-      const a = q[i], b = q[(i + 1) % 4], L = Math.hypot(b[0] - a[0], b[1] - a[1]);
-      if (L < w * .12) return { s: 0, min: 0 };
-      const nx = (b[1] - a[1]) / L, ny = -(b[0] - a[0]) / L, N = Math.max(12, Math.floor(L / 4)); let ok = 0;
-      for (let k = 0; k < N; k++) {
-        const t = .04 + .92 * k / (N - 1), px = a[0] + (b[0] - a[0]) * t, py = a[1] + (b[1] - a[1]) * t;
-        const ox = px + nx * d, oy = py + ny * d, ix = px - nx * d, iy = py - ny * d;
-        if (ox < 0 || oy < 0 || ox >= w - 1 || oy >= h - 1 || ix < 0 || iy < 0 || ix >= w - 1 || iy >= h - 1) continue;
-        const po = ((oy | 0) * w + (ox | 0)) * 3, pi = ((iy | 0) * w + (ix | 0)) * 3;
-        if (Math.hypot(lab[po] - lab[pi], lab[po + 1] - lab[pi + 1], lab[po + 2] - lab[pi + 2]) > 3.5) ok++;
-      }
-      sides.push(ok / N);
+  /* Điểm một cạnh = ½ độ tương phản trong/ngoài (Lab) + ½ tỉ lệ điểm trùng cạnh Canny */
+  function sideScore(a, b, labs, ed, w, h) {
+    const L = Math.hypot(b[0] - a[0], b[1] - a[1]), nx = (b[1] - a[1]) / L, ny = -(b[0] - a[0]) / L, d = Math.max(3, Math.round(w * .012)), N = Math.max(12, Math.floor(L / 4));
+    let sc = 0, cnt = 0, hit = 0;
+    for (let k = 0; k < N; k++) {
+      const t = .03 + .94 * k / (N - 1), px = a[0] + (b[0] - a[0]) * t, py = a[1] + (b[1] - a[1]) * t;
+      if (px < 0 || py < 0 || px >= w || py >= h) continue;
+      cnt++;
+      const x = px | 0, y = py | 0; let e = false;
+      for (let j = Math.max(0, y - 2); j <= Math.min(h - 1, y + 2) && !e; j++) for (let i = Math.max(0, x - 2); i <= Math.min(w - 1, x + 2); i++) if (ed[j * w + i]) { e = true; break; }
+      if (e) hit++;
+      const ox = px + nx * d, oy = py + ny * d, ix = px - nx * d, iy = py - ny * d;
+      if (ox < 0 || oy < 0 || ox >= w - 1 || oy >= h - 1 || ix < 0 || iy < 0 || ix >= w - 1 || iy >= h - 1) continue;
+      const po = ((oy | 0) * w + (ox | 0)) * 3, pi = ((iy | 0) * w + (ix | 0)) * 3;
+      sc += Math.min(1, Math.hypot(labs[po] - labs[pi], labs[po + 1] - labs[pi + 1], labs[po + 2] - labs[pi + 2]) / 18);
     }
-    return { s: sides.reduce((x, y) => x + y, 0) / 4, min: Math.min(...sides) };
+    return cnt < N * .5 ? 0 : .5 * sc / cnt + .5 * hit / cnt;
   }
+  /* Gộp các đoạn Hough gần trùng nhau thành đường thẳng; trả về [{v:[vx,vy,x0,y0], len, border}] */
+  function mergeSegs(segs, w) {
+    const items = segs.map(([x1, y1, x2, y2]) => {
+      const th = ((Math.atan2(y2 - y1, x2 - x1) % Math.PI) + Math.PI) % Math.PI;
+      return { th, rho: -Math.sin(th) * x1 + Math.cos(th) * y1, len: Math.hypot(x2 - x1, y2 - y1), pts: [[x1, y1], [x2, y2]] };
+    }).sort((a, b) => b.len - a.len);
+    const groups = [];
+    for (const it of items) {
+      const g = groups.find(g => { const d = Math.abs(((it.th - g.th + Math.PI * 1.5) % Math.PI) - Math.PI / 2); return d < .07 && Math.abs(it.rho - g.rho) < w * .025; });
+      if (g) { g.len += it.len; g.pts.push(...it.pts); } else groups.push(it);
+    }
+    groups.sort((a, b) => b.len - a.len);
+    return groups.slice(0, 16).map(g => ({ v: fitLine(g.pts), len: g.len, border: false }));
+  }
+  function lineInter(l1, l2) {
+    const det = -l1[0] * l2[1] + l2[0] * l1[1]; if (Math.abs(det) < 1e-3) return null;
+    const bx = l2[2] - l1[2], by = l2[3] - l1[3], t = (-bx * l2[1] + l2[0] * by) / det;
+    return [l1[2] + l1[0] * t, l1[3] + l1[1] * t];
+  }
+  /* Ưu tiên quad cỡ vừa phải (không phải cả khung hình) */
+  function quadPrior(q, w, h) { const ar = polyArea(q) / (w * h); return (ar < .55 ? 1 : Math.max(.3, 1 - (ar - .55) / .3)) * Math.pow(ar, .25); }
+
   /* Khớp đường thẳng bền vững (trọng số lại theo phần dư) */
   function fitLine(pts) {
     let mx = 0, my = 0; pts.forEach(p => { mx += p[0]; my += p[1]; }); mx /= pts.length; my /= pts.length;
@@ -304,7 +327,18 @@
       const d8 = bin8(dist), d2 = M(new cv.Mat()); cv.threshold(d8, d2, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
       cv.morphologyEx(d2, d2, cv.MORPH_CLOSE, M(cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(7, 7)))); bins.push(d2);
 
-      let best = null; const seen = new Set();
+      /* Cạnh Canny hợp nhất + đoạn thẳng Hough (chịu được cạnh bị tay che một phần) */
+      const gb = M(new cv.Mat()); cv.GaussianBlur(gc, gb, new cv.Size(0, 0), 1.5);
+      const labs = M(cv.matFromArray(h, w, cv.CV_32FC3, f)); cv.GaussianBlur(labs, labs, new cv.Size(0, 0), 1.5);   /* lab đã làm mờ mạnh hơn để chấm điểm */
+      const labsD = labs.data32F, edge = M(cv.Mat.zeros(h, w, cv.CV_8UC1)), segs = [];
+      for (const [lo, hi] of [[8, 24], [15, 45], [Math.max(0, .4 * med), Math.min(255, .9 * med + 10)]]) {
+        const e = M(new cv.Mat()), ln = M(new cv.Mat()); cv.Canny(gb, e, lo, hi); cv.bitwise_or(edge, e, edge);
+        cv.HoughLinesP(e, ln, 1, Math.PI / 180, Math.max(25, Math.round(w * .07)), Math.round(w * .14), Math.round(w * .05));
+        for (let i = 0; i < ln.rows; i++) segs.push([ln.data32S[i * 4], ln.data32S[i * 4 + 1], ln.data32S[i * 4 + 2], ln.data32S[i * 4 + 3]]);
+      }
+      const edD = M(new cv.Mat()); cv.dilate(edge, edD, k3); const ed = edD.data;
+
+      const cands = [];
       for (const bm0 of bins) {
         const cs = M(new cv.MatVector()), hi = M(new cv.Mat());
         cv.findContours(bm0, cs, hi, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
@@ -320,17 +354,48 @@
             const bx = cv.RotatedRect.points(cv.minAreaRect(hull)).map(p => [p.x, p.y]);
             if (cv.contourArea(hull) / Math.max(1, polyArea(bx)) > .85) quad = bx;
           }
-          if (!quad) continue;
-          quad = orderQuad(quad); const area = polyArea(quad);
-          if (area < N * .1 || area > N * .95 || !convexQuad(quad)) continue;
-          const key = quad.map(p => Math.round(p[0] / 3) + ',' + Math.round(p[1] / 3)).join(';'); if (seen.has(key)) continue; seen.add(key);
-          const sp = labSupport(quad, lab, w, h); if (sp.min < .45) continue;
-          const score = sp.s * Math.pow(area / N, .35);
-          if (!best || score > best.score) best = { quad, score };
+          if (quad) cands.push(orderQuad(quad));
         }
       }
+      /* Tứ giác từ các đường thẳng: 2 cặp đường gần song song, cặp này gần vuông góc với cặp kia; mép khung hình cũng là một đường (giấy bị cắt) */
+      const lines = mergeSegs(segs, w);
+      for (const [x1, y1, x2, y2] of [[0, 0, w - 1, 0], [w - 1, 0, w - 1, h - 1], [0, h - 1, w - 1, h - 1], [0, 0, 0, h - 1]]) {
+        const l = Math.hypot(x2 - x1, y2 - y1); lines.push({ v: [(x2 - x1) / l, (y2 - y1) / l, x1, y1], len: 1, border: true });
+      }
+      const ang = lines.map(l => ((Math.atan2(l.v[1], l.v[0]) % Math.PI) + Math.PI) % Math.PI), dang = (i, j) => Math.abs(((ang[i] - ang[j] + Math.PI * 1.5) % Math.PI) - Math.PI / 2);
+      const par = []; for (let i = 0; i < lines.length; i++) for (let j = i + 1; j < lines.length; j++) if (dang(i, j) < .489) par.push([i, j]);
+      for (let p = 0; p < par.length; p++) for (let r = p + 1; r < par.length; r++) {
+        const [i, j] = par[p], [k, m] = par[r];
+        if (i === k || i === m || j === k || j === m || dang(i, k) < .698) continue;
+        for (const [a1, b1] of [[i, j], [j, i]]) for (const [k1, m1] of [[k, m], [m, k]]) {
+          if (lines[a1].border + lines[b1].border + lines[k1].border + lines[m1].border > 2) continue;
+          const pts = [lineInter(lines[a1].v, lines[k1].v), lineInter(lines[a1].v, lines[m1].v), lineInter(lines[b1].v, lines[m1].v), lineInter(lines[b1].v, lines[k1].v)];
+          if (pts.some(x => !x)) continue;
+          const q = orderQuad(pts);
+          if (q.some(x => x[0] < -w * .08 || x[0] > w * 1.08 || x[1] < -h * .08 || x[1] > h * 1.08)) continue;
+          cands.push(q);
+        }
+      }
+      let best = null; const seen = new Set(), memo = new Map();
+      const sideAt = (a, b) => {
+        const key = Math.round(a[0] / 4) + ',' + Math.round(a[1] / 4) + ',' + Math.round(b[0] / 4) + ',' + Math.round(b[1] / 4);
+        let v = memo.get(key); if (v === undefined) { v = sideScore(a, b, labsD, ed, w, h); memo.set(key, v); } return v;
+      };
+      for (const q of cands) {
+        const area = polyArea(q); if (area < N * .1 || area > N * .9 || !convexQuad(q)) continue;
+        const key = q.map(p => Math.round(p[0] / 4) + ',' + Math.round(p[1] / 4)).join(';'); if (seen.has(key)) continue; seen.add(key);
+        let sum = 0, bad = false;
+        for (let t = 0; t < 4 && !bad; t++) {
+          const a = q[t], b = q[(t + 1) % 4];
+          const onBorder = (a[0] < 3 && b[0] < 3) || (a[1] < 3 && b[1] < 3) || (a[0] > w - 4 && b[0] > w - 4) || (a[1] > h - 4 && b[1] > h - 4);
+          const sc = onBorder ? .45 : sideAt(a, b); if (sc < .25) bad = true; sum += sc;
+        }
+        if (bad) continue;
+        const score = sum / 4 * quadPrior(q, w, h);
+        if (!best || score > best.score) best = { quad: q, score };
+      }
       if (!best) return null;
-      return refineQuad(best.quad, lab, w, h);
+      return best.quad.every(p => p[0] > 3 && p[0] < w - 4 && p[1] > 3 && p[1] < h - 4) ? refineQuad(best.quad, lab, w, h) : best.quad;   /* góc nằm ngoài khung = giấy bị cắt: giữ nguyên */
     } catch (e) { return null; }
     finally { mats.forEach(m => { try { m.delete(); } catch (e) { /* bỏ qua */ } }); }
   }

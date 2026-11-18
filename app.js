@@ -213,7 +213,7 @@ async function syncFolders() {
   FOLDERS = rows.map(r => ({ id: r.id, handle: r.handle })); setKnown();
   const added = FOLDERS.filter(f => !was.includes(f.id));
   if (!FOLDERS.length) { store.del('camera.saveDir'); if (dlgFolders.open) drawFolders(); return; }
-  if (added.length) await askFolder(t('pick.added', { names: added.map(f => '“' + f.handle.name + '”').join(', ') }), added[added.length - 1].id);
+  if (added.length) await askFolder(t('pick.added', { names: added.map(f => '“' + f.handle.name + '”').join(', ') }), FOLDERS.some(f => f.id === hadActive) ? hadActive : added[added.length - 1].id);   /* tick sẵn thư mục đang dùng, không phải thư mục mới */
   else if (!FOLDERS.some(f => f.id === hadActive)) await askFolder(t('pick.removed'), FOLDERS[0].id);
   else if (dlgFolders.open) drawFolders();
   if (!activeFolder()) store.set('camera.saveDir', FOLDERS[0].id);
