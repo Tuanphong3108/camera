@@ -173,3 +173,4 @@ dl.title=Đang tải thư viện
 dl.opencv=OpenCV (nhận diện tài liệu)
 scan.auto=Tự nhận diện
 dl.ml=AI nhận diện tài liệu (DocCornerNet)
+dl.seg=AI phân đoạn bìa / vật thể (U²-Net-P)

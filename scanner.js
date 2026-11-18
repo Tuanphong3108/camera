@@ -283,7 +283,7 @@
     }
     return out.every((p, i) => Math.hypot(p[0] - q[i][0], p[1] - q[i][1]) < rad * 2.2) ? out : q;
   }
-  function findQuadCV(cv, rgba, w, h) {
+  function findQuadCV(cv, rgba, w, h, mask) {   /* mask: w*h, >127 = tiền cảnh do mô hình phân đoạn (tuỳ chọn) */
     const mats = [], M = m => (mats.push(m), m), N = w * h;
     try {
       const src = M(cv.matFromImageData({ data: rgba, width: w, height: h })), rgb = M(new cv.Mat()), gray = M(new cv.Mat()), lab8 = M(new cv.Mat());
@@ -335,6 +335,33 @@
         const e = M(new cv.Mat()), ln = M(new cv.Mat()); cv.Canny(gb, e, lo, hi); cv.bitwise_or(edge, e, edge);
         cv.HoughLinesP(e, ln, 1, Math.PI / 180, Math.max(25, Math.round(w * .07)), Math.round(w * .14), Math.round(w * .05));
         for (let i = 0; i < ln.rows; i++) segs.push([ln.data32S[i * 4], ln.data32S[i * 4 + 1], ln.data32S[i * 4 + 2], ln.data32S[i * 4 + 3]]);
+      }
+      let mIoU = null;
+      if (mask && mask.length === N) {
+        /* Mặt nạ phân đoạn: làm sạch (bỏ bàn tay nhô ra) rồi lấy viền → thêm vào cạnh + đoạn thẳng; phần nhô của tay không thành cạnh thẳng nên không gây hại */
+        const mm = M(cv.matFromArray(h, w, cv.CV_8UC1, Array.from(mask, v => v > 127 ? 255 : 0)));
+        const ko = Math.max(3, Math.round(w * .02) | 1); cv.morphologyEx(mm, mm, cv.MORPH_OPEN, M(cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(ko, ko))));
+        /* Chỉ tin mặt nạ khi là một khối đặc, đủ lớn (tay che nhiều làm mặt nạ rách → bỏ) */
+        const mc = M(new cv.MatVector()), mh = M(new cv.Mat()); cv.findContours(mm.clone(), mc, mh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+        let bi = -1, ba = 0; for (let i = 0; i < mc.size(); i++) { const a = cv.contourArea(mc.get(i)); if (a > ba) { ba = a; bi = i; } }
+        const hh = bi >= 0 ? M(new cv.Mat()) : null; if (hh) cv.convexHull(mc.get(bi), hh, false, true);
+        if (!hh || ba < N * .2 || ba / Math.max(1, cv.contourArea(hh)) < .88) mask = null;
+      }
+      if (mask && mask.length === N) {
+        const mm = M(cv.matFromArray(h, w, cv.CV_8UC1, Array.from(mask, v => v > 127 ? 255 : 0)));
+        const ko = Math.max(3, Math.round(w * .02) | 1); cv.morphologyEx(mm, mm, cv.MORPH_OPEN, M(cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(ko, ko))));
+        const me = M(new cv.Mat()), ln = M(new cv.Mat()); cv.Canny(mm, me, 50, 150); cv.bitwise_or(edge, me, edge);
+        cv.HoughLinesP(me, ln, 1, Math.PI / 180, Math.max(25, Math.round(w * .07)), Math.round(w * .14), Math.round(w * .05));
+        for (let i = 0; i < ln.rows; i++) segs.push([ln.data32S[i * 4], ln.data32S[i * 4 + 1], ln.data32S[i * 4 + 2], ln.data32S[i * 4 + 3]]);
+        bins.push(mm);
+        /* Bản nhỏ để tính độ trùng (IoU) giữa tứ giác ứng viên và mặt nạ: ứng viên nào lệch mặt nạ sẽ bị trừ điểm */
+        const sc = 96 / w, sw = 96, sh = Math.max(1, Math.round(h * sc)), ms = M(new cv.Mat()); cv.resize(mm, ms, new cv.Size(sw, sh), 0, 0, cv.INTER_AREA);
+        const tmp = M(new cv.Mat(sh, sw, cv.CV_8UC1)), both = M(new cv.Mat()), uni = M(new cv.Mat()), mA = cv.countNonZero(ms);
+        if (mA > sw * sh * .05) mIoU = q => {
+          tmp.setTo(new cv.Scalar(0)); const pts = M(cv.matFromArray(4, 1, cv.CV_32SC2, q.flatMap(p => [Math.round(p[0] * sc), Math.round(p[1] * sc)])));
+          const pv = M(new cv.MatVector()); pv.push_back(pts); cv.fillPoly(tmp, pv, new cv.Scalar(255));
+          cv.bitwise_and(tmp, ms, both); cv.bitwise_or(tmp, ms, uni); return cv.countNonZero(both) / Math.max(1, cv.countNonZero(uni));
+        };
       }
       const edD = M(new cv.Mat()); cv.dilate(edge, edD, k3); const ed = edD.data;
 
@@ -391,7 +418,7 @@
           const sc = onBorder ? .45 : sideAt(a, b); if (sc < .25) bad = true; sum += sc;
         }
         if (bad) continue;
-        const score = sum / 4 * quadPrior(q, w, h);
+        const score = sum / 4 * quadPrior(q, w, h) * (mIoU ? .4 + mIoU(q) : 1);
         if (!best || score > best.score) best = { quad: q, score };
       }
       if (!best) return null;

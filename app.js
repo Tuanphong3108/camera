@@ -482,6 +482,7 @@ window.addEventListener('keydown', e => {
 
 /* ---------- Quét tài liệu (kiểu ChromeOS): khung bám tờ giấy → nắn phẳng → xem lại → thêm trang → lưu ảnh / PDF ---------- */
 const SC = { pages: [], cur: 0, quad: null, miss: 0, timer: null, open: false, edit: null, cv: null };
+window.__SC = SC;   // cho kiểm thử
 /* ---------- Tải thư viện có hiện tiến trình (vòng tròn + số lượng dưới nút 3 chấm, bấm để xem chi tiết) ---------- */
 const DL = new Map();
 let dlRaf = 0;
@@ -542,14 +543,28 @@ function loadCV() {
     document.head.appendChild(sc);
   })).catch(() => null).then(r => { SC.cv = r && r.c; if (!SC.cv) cvLoad = null; });   /* không trả cv ra khỏi then (thenable) */
 }
-const detectQuad = (data, w, h) => (SC.cv && Scanner.findQuadCV(SC.cv, data, w, h)) || Scanner.findQuad(data, w, h);
+/* Mô hình phân đoạn (U²-Net-P, ~16 MB, ~1 giây/khung): chỉ nạp sau cùng và chỉ chạy khi chụp / dò lại; giúp bìa cứng, tay cầm */
+let segLoad = null;
+function loadSeg() {
+  if (segLoad) return segLoad;
+  return segLoad = import('./seg-detect.js').then(async m => { await fetchLib('seg', m.FILES); await m.load(); SC.seg = m; }).catch(e => { console.warn('SEG:', e); segLoad = null; });
+}
+const detectQuad = (data, w, h, mask) => (SC.cv && Scanner.findQuadCV(SC.cv, data, w, h, mask)) || Scanner.findQuad(data, w, h);
+/* Độ trùng (IoU) giữa tứ giác q (toạ độ 0–1) và mặt nạ w×h */
+function quadIoU(q, mask, w, h) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d', { willReadFrequently: true });
+  x.fillStyle = '#fff'; x.beginPath(); q.forEach((p, i) => x[i ? 'lineTo' : 'moveTo'](p[0] * w, p[1] * h)); x.fill();
+  const d = x.getImageData(0, 0, w, h).data; let a = 0, u = 0;
+  for (let i = 0; i < w * h; i++) { const p = d[i * 4] > 127, m = mask[i] > 127; if (p && m) a++; if (p || m) u++; }
+  return u ? a / u : 0;
+}
 const dcv = $('#docCanvas'), dsmall = document.createElement('canvas'), scanView = $('#scanView');
 function scanSync() {
   const on = S.mode === 'scan' && S.sub.scan === 'document';
   if (!on) {
     clearInterval(SC.timer); SC.timer = null; SC.quad = null; docDraw();
     if (S.mode !== 'scan') scanReset();
-  } else { loadML(); loadCV(); if (!SC.timer) SC.timer = setInterval(docTick, 350); }
+  } else { loadML(); loadCV().then(loadSeg); if (!SC.timer) SC.timer = setInterval(docTick, 350); }
   paintBadge();
 }
 function scanReset() { SC.pages.forEach(p => p.url && URL.revokeObjectURL(p.url)); SC.pages = []; SC.cur = 0; }
@@ -560,15 +575,28 @@ function paintBadge() {
 }
 /* Tìm 4 góc tài liệu trong src (video / canvas): AI trước (cần điểm tin cậy ≥ 0,5), không được thì OpenCV / bộ nhẹ. Trả về toạ độ 0–1 hoặc null */
 const quadOk = q => { let a = 0; for (let i = 0; i < 4; i++) { const p = q[i], n = q[(i + 1) % 4], r = q[(i + 2) % 4]; if ((n[0] - p[0]) * (r[1] - p[1]) - (n[1] - p[1]) * (r[0] - p[0]) <= 0) return false; a += p[0] * n[1] - n[0] * p[1]; } return Math.abs(a) / 2 > .08; };
-async function findDoc(src, sw, sh, maxW) {
+async function findDoc(src, sw, sh, maxW, deep) {
+  /* Trọng tài: AI góc, OpenCV (có mặt nạ phân đoạn khi deep) → chọn tứ giác khớp mặt nạ nhất; không có mặt nạ thì AI trước (điểm ≥ 0,5) rồi OpenCV */
+  let qml = null;
   if (SC.ml) {
-    try { const r = await SC.ml.detect(src); if (r && r.score >= .5 && quadOk(r.q)) return r.q.map(p => [Math.max(0, Math.min(1, p[0])), Math.max(0, Math.min(1, p[1]))]); } catch (e) { /* dùng cách cổ điển */ }
+    try { const r = await SC.ml.detect(src); if (r && r.score >= .5 && quadOk(r.q)) qml = r.q.map(p => [Math.max(0, Math.min(1, p[0])), Math.max(0, Math.min(1, p[1]))]); } catch (e) { /* dùng cách cổ điển */ }
   }
+  if (qml && !(deep && SC.seg)) return qml;
   const w = Math.min(sw, maxW), h = Math.round(w * sh / sw);
   dsmall.width = w; dsmall.height = h;
   const x = dsmall.getContext('2d', { willReadFrequently: true }); x.drawImage(src, 0, 0, w, h);
-  let q = null; try { q = detectQuad(x.getImageData(0, 0, w, h).data, w, h); } catch (e) { /* bỏ qua */ }
-  return q ? q.map(p => [p[0] / w, p[1] / h]) : null;
+  let mask = null; if (deep && SC.seg) { try { mask = await SC.seg.mask(dsmall, w, h); } catch (e) { /* bỏ qua */ } }
+  let q = null; try { q = detectQuad(x.getImageData(0, 0, w, h).data, w, h, mask); } catch (e) { /* bỏ qua */ }
+  const qcv = q ? q.map(p => [p[0] / w, p[1] / h]) : null;
+  if (qml && qcv && mask) {
+    const sc = 96 / w, mw = 96, mh = Math.max(1, Math.round(h * sc)), mc = document.createElement('canvas'); mc.width = mw; mc.height = mh;
+    const mx = mc.getContext('2d', { willReadFrequently: true }), id = mx.createImageData(mw, mh), s2 = document.createElement('canvas'); s2.width = w; s2.height = h;
+    const si = s2.getContext('2d').createImageData(w, h); for (let i = 0; i < w * h; i++) si.data[i * 4] = si.data[i * 4 + 1] = si.data[i * 4 + 2] = mask[i], si.data[i * 4 + 3] = 255;
+    s2.getContext('2d').putImageData(si, 0, 0); mx.drawImage(s2, 0, 0, mw, mh);
+    const md = mx.getImageData(0, 0, mw, mh).data, sm = new Uint8Array(mw * mh); for (let i = 0; i < mw * mh; i++) sm[i] = md[i * 4];
+    return quadIoU(qml, sm, mw, mh) >= quadIoU(qcv, sm, mw, mh) - .03 ? qml : qcv;
+  }
+  return qcv || qml;
 }
 let ticking = false;
 async function docTick() {
@@ -619,7 +647,7 @@ async function docShoot() {
   const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
   let quad = SC.quad ? SC.quad.map(p => [p[0] * w, p[1] * h]) : [[0, 0], [w - 1, 0], [w - 1, h - 1], [0, h - 1]];
   try {   /* dò lại trên chính khung vừa chụp (khung xem trước có thể đã trễ vài trăm ms) */
-    const q2 = await findDoc(raw, w, h, 800);
+    const q2 = await findDoc(raw, w, h, 800, true);
     if (q2) quad = q2.map(p => [p[0] * w, p[1] * h]);
   } catch (e) { /* giữ khung đang hiện */ }
   const pg = { raw, quad }; await renderPage(pg);
@@ -681,13 +709,14 @@ function fitEdit() {
 function paintEdit() {
   const ed = SC.edit, raw = ed.pg.raw;
   $$('#edBox .hd').forEach((el, i) => { el.style.left = ed.q[i][0] / raw.width * 100 + '%'; el.style.top = ed.q[i][1] / raw.height * 100 + '%'; });
+  $$('#edBox .hm').forEach((el, i) => { const p = ed.q[i], n = ed.q[(i + 1) % 4]; el.style.left = (p[0] + n[0]) / 2 / raw.width * 100 + '%'; el.style.top = (p[1] + n[1]) / 2 / raw.height * 100 + '%'; });
   const b = $('#edBox').getBoundingClientRect();
   $('#edPoly').setAttribute('points', ed.q.map(p => `${p[0] / raw.width * b.width},${p[1] / raw.height * b.height}`).join(' '));
 }
 function startEdit() {
   const pg = SC.pages[SC.cur]; if (!pg) return;
   SC.edit = { pg, q: pg.quad.map(p => p.slice()) };
-  const box = $('#edBox'); let cv = $('canvas', box); if (cv) cv.remove();
+  const box = $('#edBox'); let cv = $('canvas:not(#edLoupe)', box); if (cv) cv.remove();
   cv = pg.raw; cv.style.cssText = ''; box.insertBefore(cv, box.firstChild);
   scanView.dataset.edit = '1'; $('#svImg').hidden = true; box.hidden = false; fitEdit();
 }
@@ -701,20 +730,44 @@ $('#svEdDone').onclick = () => endEdit(true);
 $('#svEdCancel').onclick = () => endEdit(false);
 $('#svEdAuto').onclick = async () => {   /* dò lại góc trên ảnh gốc */
   const ed = SC.edit; if (!ed) return; const raw = ed.pg.raw;
-  let q = null; try { q = await findDoc(raw, raw.width, raw.height, 800); } catch (e) { /* bỏ qua */ }
+  let q = null; try { q = await findDoc(raw, raw.width, raw.height, 800, true); } catch (e) { /* bỏ qua */ }
   if (!SC.edit) return;
   ed.q = q ? q.map(p => [p[0] * raw.width, p[1] * raw.height]) : [[0, 0], [raw.width - 1, 0], [raw.width - 1, raw.height - 1], [0, raw.height - 1]];
   paintEdit();
 };
-$$('#edBox .hd').forEach(el => {
-  el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); el.dataset.drag = '1'; e.preventDefault(); });
+/* Kính lúp: phóng 3× vùng quanh điểm đang kéo, đặt lệch lên trên (hoặc xuống dưới nếu sát mép) để ngón tay không che */
+function loupe(rx, ry, show) {
+  const L = $('#edLoupe'); if (!show || !SC.edit) { L.hidden = true; return; }
+  const raw = SC.edit.pg.raw, b = $('#edBox').getBoundingClientRect(), n = L.width, z = 3, sw = n / z * (raw.width / b.width);   /* sw: cạnh vùng nguồn (px ảnh gốc) */
+  const x = L.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, n, n);
+  x.drawImage(raw, rx - sw / 2, ry - sw / 2, sw, sw, 0, 0, n, n);
+  x.strokeStyle = 'rgba(255,193,7,.9)'; x.lineWidth = 2; x.beginPath(); x.moveTo(n / 2 - 14, n / 2); x.lineTo(n / 2 + 14, n / 2); x.moveTo(n / 2, n / 2 - 14); x.lineTo(n / 2, n / 2 + 14); x.stroke();
+  const px = rx / raw.width * b.width, py = ry / raw.height * b.height, d = L.getBoundingClientRect().width || 130;
+  L.style.left = Math.max(0, Math.min(b.width - d, px - d / 2)) + 'px';
+  L.style.top = (py - d - 50 >= 0 ? py - d - 50 : py + 50) + 'px'; L.hidden = false;
+}
+const clampPt = (p, raw) => [Math.max(0, Math.min(raw.width - 1, p[0])), Math.max(0, Math.min(raw.height - 1, p[1]))];
+$$('#edBox .hd, #edBox .hm').forEach(el => {
+  const edge = el.classList.contains('hm');
+  el.addEventListener('pointerdown', e => {
+    el.setPointerCapture(e.pointerId); el.dataset.drag = '1'; e.preventDefault();
+    if (edge && SC.edit) el._o = { q: SC.edit.q.map(p => p.slice()), x: e.clientX, y: e.clientY };
+  });
   el.addEventListener('pointermove', e => {
     if (!el.dataset.drag || !SC.edit) return;
-    const b = $('#edBox').getBoundingClientRect(), raw = SC.edit.pg.raw;
-    SC.edit.q[+el.dataset.k] = [Math.max(0, Math.min(raw.width - 1, (e.clientX - b.left) / b.width * raw.width)), Math.max(0, Math.min(raw.height - 1, (e.clientY - b.top) / b.height * raw.height))];
+    const b = $('#edBox').getBoundingClientRect(), raw = SC.edit.pg.raw, k = +el.dataset.k, q = SC.edit.q;
+    if (edge) {   /* kéo cả cạnh: dời 2 đầu cùng một lượng (giới hạn để không ra ngoài ảnh) */
+      const o = el._o; let dx = (e.clientX - o.x) / b.width * raw.width, dy = (e.clientY - o.y) / b.height * raw.height, n = (k + 1) % 4;
+      for (const i of [k, n]) { dx = Math.max(-o.q[i][0], Math.min(raw.width - 1 - o.q[i][0], dx)); dy = Math.max(-o.q[i][1], Math.min(raw.height - 1 - o.q[i][1], dy)); }
+      q[k] = [o.q[k][0] + dx, o.q[k][1] + dy]; q[n] = [o.q[n][0] + dx, o.q[n][1] + dy];
+      loupe((q[k][0] + q[n][0]) / 2, (q[k][1] + q[n][1]) / 2, true);
+    } else {
+      q[k] = clampPt([(e.clientX - b.left) / b.width * raw.width, (e.clientY - b.top) / b.height * raw.height], raw);
+      loupe(q[k][0], q[k][1], true);
+    }
     paintEdit();
   });
-  const up = () => { delete el.dataset.drag; };
+  const up = () => { delete el.dataset.drag; loupe(0, 0, false); };
   el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
 });
 window.addEventListener('resize', () => { if (SC.edit) fitEdit(); });
