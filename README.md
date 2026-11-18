@@ -50,5 +50,5 @@
 💡 Dự án cá nhân, mục tiêu **đủ xài, nhẹ, tiện**: chỉ cần trình duyệt, không cần cài gì thêm.
 
 ## Ngôn ngữ & phím tắt
-- 20 ngôn ngữ trong `language/*.lang`; danh sách + tìm kiếm ở `i18n.js` (thêm ngôn ngữ = thêm file .lang và một dòng trong `LIST`). Mặc định theo ngôn ngữ trình duyệt, có mục "Theo ngôn ngữ thiết bị".
+- Hai ngôn ngữ: Tiếng Việt và English (`language/*.lang`); danh sách + tìm kiếm ở `i18n.js` (thêm ngôn ngữ = thêm file .lang và một dòng trong `LIST`; ô tìm kiếm tự hiện khi có hơn 6 ngôn ngữ). Mặc định theo trình duyệt, có mục "Theo ngôn ngữ thiết bị".
 - Phím tắt (menu 3 chấm → Phím tắt, hoặc nhấn `?`): bắt ở pha capture nên chạy dù đang focus nút nào; tạm tắt khi mở hộp thoại hoặc đang gõ chữ. Chữ cái theo vị trí phím nên dùng được trên mọi bố cục bàn phím.

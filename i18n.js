@@ -10,11 +10,7 @@
   var KEY = 'camera.lang', dict = {};
   /* Danh sách ngôn ngữ: [mã (trùng tên file language/<mã>.lang), tên bản ngữ, tên tiếng Anh]. Thêm ngôn ngữ = thêm file .lang + một dòng ở đây */
   var LIST = [
-    ['vi', 'Tiếng Việt', 'Vietnamese'], ['en', 'English', 'English'], ['zh-CN', '简体中文', 'Chinese (Simplified)'], ['zh-TW', '繁體中文', 'Chinese (Traditional)'],
-    ['ja', '日本語', 'Japanese'], ['ko', '한국어', 'Korean'], ['es', 'Español', 'Spanish'], ['fr', 'Français', 'French'], ['de', 'Deutsch', 'German'],
-    ['pt-BR', 'Português (Brasil)', 'Portuguese (Brazil)'], ['ru', 'Русский', 'Russian'], ['id', 'Bahasa Indonesia', 'Indonesian'], ['th', 'ไทย', 'Thai'],
-    ['hi', 'हिन्दी', 'Hindi'], ['it', 'Italiano', 'Italian'], ['tr', 'Türkçe', 'Turkish'], ['pl', 'Polski', 'Polish'], ['nl', 'Nederlands', 'Dutch'],
-    ['uk', 'Українська', 'Ukrainian'], ['ms', 'Bahasa Melayu', 'Malay']
+    ['vi', 'Tiếng Việt', 'Vietnamese'], ['en', 'English', 'English']
   ], LANGS = LIST.map(function (l) { return l[0]; });
   var norm = function (s) { return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); };
 

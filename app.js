@@ -876,7 +876,7 @@ function renderLangs() {
   });
   $('#langNone').hidden = rows.length > 0;
 }
-$('#miLang').onclick = () => { langQ.value = ''; renderLangs(); dlgLang.show(); };
+$('#miLang').onclick = () => { $('.lang-q').hidden = I18N.list.length <= 6; langQ.value = ''; renderLangs(); dlgLang.show(); };
 langQ.addEventListener('input', renderLangs);
 langQ.addEventListener('keydown', e => { if (e.key === 'ArrowDown') { const f = $('md-list-item', langList); if (f) { e.preventDefault(); f.focus(); } } });
 $('#btnLangDone').onclick = () => dlgLang.close();

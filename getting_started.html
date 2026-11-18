@@ -65,7 +65,7 @@
   .pick { align-self:center; }
   .lang { display:flex; justify-content:center; position:relative; } .lang .btn { padding:10px 20px; }
   .lang-pop { position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%); z-index:5; width:min(340px,92vw); padding:10px; border-radius:24px; background:var(--c2,#262a21); box-shadow:0 12px 36px rgba(0,0,0,.5); display:flex; flex-direction:column; gap:6px; }
-  .lang-pop[hidden] { display:none; }
+  .lang-pop[hidden], .lang-q[hidden] { display:none; }
   .lang-q { display:flex; align-items:center; gap:10px; height:44px; padding:0 14px; border-radius:22px; background:var(--c3); color:var(--on-sc); } .lang-q input { flex:1; min-width:0; border:0; outline:0; background:none; color:inherit; font:500 15px var(--font); }
   #langList { max-height:260px; overflow:auto; display:flex; flex-direction:column; }
   #langList button { display:flex; flex-direction:column; align-items:flex-start; gap:1px; text-align:left; border:0; background:none; color:inherit; font:600 14px var(--font); padding:9px 14px; border-radius:14px; cursor:pointer; }
@@ -93,7 +93,7 @@
       <div class="lang" role="group" aria-label="Language">
         <button class="btn tonal" id="langBtn" aria-haspopup="listbox" aria-expanded="false"><span class="ms" data-i="language"></span><span id="langName"></span></button>
         <div class="lang-pop" id="langPop" hidden>
-          <label class="lang-q"><span class="ms" data-i="search"></span><input id="langQ" type="search" autocomplete="off" spellcheck="false" data-i18n-ph="lang.search"></label>
+          <label class="lang-q" id="langQL"><span class="ms" data-i="search"></span><input id="langQ" type="search" autocomplete="off" spellcheck="false" data-i18n-ph="lang.search"></label>
           <div id="langList" role="listbox"></div>
           <p id="langNone" hidden data-i18n="lang.none"></p>
         </div>
@@ -205,8 +205,8 @@
     });
     $('#langNone').hidden = rows.length > 0;
   }
-  $('#langBtn').onclick = function (e) { e.stopPropagation(); pop.hidden = !pop.hidden; this.setAttribute('aria-expanded', String(!pop.hidden)); if (!pop.hidden) { lq.value = ''; langPaint(); lq.focus(); } };
-  lq.oninput = langPaint; pop.onclick = function (e) { e.stopPropagation(); };
+  $('#langBtn').onclick = function (e) { e.stopPropagation(); pop.hidden = !pop.hidden; this.setAttribute('aria-expanded', String(!pop.hidden)); if (!pop.hidden) { lq.value = ''; langPaint(); if (I18N.list.length > 6) lq.focus(); } };
+  $('#langQL').hidden = I18N.list.length <= 6; lq.oninput = langPaint; pop.onclick = function (e) { e.stopPropagation(); };
   document.addEventListener('click', function () { pop.hidden = true; $('#langBtn').setAttribute('aria-expanded', 'false'); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !pop.hidden) { pop.hidden = true; e.stopPropagation(); } }, true);
   document.addEventListener('i18n', ui);
