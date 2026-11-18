@@ -1,0 +1,211 @@
+# =========================================================
+#  Camera — Language file: Nederlands
+#  Format: key=value, one entry per line.
+#  Lines starting with "#" are comments. "\n" is a line break.
+#  {name} is a placeholder filled in at runtime.
+#  To add a language: create language/<code>.lang and add the code to LANGS in i18n.js.
+# =========================================================
+
+## --- Common ---
+common.close=Sluiten
+common.done=Klaar
+
+## --- Three-dot menu ---
+menu.open=Menu
+menu.folders=Opslagmappen
+menu.language=Taal
+menu.getting_started=Aan de slag
+menu.shortcuts=Sneltoetsen
+menu.about=Over
+
+## --- Modes ---
+mode.video=Video
+mode.photo=Foto
+mode.scan=Scannen
+sub.normal=Normaal
+sub.gif=GIF
+sub.timelapse=Timelapse
+sub.document=Document
+sub.qr=QR-code
+
+## --- Tools ---
+tool.mirror=Spiegelen
+tool.grid=Raster
+tool.timer=Timer
+tool.switch=Camera wisselen
+tool.mic=Microfoon
+tool.filter=Filters
+timer.off=Uit
+timer.sec={n} seconden
+filter.none=Normaal
+filter.sepia=Sepia
+filter.grayscale=Grijstinten
+filter.vivid=Levendig
+filter.invert=Omkeren
+filter.saturate=Verzadiging
+filter.contrast=Contrast
+filter.brightness=Helderheid
+
+## --- Shutter ---
+shutter.photo=Foto maken
+shutter.record=Opname starten
+shutter.stop=Opname stoppen
+shutter.cancel=Aftellen annuleren
+thumb.open=Photos openen
+
+## --- Messages ---
+msg.no_camera=Je browser ondersteunt geen cameratoegang.
+msg.cam_error=Geen toegang tot de camera. Controleer de rechten.
+msg.countdown=Aftellen gestart: {n} seconden
+msg.recording=Opnemen…
+msg.gif_encoding=GIF maken…
+msg.tl_rendering=Timelapsevideo maken…
+msg.saved_folder=Opgeslagen in “{folder}”: {name}
+msg.saved_download=Gedownload: {name}
+msg.perm_denied=Schrijftoegang tot de map is niet verleend, dus het bestand is gedownload.
+msg.save_failed=Kan het bestand niet opslaan.
+msg.no_qr=Deze browser ondersteunt het scannen van QR-codes niet.
+msg.opened_photos=Foto geopend in Photos
+msg.photos_fail=Kan de foto niet naar Photos sturen. De Photos-bibliotheek wordt geopend
+msg.copied=Gekopieerd
+qr.copy=Kopiëren
+qr.open=Link openen
+
+## --- Save folders dialog ---
+folders.title=Opslagmappen
+folders.desc=Foto's en video's worden opgeslagen in de geselecteerde map. Deze lijst wordt gedeeld met Photos: een map hier toevoegen of verwijderen doet hetzelfde daar, en andersom.
+folders.empty=Nog geen mappen. Als je er geen kiest, worden bestanden zoals gewoonlijk gedownload.
+folders.add=Map toevoegen
+folders.remove=Uit lijst verwijderen (ook niet meer volgen in Photos)
+folders.active=Hier opslaan
+folders.select=Opslaan in deze map
+folders.reauth=Toegang moet opnieuw worden verleend
+folders.added=Map “{name}” toegevoegd
+folders.dup=Deze map staat al in de lijst
+folders.fail=Kan de map niet openen
+folders.unsupported=Deze browser kan geen opslagmap kiezen. Bestanden worden zoals gewoonlijk gedownload.
+
+## --- Language dialog ---
+lang.title=Taal
+lang.search=Talen zoeken
+lang.auto=Systeemtaal
+lang.none=Geen talen gevonden
+
+## --- About ---
+about.title=Camera
+about.sub=Een camera-app die rechtstreeks in je browser draait
+about.desc=Een lichte PWA in de stijl van de ChromeOS Camera-app, voor apparaten zonder camera-app. Ontwikkeld door Phong VN.
+about.version=Versie
+about.developer=Ontwikkelaar
+about.source=Broncode
+
+## --- Getting started (getting_started.html) ---
+gs.title=Aan de slag - Camera
+gs.sub=Aan de slag
+gs.skip=Overslaan
+gs.back=Terug
+gs.next=Volgende
+gs.finish=Beginnen met fotograferen
+gs.step=Stap {n} van {t}
+gs.name1=Welkom
+gs.name2=Modi
+gs.name3=Hulpmiddelen
+gs.name4=Waar opslaan
+gs.s1_title=Welkom bij Camera
+gs.s1_desc=Camera draait rechtstreeks in je browser: maak foto's, neem video's op, maak GIF's en scan documenten en QR-codes, zelfs zonder verbinding.
+gs.s1_pick=Kies je taal
+gs.s1_note=Foto's en video's blijven op je apparaat en worden nooit naar een server geüpload.
+gs.s2_chip=Modi
+gs.s2_title=Fotograferen, opnemen en scannen
+gs.s2_desc=Schakel tussen de drie modi op de onderste balk.
+gs.s2_c1t=Video
+gs.s2_c1d=Neem gewone video's op, maak een GIF (maximaal 5 seconden) of een timelapsevideo.
+gs.s2_c2t=Foto
+gs.s2_c2d=Maak foto's met een timer en met filters die direct op de foto worden toegepast.
+gs.s2_c3t=Scannen
+gs.s2_c3d=Leg een document scherper vast of scan een QR-code; het resultaat verschijnt meteen om te kopiëren of te openen.
+gs.s2_note=De timer werkt ook tijdens het opnemen van video, wat de standaard Camera-app niet biedt.
+gs.s3_chip=Hulpmiddelen
+gs.s3_title=Handige knoppen aan de zijkant
+gs.s3_c1t=Timer
+gs.s3_c1d=Kies 3, 5 of 10 seconden. Druk tijdens het aftellen opnieuw op de sluiter om te annuleren.
+gs.s3_c2t=Spiegelen
+gs.s3_c2d=Spiegel het voorbeeld en de foto als in een spiegel.
+gs.s3_c3t=Raster
+gs.s3_c3d=Zet een 3×3-raster aan om je opname te componeren.
+gs.s3_c4t=Filters
+gs.s3_c4d=Sepia, grijstinten, levendig... bekijk een live voorbeeld en pas ze toe op je foto.
+gs.s3_c5t=Camera wisselen
+gs.s3_c5d=Verschijnt als je apparaat meer dan één camera heeft.
+gs.s3_c6t=Microfoon
+gs.s3_c6d=Demp of dempt op tijdens het opnemen van video.
+gs.s4_chip=Opslag
+gs.s4_title=Kies waar je opslaat
+gs.s4_desc=Kies een map waarin Camera foto's en video's opslaat. Je kunt mappen op elk moment toevoegen of wijzigen via het menu met drie puntjes > Opslagmappen.
+gs.s4_c1t=Rechtstreeks in een map opslaan
+gs.s4_c1d=Je hoeft niet elk bestand te downloaden: foto's en video's worden direct in de gekozen map geschreven.
+gs.s4_c2t=Verbonden met Photos
+gs.s4_c2d=Deze map wordt ook aan Photos toegevoegd en de kleine fotoknop rechtsonder opent Photos rechtstreeks.
+gs.s4_pick=Opslagmap kiezen
+gs.s4_more=Nog een map toevoegen
+gs.s4_picked=Geselecteerd: {names}
+gs.s4_unsupported=Deze browser kan geen mappen kiezen
+gs.s4_note=Als je deze stap overslaat, worden bestanden zoals gewoonlijk gedownload.
+pick.title=In welke map opslaan?
+pick.added={names} toegevoegd. Kies de map waarin Camera foto's en video's moet opslaan.
+pick.removed=De map waarin Camera opsloeg, is verwijderd. Kies een andere map om in op te slaan.
+pick.multi=Je hebt meerdere mappen gekozen. In welke moet Camera opslaan?
+pick.ok=Deze map gebruiken
+scan.hint=Richt de camera op een document
+scan.page=Pagina {n} scannen
+scan.cancel=Annuleren
+scan.add=Pagina toevoegen
+scan.edit=Perspectief aanpassen
+scan.delete=Deze pagina verwijderen
+scan.share=Delen
+scan.save_photo=Opslaan als foto
+scan.save_pdf=Opslaan als PDF
+scan.edit_cancel=Annuleren
+scan.edit_done=Klaar
+scan.title=Pagina {n} van {m}
+scan.share_fail=Delen is hier niet beschikbaar. Sla het in plaats daarvan op.
+scan.saved_n={n} pagina's opgeslagen
+dl.aria=Bibliotheken downloaden
+dl.title=Bibliotheken downloaden
+dl.opencv=OpenCV (documentdetectie)
+scan.auto=Automatisch detecteren
+dl.ml=AI-documentdetector (DocCornerNet)
+dl.seg=AI-segmentatie voor omslagen / objecten (U²-Net-P)
+
+## --- Keyboard shortcuts ---
+sc.title=Sneltoetsen
+sc.group_cam=Camera
+sc.group_review=Documentcontrole
+sc.group_edit=Hoeken aanpassen
+sc.group_general=Algemeen
+sc.shutter=Vastleggen / opnemen / stoppen
+sc.modes=Wisselen tussen Video, Foto en Scannen
+sc.mode_keys=Video / Foto / Scannen
+sc.submodes=Submodus wisselen
+sc.timer=Timer wijzigen
+sc.mirror=Spiegelen
+sc.grid=Raster aan/uit
+sc.filters=Filters
+sc.switch=Camera wisselen
+sc.mic=Microfoon dempen / dempen opheffen
+sc.gallery=Fotogalerij openen
+sc.help=Sneltoetsen tonen
+sc.cancel=Aftellen annuleren / sluiten
+sc.save_photo=Opslaan als foto
+sc.save_pdf=Opslaan als PDF
+sc.edit=Hoeken aanpassen
+sc.add=Pagina toevoegen
+sc.delete=Pagina verwijderen
+sc.pages=Vorige / volgende pagina
+sc.done=Klaar
+sc.auto=Opnieuw detecteren
+sc.note=Sneltoetsen werken ongeacht welke knop focus heeft; ze zijn onderbroken terwijl een dialoogvenster open is of je typt.
+key.space=Spatie
+key.enter=Enter
+key.esc=Esc
+key.del=Delete

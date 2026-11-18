@@ -2,6 +2,8 @@
    Dùng: <md-icon data-i="more_vert"></md-icon> hoặc <span class="ms" data-i="..."></span>, rồi gọi paintIcons(root). */
 (function () {
   var IC = {
+  search: 59574,
+  keyboard: 58130,
   more_vert: 58836,
   folder: 58055,
   folder_open: 58056,

@@ -1,0 +1,211 @@
+# =========================================================
+#  Camera — भाषा फ़ाइल: हिन्दी
+#  फ़ॉर्मैट: key=value, हर पंक्ति में एक प्रविष्टि।
+#  "#" से शुरू होने वाली पंक्तियाँ टिप्पणियाँ हैं। "\n" नई पंक्ति है।
+#  {name} रनटाइम पर भरा जाने वाला प्लेसहोल्डर है।
+#  To add a language: create language/<code>.lang and add the code to LANGS in i18n.js.
+# =========================================================
+
+## --- Common ---
+common.close=बंद करें
+common.done=हो गया
+
+## --- Three-dot menu ---
+menu.open=मेन्यू
+menu.folders=सेव फ़ोल्डर
+menu.language=भाषा
+menu.getting_started=शुरू करें
+menu.shortcuts=कीबोर्ड शॉर्टकट
+menu.about=परिचय
+
+## --- Modes ---
+mode.video=वीडियो
+mode.photo=फ़ोटो
+mode.scan=स्कैन
+sub.normal=सामान्य
+sub.gif=GIF
+sub.timelapse=टाइम लैप्स
+sub.document=दस्तावेज़
+sub.qr=QR कोड
+
+## --- Tools ---
+tool.mirror=मिरर
+tool.grid=ग्रिड
+tool.timer=टाइमर
+tool.switch=कैमरा बदलें
+tool.mic=माइक्रोफ़ोन
+tool.filter=फ़िल्टर
+timer.off=बंद
+timer.sec={n} सेकंड
+filter.none=सामान्य
+filter.sepia=सेपिया
+filter.grayscale=ग्रेस्केल
+filter.vivid=विविड
+filter.invert=इन्वर्ट
+filter.saturate=सैचुरेशन
+filter.contrast=कंट्रास्ट
+filter.brightness=ब्राइटनेस
+
+## --- Shutter ---
+shutter.photo=फ़ोटो लें
+shutter.record=रिकॉर्डिंग शुरू करें
+shutter.stop=रिकॉर्डिंग रोकें
+shutter.cancel=काउंटडाउन रद्द करें
+thumb.open=Photos खोलें
+
+## --- Messages ---
+msg.no_camera=आपका ब्राउज़र कैमरा ऐक्सेस का समर्थन नहीं करता।
+msg.cam_error=कैमरा ऐक्सेस नहीं हो सका। कृपया अनुमतियाँ जाँचें।
+msg.countdown={n} सेकंड का काउंटडाउन शुरू हो रहा है
+msg.recording=रिकॉर्ड हो रहा है…
+msg.gif_encoding=GIF बनाई जा रही है…
+msg.tl_rendering=टाइम लैप्स वीडियो बनाया जा रहा है…
+msg.saved_folder=“{folder}” में सेव किया गया: {name}
+msg.saved_download=डाउनलोड हो गया: {name}
+msg.perm_denied=फ़ोल्डर में लिखने की अनुमति नहीं मिली, इसलिए फ़ाइल डाउनलोड कर दी गई।
+msg.save_failed=फ़ाइल सेव नहीं हो सकी।
+msg.no_qr=यह ब्राउज़र QR कोड स्कैन करने का समर्थन नहीं करता।
+msg.opened_photos=फ़ोटो को Photos में खोला गया
+msg.photos_fail=फ़ोटो को Photos में नहीं भेजा जा सका, इसके बजाय Photos लाइब्रेरी खोली जा रही है
+msg.copied=कॉपी किया गया
+qr.copy=कॉपी करें
+qr.open=लिंक खोलें
+
+## --- Save folders dialog ---
+folders.title=सेव फ़ोल्डर
+folders.desc=फ़ोटो और वीडियो चुने गए फ़ोल्डर में सेव होते हैं। यह सूची Photos के साथ साझा है: यहाँ फ़ोल्डर जोड़ने या हटाने का असर वहाँ भी होता है, और वहाँ का असर यहाँ भी।
+folders.empty=अभी कोई फ़ोल्डर नहीं है। अगर आप कोई फ़ोल्डर नहीं चुनते, तो फ़ाइलें सामान्य रूप से डाउनलोड होती हैं।
+folders.add=फ़ोल्डर जोड़ें
+folders.remove=सूची से हटाएँ (Photos में भी देखना बंद करें)
+folders.active=यहाँ सेव हो रहा है
+folders.select=इस फ़ोल्डर में सेव करें
+folders.reauth=ऐक्सेस फिर से देना ज़रूरी है
+folders.added=फ़ोल्डर “{name}” जोड़ा गया
+folders.dup=यह फ़ोल्डर पहले से सूची में है
+folders.fail=फ़ोल्डर नहीं खोला जा सका
+folders.unsupported=यह ब्राउज़र सेव फ़ोल्डर नहीं चुन सकता। फ़ाइलें सामान्य रूप से डाउनलोड होती हैं।
+
+## --- Language dialog ---
+lang.title=भाषा
+lang.search=भाषाएँ खोजें
+lang.auto=सिस्टम की भाषा
+lang.none=कोई भाषा नहीं मिली
+
+## --- About ---
+about.title=Camera
+about.sub=एक कैमरा ऐप जो सीधे आपके ब्राउज़र में चलता है
+about.desc=ChromeOS Camera ऐप की तरह बनाया गया एक हल्का PWA, उन डिवाइस के लिए जिनमें कैमरा ऐप नहीं है। Phong VN द्वारा विकसित।
+about.version=वर्शन
+about.developer=डेवलपर
+about.source=सोर्स कोड
+
+## --- Getting started (getting_started.html) ---
+gs.title=शुरू करें - Camera
+gs.sub=शुरू करें
+gs.skip=छोड़ें
+gs.back=वापस
+gs.next=आगे
+gs.finish=शूटिंग शुरू करें
+gs.step=चरण {n}/{t}
+gs.name1=स्वागत
+gs.name2=मोड
+gs.name3=टूल
+gs.name4=कहाँ सेव करें
+gs.s1_title=Camera में आपका स्वागत है
+gs.s1_desc=Camera सीधे आपके ब्राउज़र में चलता है: फ़ोटो लें, वीडियो रिकॉर्ड करें, GIF बनाएँ, दस्तावेज़ और QR कोड स्कैन करें, बिना कनेक्शन के भी।
+gs.s1_pick=अपनी भाषा चुनें
+gs.s1_note=फ़ोटो और वीडियो आपके डिवाइस पर ही रहते हैं और किसी सर्वर पर अपलोड नहीं किए जाते।
+gs.s2_chip=मोड
+gs.s2_title=शूट करें, रिकॉर्ड करें और स्कैन करें
+gs.s2_desc=नीचे की बार पर तीनों मोड के बीच बदलें।
+gs.s2_c1t=वीडियो
+gs.s2_c1d=सामान्य वीडियो रिकॉर्ड करें, GIF (5 सेकंड तक) या टाइम लैप्स वीडियो बनाएँ।
+gs.s2_c2t=फ़ोटो
+gs.s2_c2d=टाइमर के साथ फ़ोटो लें, फ़िल्टर सीधे तस्वीर पर लागू होते हैं।
+gs.s2_c3t=स्कैन
+gs.s2_c3d=दस्तावेज़ को ज़्यादा साफ़ कैप्चर करें या QR कोड स्कैन करें; नतीजा तुरंत कॉपी या खोलने के लिए दिखता है।
+gs.s2_note=टाइमर वीडियो रिकॉर्ड करते समय भी काम करता है, जो डिफ़ॉल्ट Camera ऐप में नहीं मिलता।
+gs.s3_chip=टूल
+gs.s3_title=किनारे पर काम के बटन
+gs.s3_c1t=टाइमर
+gs.s3_c1d=3, 5 या 10 सेकंड चुनें। रद्द करने के लिए काउंटडाउन के दौरान शटर फिर से दबाएँ।
+gs.s3_c2t=मिरर
+gs.s3_c2d=प्रीव्यू और फ़ोटो को आईने की तरह पलटें।
+gs.s3_c3t=ग्रिड
+gs.s3_c3d=फ़्रेमिंग के लिए 3×3 ग्रिड चालू करें।
+gs.s3_c4t=फ़िल्टर
+gs.s3_c4d=सेपिया, ग्रेस्केल, विविड... लाइव प्रीव्यू देखें और अपनी फ़ोटो पर लागू करें।
+gs.s3_c5t=कैमरा बदलें
+gs.s3_c5d=तब दिखता है जब आपके डिवाइस में एक से ज़्यादा कैमरे हों।
+gs.s3_c6t=माइक्रोफ़ोन
+gs.s3_c6d=वीडियो रिकॉर्ड करते समय म्यूट या अनम्यूट करें।
+gs.s4_chip=स्टोरेज
+gs.s4_title=चुनें कि कहाँ सेव करें
+gs.s4_desc=Camera के फ़ोटो और वीडियो सेव करने के लिए एक फ़ोल्डर चुनें। आप कभी भी तीन-बिंदु मेन्यू > सेव फ़ोल्डर से फ़ोल्डर जोड़ या बदल सकते हैं।
+gs.s4_c1t=सीधे फ़ोल्डर में सेव करें
+gs.s4_c1d=हर फ़ाइल डाउनलोड करने की ज़रूरत नहीं: फ़ोटो और वीडियो सीधे आपके चुने फ़ोल्डर में लिखे जाते हैं।
+gs.s4_c2t=Photos से जुड़ा हुआ
+gs.s4_c2d=यह फ़ोल्डर Photos में भी जुड़ जाता है, और नीचे दाईं ओर का छोटा फ़ोटो बटन सीधे Photos खोलता है।
+gs.s4_pick=सेव फ़ोल्डर चुनें
+gs.s4_more=एक और फ़ोल्डर जोड़ें
+gs.s4_picked=चुना गया: {names}
+gs.s4_unsupported=यह ब्राउज़र फ़ोल्डर नहीं चुन सकता
+gs.s4_note=अगर आप यह चरण छोड़ देते हैं, तो फ़ाइलें सामान्य रूप से डाउनलोड होती हैं।
+pick.title=किस फ़ोल्डर में सेव करें?
+pick.added={names} जोड़ा गया। वह फ़ोल्डर चुनें जिसमें Camera फ़ोटो और वीडियो सेव करे।
+pick.removed=जिस फ़ोल्डर में Camera सेव कर रहा था, उसे हटा दिया गया है। सेव करने के लिए दूसरा फ़ोल्डर चुनें।
+pick.multi=आपने कई फ़ोल्डर चुने हैं। Camera किसमें सेव करे?
+pick.ok=यह फ़ोल्डर इस्तेमाल करें
+scan.hint=कैमरा दस्तावेज़ की ओर रखें
+scan.page=पेज {n} स्कैन हो रहा है
+scan.cancel=रद्द करें
+scan.add=पेज जोड़ें
+scan.edit=पर्सपेक्टिव ठीक करें
+scan.delete=यह पेज हटाएँ
+scan.share=शेयर करें
+scan.save_photo=फ़ोटो के रूप में सेव करें
+scan.save_pdf=PDF के रूप में सेव करें
+scan.edit_cancel=रद्द करें
+scan.edit_done=हो गया
+scan.title=पेज {n}/{m}
+scan.share_fail=यहाँ शेयरिंग उपलब्ध नहीं है। इसके बजाय सेव करें।
+scan.saved_n={n} पेज सेव किए गए
+dl.aria=लाइब्रेरी डाउनलोड हो रही हैं
+dl.title=लाइब्रेरी डाउनलोड हो रही हैं
+dl.opencv=OpenCV (दस्तावेज़ की पहचान)
+scan.auto=अपने-आप पहचानें
+dl.ml=दस्तावेज़ AI डिटेक्टर (DocCornerNet)
+dl.seg=कवर / ऑब्जेक्ट के लिए AI सेगमेंटेशन (U²-Net-P)
+
+## --- Keyboard shortcuts ---
+sc.title=कीबोर्ड शॉर्टकट
+sc.group_cam=Camera
+sc.group_review=दस्तावेज़ की समीक्षा
+sc.group_edit=कोने ठीक करें
+sc.group_general=सामान्य
+sc.shutter=कैप्चर / रिकॉर्ड / रोकें
+sc.modes=वीडियो, फ़ोटो और स्कैन के बीच बदलें
+sc.mode_keys=वीडियो / फ़ोटो / स्कैन
+sc.submodes=सब-मोड बदलें
+sc.timer=टाइमर बदलें
+sc.mirror=मिरर
+sc.grid=ग्रिड चालू/बंद करें
+sc.filters=फ़िल्टर
+sc.switch=कैमरा बदलें
+sc.mic=माइक्रोफ़ोन म्यूट / अनम्यूट करें
+sc.gallery=फ़ोटो गैलरी खोलें
+sc.help=शॉर्टकट दिखाएँ
+sc.cancel=काउंटडाउन रद्द करें / बंद करें
+sc.save_photo=फ़ोटो के रूप में सेव करें
+sc.save_pdf=PDF के रूप में सेव करें
+sc.edit=कोने ठीक करें
+sc.add=पेज जोड़ें
+sc.delete=पेज हटाएँ
+sc.pages=पिछला / अगला पेज
+sc.done=हो गया
+sc.auto=फिर से पहचानें
+sc.note=शॉर्टकट किसी भी बटन के फ़ोकस में होने पर काम करते हैं; डायलॉग खुला होने या टाइप करते समय वे रुक जाते हैं।
+key.space=Space
+key.enter=Enter
+key.esc=Esc
+key.del=Delete

@@ -1,0 +1,211 @@
+# =========================================================
+#  Camera — ไฟล์ภาษา: ไทย
+#  รูปแบบ: key=value หนึ่งรายการต่อบรรทัด
+#  บรรทัดที่ขึ้นต้นด้วย "#" คือความคิดเห็น "\n" คือการขึ้นบรรทัดใหม่
+#  {name} คือตัวแทนที่ถูกเติมค่าตอนรันไทม์
+#  To add a language: create language/<code>.lang and add the code to LANGS in i18n.js.
+# =========================================================
+
+## --- Common ---
+common.close=ปิด
+common.done=เสร็จสิ้น
+
+## --- Three-dot menu ---
+menu.open=เมนู
+menu.folders=โฟลเดอร์สำหรับบันทึก
+menu.language=ภาษา
+menu.getting_started=เริ่มต้นใช้งาน
+menu.shortcuts=แป้นพิมพ์ลัด
+menu.about=เกี่ยวกับ
+
+## --- Modes ---
+mode.video=วิดีโอ
+mode.photo=ภาพถ่าย
+mode.scan=สแกน
+sub.normal=ปกติ
+sub.gif=GIF
+sub.timelapse=ไทม์แลปส์
+sub.document=เอกสาร
+sub.qr=คิวอาร์โค้ด
+
+## --- Tools ---
+tool.mirror=กระจก
+tool.grid=เส้นตาราง
+tool.timer=ตัวตั้งเวลา
+tool.switch=สลับกล้อง
+tool.mic=ไมโครโฟน
+tool.filter=ฟิลเตอร์
+timer.off=ปิด
+timer.sec={n} วินาที
+filter.none=ปกติ
+filter.sepia=ซีเปีย
+filter.grayscale=ขาวดำ
+filter.vivid=สดใส
+filter.invert=กลับสี
+filter.saturate=ความอิ่มตัว
+filter.contrast=คอนทราสต์
+filter.brightness=ความสว่าง
+
+## --- Shutter ---
+shutter.photo=ถ่ายภาพ
+shutter.record=เริ่มบันทึก
+shutter.stop=หยุดบันทึก
+shutter.cancel=ยกเลิกการนับถอยหลัง
+thumb.open=เปิด Photos
+
+## --- Messages ---
+msg.no_camera=เบราว์เซอร์ของคุณไม่รองรับการเข้าถึงกล้อง
+msg.cam_error=เข้าถึงกล้องไม่ได้ โปรดตรวจสอบสิทธิ์
+msg.countdown=เริ่มนับถอยหลัง {n} วินาที
+msg.recording=กำลังบันทึก…
+msg.gif_encoding=กำลังสร้าง GIF…
+msg.tl_rendering=กำลังสร้างวิดีโอไทม์แลปส์…
+msg.saved_folder=บันทึกไปยัง “{folder}” แล้ว: {name}
+msg.saved_download=ดาวน์โหลดแล้ว: {name}
+msg.perm_denied=ไม่ได้รับสิทธิ์เขียนในโฟลเดอร์ จึงดาวน์โหลดไฟล์แทน
+msg.save_failed=บันทึกไฟล์ไม่ได้
+msg.no_qr=เบราว์เซอร์นี้ไม่รองรับการสแกนคิวอาร์โค้ด
+msg.opened_photos=เปิดรูปภาพใน Photos แล้ว
+msg.photos_fail=ส่งรูปภาพไปยัง Photos ไม่ได้ จึงเปิดคลังรูปภาพของ Photos แทน
+msg.copied=คัดลอกแล้ว
+qr.copy=คัดลอก
+qr.open=เปิดลิงก์
+
+## --- Save folders dialog ---
+folders.title=โฟลเดอร์สำหรับบันทึก
+folders.desc=ระบบจะบันทึกรูปภาพและวิดีโอลงในโฟลเดอร์ที่เลือก รายการนี้ใช้ร่วมกับ Photos: การเพิ่มหรือลบโฟลเดอร์ที่นี่จะมีผลเหมือนกันใน Photos และในทางกลับกัน
+folders.empty=ยังไม่มีโฟลเดอร์ หากไม่เลือก ระบบจะดาวน์โหลดไฟล์ตามปกติ
+folders.add=เพิ่มโฟลเดอร์
+folders.remove=นำออกจากรายการ (หยุดติดตามใน Photos ด้วย)
+folders.active=กำลังบันทึกที่นี่
+folders.select=บันทึกไปยังโฟลเดอร์นี้
+folders.reauth=ต้องให้สิทธิ์เข้าถึงอีกครั้ง
+folders.added=เพิ่มโฟลเดอร์ “{name}” แล้ว
+folders.dup=โฟลเดอร์นี้อยู่ในรายการแล้ว
+folders.fail=เปิดโฟลเดอร์ไม่ได้
+folders.unsupported=เบราว์เซอร์นี้เลือกโฟลเดอร์สำหรับบันทึกไม่ได้ ระบบจะดาวน์โหลดไฟล์ตามปกติ
+
+## --- Language dialog ---
+lang.title=ภาษา
+lang.search=ค้นหาภาษา
+lang.auto=ภาษาของระบบ
+lang.none=ไม่พบภาษา
+
+## --- About ---
+about.title=Camera
+about.sub=แอปกล้องที่ทำงานในเบราว์เซอร์ของคุณได้เลย
+about.desc=PWA แบบเบา ออกแบบตามแอป Camera ของ ChromeOS สำหรับอุปกรณ์ที่ไม่มีแอปกล้อง พัฒนาโดย Phong VN
+about.version=เวอร์ชัน
+about.developer=นักพัฒนา
+about.source=ซอร์สโค้ด
+
+## --- Getting started (getting_started.html) ---
+gs.title=เริ่มต้นใช้งาน - Camera
+gs.sub=เริ่มต้นใช้งาน
+gs.skip=ข้าม
+gs.back=ย้อนกลับ
+gs.next=ถัดไป
+gs.finish=เริ่มถ่ายภาพ
+gs.step=ขั้นตอนที่ {n} จาก {t}
+gs.name1=ยินดีต้อนรับ
+gs.name2=โหมด
+gs.name3=เครื่องมือ
+gs.name4=ตำแหน่งที่บันทึก
+gs.s1_title=ยินดีต้อนรับสู่ Camera
+gs.s1_desc=Camera ทำงานในเบราว์เซอร์ของคุณได้เลย: ถ่ายภาพ บันทึกวิดีโอ สร้าง GIF สแกนเอกสารและคิวอาร์โค้ด แม้ไม่มีการเชื่อมต่ออินเทอร์เน็ต
+gs.s1_pick=เลือกภาษาของคุณ
+gs.s1_note=รูปภาพและวิดีโอจะอยู่ในอุปกรณ์ของคุณและจะไม่ถูกอัปโหลดไปยังเซิร์ฟเวอร์ใดๆ
+gs.s2_chip=โหมด
+gs.s2_title=ถ่ายภาพ บันทึก และสแกน
+gs.s2_desc=สลับระหว่างสามโหมดได้ที่แถบด้านล่าง
+gs.s2_c1t=วิดีโอ
+gs.s2_c1d=บันทึกวิดีโอปกติ สร้าง GIF (ยาวสูงสุด 5 วินาที) หรือวิดีโอไทม์แลปส์
+gs.s2_c2t=ภาพถ่าย
+gs.s2_c2d=ถ่ายภาพด้วยตัวตั้งเวลา พร้อมใช้ฟิลเตอร์กับภาพได้โดยตรง
+gs.s2_c3t=สแกน
+gs.s2_c3d=ถ่ายเอกสารให้ชัดขึ้นหรือสแกนคิวอาร์โค้ด ผลลัพธ์จะแสดงทันทีเพื่อคัดลอกหรือเปิด
+gs.s2_note=ตัวตั้งเวลาใช้ได้ขณะบันทึกวิดีโอด้วย ซึ่งแอป Camera เริ่มต้นไม่มีให้
+gs.s3_chip=เครื่องมือ
+gs.s3_title=ปุ่มลัดที่สะดวกด้านข้าง
+gs.s3_c1t=ตัวตั้งเวลา
+gs.s3_c1d=เลือก 3, 5 หรือ 10 วินาที กดชัตเตอร์อีกครั้งระหว่างนับถอยหลังเพื่อยกเลิก
+gs.s3_c2t=กระจก
+gs.s3_c2d=พลิกภาพตัวอย่างและภาพถ่ายเหมือนกระจก
+gs.s3_c3t=เส้นตาราง
+gs.s3_c3d=เปิดเส้นตาราง 3×3 เพื่อช่วยจัดองค์ประกอบภาพ
+gs.s3_c4t=ฟิลเตอร์
+gs.s3_c4d=ซีเปีย ขาวดำ สดใส... ดูตัวอย่างแบบสดและใช้กับภาพถ่ายของคุณ
+gs.s3_c5t=สลับกล้อง
+gs.s3_c5d=จะปรากฏเมื่ออุปกรณ์ของคุณมีกล้องมากกว่าหนึ่งตัว
+gs.s3_c6t=ไมโครโฟน
+gs.s3_c6d=ปิดหรือเปิดเสียงขณะบันทึกวิดีโอ
+gs.s4_chip=พื้นที่เก็บข้อมูล
+gs.s4_title=เลือกตำแหน่งที่บันทึก
+gs.s4_desc=เลือกโฟลเดอร์ให้ Camera บันทึกรูปภาพและวิดีโอลงไป คุณเพิ่มหรือเปลี่ยนโฟลเดอร์ได้ทุกเมื่อจากเมนูสามจุด > โฟลเดอร์สำหรับบันทึก
+gs.s4_c1t=บันทึกลงโฟลเดอร์โดยตรง
+gs.s4_c1d=ไม่ต้องดาวน์โหลดทีละไฟล์: รูปภาพและวิดีโอจะถูกเขียนลงในโฟลเดอร์ที่คุณเลือกโดยตรง
+gs.s4_c2t=เชื่อมต่อกับ Photos
+gs.s4_c2d=โฟลเดอร์นี้จะถูกเพิ่มใน Photos ด้วย และปุ่มรูปภาพเล็กๆ ที่มุมขวาล่างจะเปิด Photos ได้โดยตรง
+gs.s4_pick=เลือกโฟลเดอร์สำหรับบันทึก
+gs.s4_more=เพิ่มโฟลเดอร์อื่น
+gs.s4_picked=เลือกแล้ว: {names}
+gs.s4_unsupported=เบราว์เซอร์นี้เลือกโฟลเดอร์ไม่ได้
+gs.s4_note=หากข้ามขั้นตอนนี้ ระบบจะดาวน์โหลดไฟล์ตามปกติ
+pick.title=บันทึกไปยังโฟลเดอร์ใด
+pick.added=เพิ่ม {names} แล้ว เลือกโฟลเดอร์ที่ Camera ควรบันทึกรูปภาพและวิดีโอลงไป
+pick.removed=โฟลเดอร์ที่ Camera บันทึกอยู่ถูกนำออกแล้ว เลือกโฟลเดอร์อื่นเพื่อบันทึก
+pick.multi=คุณเลือกหลายโฟลเดอร์ ต้องการให้ Camera บันทึกลงโฟลเดอร์ใด
+pick.ok=ใช้โฟลเดอร์นี้
+scan.hint=หันกล้องไปที่เอกสาร
+scan.page=กำลังสแกนหน้า {n}
+scan.cancel=ยกเลิก
+scan.add=เพิ่มหน้า
+scan.edit=ปรับมุมมอง
+scan.delete=ลบหน้านี้
+scan.share=แชร์
+scan.save_photo=บันทึกเป็นภาพถ่าย
+scan.save_pdf=บันทึกเป็น PDF
+scan.edit_cancel=ยกเลิก
+scan.edit_done=เสร็จสิ้น
+scan.title=หน้า {n} จาก {m}
+scan.share_fail=ไม่สามารถแชร์ที่นี่ได้ โปรดบันทึกแทน
+scan.saved_n=บันทึก {n} หน้าแล้ว
+dl.aria=กำลังดาวน์โหลดไลบรารี
+dl.title=กำลังดาวน์โหลดไลบรารี
+dl.opencv=OpenCV (ตรวจจับเอกสาร)
+scan.auto=ตรวจจับอัตโนมัติ
+dl.ml=ตัวตรวจจับเอกสารด้วย AI (DocCornerNet)
+dl.seg=การแบ่งส่วนด้วย AI สำหรับปก / วัตถุ (U²-Net-P)
+
+## --- Keyboard shortcuts ---
+sc.title=แป้นพิมพ์ลัด
+sc.group_cam=Camera
+sc.group_review=ตรวจสอบเอกสาร
+sc.group_edit=ปรับมุม
+sc.group_general=ทั่วไป
+sc.shutter=ถ่ายภาพ / บันทึก / หยุด
+sc.modes=สลับระหว่างวิดีโอ ภาพถ่าย และสแกน
+sc.mode_keys=วิดีโอ / ภาพถ่าย / สแกน
+sc.submodes=สลับโหมดย่อย
+sc.timer=เปลี่ยนตัวตั้งเวลา
+sc.mirror=กระจก
+sc.grid=เปิด/ปิดเส้นตาราง
+sc.filters=ฟิลเตอร์
+sc.switch=สลับกล้อง
+sc.mic=ปิด/เปิดเสียงไมโครโฟน
+sc.gallery=เปิดแกลเลอรีรูปภาพ
+sc.help=แสดงแป้นพิมพ์ลัด
+sc.cancel=ยกเลิกการนับถอยหลัง / ปิด
+sc.save_photo=บันทึกเป็นภาพถ่าย
+sc.save_pdf=บันทึกเป็น PDF
+sc.edit=ปรับมุม
+sc.add=เพิ่มหน้า
+sc.delete=ลบหน้า
+sc.pages=หน้าก่อนหน้า / ถัดไป
+sc.done=เสร็จสิ้น
+sc.auto=ตรวจจับอีกครั้ง
+sc.note=แป้นพิมพ์ลัดใช้ได้ไม่ว่าปุ่มใดจะถูกโฟกัสอยู่ และจะหยุดทำงานขณะมีกล่องโต้ตอบเปิดอยู่หรือขณะที่คุณกำลังพิมพ์
+key.space=Space
+key.enter=Enter
+key.esc=Esc
+key.del=Delete

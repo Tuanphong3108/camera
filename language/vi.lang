@@ -15,6 +15,7 @@ menu.open=Menu
 menu.folders=Thư mục lưu ảnh
 menu.language=Ngôn ngữ
 menu.getting_started=Hướng dẫn bắt đầu
+menu.shortcuts=Phím tắt
 menu.about=Về ứng dụng
 
 ## --- Chế độ ---
@@ -86,8 +87,9 @@ folders.unsupported=Trình duyệt này không hỗ trợ chọn thư mục lưu
 
 ## --- Hộp thoại ngôn ngữ ---
 lang.title=Ngôn ngữ
-lang.vi=Tiếng Việt
-lang.en=English
+lang.search=Tìm ngôn ngữ
+lang.auto=Theo ngôn ngữ thiết bị
+lang.none=Không tìm thấy ngôn ngữ nào
 
 ## --- Về ứng dụng ---
 about.title=Camera
@@ -174,3 +176,36 @@ dl.opencv=OpenCV (nhận diện tài liệu)
 scan.auto=Tự nhận diện
 dl.ml=AI nhận diện tài liệu (DocCornerNet)
 dl.seg=AI phân đoạn bìa / vật thể (U²-Net-P)
+
+## --- Phím tắt ---
+sc.title=Phím tắt
+sc.group_cam=Máy ảnh
+sc.group_review=Xem lại tài liệu
+sc.group_edit=Chỉnh góc
+sc.group_general=Chung
+sc.shutter=Chụp / quay / dừng
+sc.modes=Chuyển chế độ Video, Ảnh, Quét
+sc.mode_keys=Video / Ảnh / Quét
+sc.submodes=Chuyển chế độ phụ
+sc.timer=Đổi hẹn giờ
+sc.mirror=Lật gương
+sc.grid=Bật / tắt lưới
+sc.filters=Bộ lọc
+sc.switch=Đổi camera
+sc.mic=Bật / tắt micrô
+sc.gallery=Mở thư viện ảnh
+sc.help=Xem phím tắt
+sc.cancel=Huỷ đếm ngược / đóng
+sc.save_photo=Lưu thành ảnh
+sc.save_pdf=Lưu thành PDF
+sc.edit=Chỉnh góc
+sc.add=Thêm trang
+sc.delete=Xoá trang
+sc.pages=Trang trước / sau
+sc.done=Xong
+sc.auto=Tự nhận diện lại
+sc.note=Phím tắt hoạt động dù đang chọn bất kỳ nút nào; tạm tắt khi đang mở hộp thoại hoặc gõ chữ.
+key.space=Dấu cách
+key.enter=Enter
+key.esc=Esc
+key.del=Delete

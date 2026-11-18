@@ -1,0 +1,211 @@
+# =========================================================
+#  Camera — Archivo de idioma: Español
+#  Formato: clave=valor, una entrada por línea.
+#  Las líneas que empiezan con "#" son comentarios. "\n" es un salto de línea.
+#  {name} es un marcador que se rellena en tiempo de ejecución.
+#  Para añadir un idioma: crea language/<code>.lang y añade el código a LANGS en i18n.js.
+# =========================================================
+
+## --- Común ---
+common.close=Cerrar
+common.done=Listo
+
+## --- Menú de tres puntos ---
+menu.open=Menú
+menu.folders=Carpetas de guardado
+menu.language=Idioma
+menu.getting_started=Primeros pasos
+menu.shortcuts=Combinaciones de teclas
+menu.about=Acerca de
+
+## --- Modos ---
+mode.video=Video
+mode.photo=Foto
+mode.scan=Escanear
+sub.normal=Normal
+sub.gif=GIF
+sub.timelapse=Time lapse
+sub.document=Documento
+sub.qr=Código QR
+
+## --- Herramientas ---
+tool.mirror=Espejo
+tool.grid=Cuadrícula
+tool.timer=Temporizador
+tool.switch=Cambiar de cámara
+tool.mic=Micrófono
+tool.filter=Filtros
+timer.off=Desactivado
+timer.sec={n} segundos
+filter.none=Normal
+filter.sepia=Sepia
+filter.grayscale=Escala de grises
+filter.vivid=Vívido
+filter.invert=Invertir
+filter.saturate=Saturación
+filter.contrast=Contraste
+filter.brightness=Brillo
+
+## --- Obturador ---
+shutter.photo=Tomar foto
+shutter.record=Iniciar grabación
+shutter.stop=Detener grabación
+shutter.cancel=Cancelar cuenta regresiva
+thumb.open=Abrir Photos
+
+## --- Mensajes ---
+msg.no_camera=Tu navegador no admite el acceso a la cámara.
+msg.cam_error=No se puede acceder a la cámara. Verifica los permisos.
+msg.countdown=Iniciando cuenta regresiva de {n} segundos
+msg.recording=Grabando…
+msg.gif_encoding=Creando GIF…
+msg.tl_rendering=Creando video de time lapse…
+msg.saved_folder=Guardado en “{folder}”: {name}
+msg.saved_download=Descargado: {name}
+msg.perm_denied=No se concedió acceso de escritura a la carpeta, por lo que el archivo se descargó.
+msg.save_failed=No se pudo guardar el archivo.
+msg.no_qr=Este navegador no admite el escaneo de códigos QR.
+msg.opened_photos=Foto abierta en Photos
+msg.photos_fail=No se pudo enviar la foto a Photos; se abrirá la biblioteca de Photos
+msg.copied=Copiado
+qr.copy=Copiar
+qr.open=Abrir enlace
+
+## --- Diálogo de carpetas de guardado ---
+folders.title=Carpetas de guardado
+folders.desc=Las fotos y los videos se guardan en la carpeta seleccionada. Esta lista se comparte con Photos: añadir o quitar una carpeta aquí hace lo mismo allá, y viceversa.
+folders.empty=Aún no hay carpetas. Si no eliges una, los archivos se descargan como de costumbre.
+folders.add=Añadir carpeta
+folders.remove=Quitar de la lista (también deja de vigilarse en Photos)
+folders.active=Guardando aquí
+folders.select=Guardar en esta carpeta
+folders.reauth=Hay que volver a conceder el acceso
+folders.added=Carpeta “{name}” añadida
+folders.dup=Esta carpeta ya está en la lista
+folders.fail=No se pudo abrir la carpeta
+folders.unsupported=Este navegador no puede elegir una carpeta de guardado. Los archivos se descargan como de costumbre.
+
+## --- Diálogo de idioma ---
+lang.title=Idioma
+lang.search=Buscar idiomas
+lang.auto=Idioma del sistema
+lang.none=No se encontraron idiomas
+
+## --- Acerca de ---
+about.title=Camera
+about.sub=Una app de cámara que funciona directamente en tu navegador
+about.desc=Una PWA ligera con el estilo de la app Cámara de ChromeOS, para dispositivos sin app de cámara. Desarrollada por Phong VN.
+about.version=Versión
+about.developer=Desarrollador
+about.source=Código fuente
+
+## --- Primeros pasos (getting_started.html) ---
+gs.title=Primeros pasos - Camera
+gs.sub=Primeros pasos
+gs.skip=Omitir
+gs.back=Atrás
+gs.next=Siguiente
+gs.finish=Empezar a capturar
+gs.step=Paso {n} de {t}
+gs.name1=Bienvenida
+gs.name2=Modos
+gs.name3=Herramientas
+gs.name4=Dónde guardar
+gs.s1_title=Te damos la bienvenida a Camera
+gs.s1_desc=Camera funciona directamente en tu navegador: toma fotos, graba videos, crea GIF, escanea documentos y códigos QR, incluso sin conexión.
+gs.s1_pick=Elige tu idioma
+gs.s1_note=Las fotos y los videos se quedan en tu dispositivo y nunca se suben a ningún servidor.
+gs.s2_chip=Modos
+gs.s2_title=Captura, graba y escanea
+gs.s2_desc=Cambia entre los tres modos en la barra inferior.
+gs.s2_c1t=Video
+gs.s2_c1d=Graba video normal, crea un GIF (de hasta 5 segundos) o un video de time lapse.
+gs.s2_c2t=Foto
+gs.s2_c2d=Toma fotos con temporizador y con filtros aplicados directamente a la imagen.
+gs.s2_c3t=Escanear
+gs.s2_c3d=Captura un documento con más nitidez o escanea un código QR; el resultado aparece al instante para copiarlo o abrirlo.
+gs.s2_note=El temporizador también funciona al grabar video, algo que la app Cámara predeterminada no ofrece.
+gs.s3_chip=Herramientas
+gs.s3_title=Botones prácticos a un lado
+gs.s3_c1t=Temporizador
+gs.s3_c1d=Elige 3, 5 o 10 segundos. Presiona el obturador de nuevo durante la cuenta regresiva para cancelar.
+gs.s3_c2t=Espejo
+gs.s3_c2d=Voltea la vista previa y la foto como un espejo.
+gs.s3_c3t=Cuadrícula
+gs.s3_c3d=Activa una cuadrícula de 3×3 para componer tu toma.
+gs.s3_c4t=Filtros
+gs.s3_c4d=Sepia, escala de grises, vívido... previsualiza en vivo y aplícalos a tu foto.
+gs.s3_c5t=Cambiar de cámara
+gs.s3_c5d=Aparece cuando tu dispositivo tiene más de una cámara.
+gs.s3_c6t=Micrófono
+gs.s3_c6d=Silencia o activa el sonido mientras grabas video.
+gs.s4_chip=Almacenamiento
+gs.s4_title=Elige dónde guardar
+gs.s4_desc=Elige una carpeta para que Camera guarde las fotos y los videos. Puedes añadir o cambiar carpetas en cualquier momento desde el menú de tres puntos > Carpetas de guardado.
+gs.s4_c1t=Guardar directamente en una carpeta
+gs.s4_c1d=No hace falta descargar cada archivo: las fotos y los videos se escriben directamente en la carpeta que elijas.
+gs.s4_c2t=Conectado con Photos
+gs.s4_c2d=Esta carpeta también se añade a Photos, y el pequeño botón de foto en la esquina inferior derecha abre Photos directamente.
+gs.s4_pick=Elegir carpeta de guardado
+gs.s4_more=Añadir otra carpeta
+gs.s4_picked=Seleccionadas: {names}
+gs.s4_unsupported=Este navegador no puede elegir carpetas
+gs.s4_note=Si omites este paso, los archivos se descargan como de costumbre.
+pick.title=¿En qué carpeta guardar?
+pick.added=Se añadió {names}. Elige la carpeta en la que Camera debe guardar las fotos y los videos.
+pick.removed=Se quitó la carpeta en la que Camera estaba guardando. Elige otra carpeta para guardar.
+pick.multi=Elegiste varias carpetas. ¿En cuál debe guardar Camera?
+pick.ok=Usar esta carpeta
+scan.hint=Apunta la cámara a un documento
+scan.page=Escaneando la página {n}
+scan.cancel=Cancelar
+scan.add=Añadir página
+scan.edit=Ajustar perspectiva
+scan.delete=Eliminar esta página
+scan.share=Compartir
+scan.save_photo=Guardar como foto
+scan.save_pdf=Guardar como PDF
+scan.edit_cancel=Cancelar
+scan.edit_done=Listo
+scan.title=Página {n} de {m}
+scan.share_fail=Compartir no está disponible aquí. Guárdalo en su lugar.
+scan.saved_n=Se guardaron {n} páginas
+dl.aria=Descargando bibliotecas
+dl.title=Descargando bibliotecas
+dl.opencv=OpenCV (detección de documentos)
+scan.auto=Detección automática
+dl.ml=Detector de documentos con IA (DocCornerNet)
+dl.seg=Segmentación con IA para portadas / objetos (U²-Net-P)
+
+## --- Combinaciones de teclas ---
+sc.title=Combinaciones de teclas
+sc.group_cam=Cámara
+sc.group_review=Revisión de documentos
+sc.group_edit=Ajustar esquinas
+sc.group_general=General
+sc.shutter=Capturar / grabar / detener
+sc.modes=Cambiar entre Video, Foto y Escanear
+sc.mode_keys=Video / Foto / Escanear
+sc.submodes=Cambiar de submodo
+sc.timer=Cambiar temporizador
+sc.mirror=Espejo
+sc.grid=Mostrar u ocultar cuadrícula
+sc.filters=Filtros
+sc.switch=Cambiar de cámara
+sc.mic=Silenciar / activar micrófono
+sc.gallery=Abrir galería de fotos
+sc.help=Mostrar combinaciones de teclas
+sc.cancel=Cancelar cuenta regresiva / cerrar
+sc.save_photo=Guardar como foto
+sc.save_pdf=Guardar como PDF
+sc.edit=Ajustar esquinas
+sc.add=Añadir página
+sc.delete=Eliminar página
+sc.pages=Página anterior / siguiente
+sc.done=Listo
+sc.auto=Detectar de nuevo
+sc.note=Las combinaciones funcionan sin importar qué botón esté enfocado; se pausan mientras hay un diálogo abierto o estás escribiendo.
+key.space=Espacio
+key.enter=Intro
+key.esc=Esc
+key.del=Supr

@@ -15,6 +15,7 @@ menu.open=Menu
 menu.folders=Save folders
 menu.language=Language
 menu.getting_started=Getting started
+menu.shortcuts=Keyboard shortcuts
 menu.about=About
 
 ## --- Modes ---
@@ -86,8 +87,9 @@ folders.unsupported=This browser can't pick a save folder. Files are downloaded 
 
 ## --- Language dialog ---
 lang.title=Language
-lang.vi=Tiếng Việt
-lang.en=English
+lang.search=Search languages
+lang.auto=System language
+lang.none=No languages found
 
 ## --- About ---
 about.title=Camera
@@ -174,3 +176,36 @@ dl.opencv=OpenCV (document detection)
 scan.auto=Auto-detect
 dl.ml=Document AI detector (DocCornerNet)
 dl.seg=AI segmentation for covers / objects (U²-Net-P)
+
+## --- Keyboard shortcuts ---
+sc.title=Keyboard shortcuts
+sc.group_cam=Camera
+sc.group_review=Document review
+sc.group_edit=Adjust corners
+sc.group_general=General
+sc.shutter=Capture / record / stop
+sc.modes=Switch between Video, Photo and Scan
+sc.mode_keys=Video / Photo / Scan
+sc.submodes=Switch sub-mode
+sc.timer=Change timer
+sc.mirror=Mirror
+sc.grid=Toggle grid
+sc.filters=Filters
+sc.switch=Switch camera
+sc.mic=Mute / unmute microphone
+sc.gallery=Open photo gallery
+sc.help=Show shortcuts
+sc.cancel=Cancel countdown / close
+sc.save_photo=Save as photo
+sc.save_pdf=Save as PDF
+sc.edit=Adjust corners
+sc.add=Add page
+sc.delete=Delete page
+sc.pages=Previous / next page
+sc.done=Done
+sc.auto=Detect again
+sc.note=Shortcuts work whichever button is focused; they pause while a dialog is open or you are typing.
+key.space=Space
+key.enter=Enter
+key.esc=Esc
+key.del=Delete

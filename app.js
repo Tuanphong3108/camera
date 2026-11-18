@@ -473,11 +473,6 @@ async function shutterRun() {
   else await startVideo();
 }
 $('#shutter').onclick = shutter;
-window.addEventListener('keydown', e => {
-  if (e.target.closest && e.target.closest('md-dialog, #gs')) return;
-  if (e.key === 'Escape' && S.counting) S.counting.cancel();
-  else if ((e.key === ' ' || e.key === 'Enter') && !e.target.closest('button, md-icon-button, md-menu-item')) { e.preventDefault(); shutter(); }
-});
 
 
 /* ---------- Quét tài liệu (kiểu ChromeOS): khung bám tờ giấy → nắn phẳng → xem lại → thêm trang → lưu ảnh / PDF ---------- */
@@ -771,7 +766,6 @@ $$('#edBox .hd, #edBox .hm').forEach(el => {
   el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
 });
 window.addEventListener('resize', () => { if (SC.edit) fitEdit(); });
-window.addEventListener('keydown', e => { if (e.key === 'Escape' && SC.open && !e.target.closest('md-dialog')) { SC.edit ? endEdit(false) : closeScan(true); } });
 
 /* ---------- Quét mã QR ---------- */
 let qrTimer = null, qrDet = null, qrHide;
@@ -866,13 +860,95 @@ $('#miAbout').onclick = () => $('#dlgAbout').show();
 $('#btnAboutDone').onclick = () => $('#dlgAbout').close();
 $('#miGs').onclick = () => openGettingStarted();
 
-const dlgLang = $('#dlgLang');
-function syncLangRadios() { $$('md-radio', dlgLang).forEach(r => { r.checked = r.value === I18N.lang; }); }
-$('#miLang').onclick = () => { syncLangRadios(); dlgLang.show(); };
-$$('md-list-item[data-lang]', dlgLang).forEach(li => li.onclick = async () => { await I18N.set(li.dataset.lang); syncLangRadios(); });
+const dlgLang = $('#dlgLang'), langList = $('#langList'), langQ = $('#langQ');
+/* Danh sách ngôn ngữ kiểu Google: "Theo ngôn ngữ thiết bị" ở đầu, mỗi dòng có tên bản ngữ + tên tiếng Anh, gõ để lọc (không phân biệt hoa thường / dấu) */
+function renderLangs() {
+  const q = langQ.value.trim(), rows = q ? [] : [['auto', t('lang.auto'), '']];
+  I18N.search(q).forEach(l => rows.push([l[0], l[1], l[1] === l[2] ? '' : l[2]]));
+  langList.textContent = '';
+  rows.forEach(([code, name, sub]) => {
+    const li = document.createElement('md-list-item'); li.type = 'button'; li.dataset.lang = code;
+    li.innerHTML = '<md-radio slot="start" name="lang" touch-target="wrapper"></md-radio><div slot="headline"></div><div slot="supporting-text"></div>';
+    $('[slot=headline]', li).textContent = name; const sp = $('[slot=supporting-text]', li); sp.textContent = sub || (code === 'auto' ? I18N.list.filter(l => l[0] === I18N.lang).map(l => l[1])[0] : ''); if (!sp.textContent) sp.remove();
+    $('md-radio', li).checked = code === I18N.pref;
+    li.onclick = async () => { await I18N.set(code); renderLangs(); };
+    langList.appendChild(li);
+  });
+  $('#langNone').hidden = rows.length > 0;
+}
+$('#miLang').onclick = () => { langQ.value = ''; renderLangs(); dlgLang.show(); };
+langQ.addEventListener('input', renderLangs);
+langQ.addEventListener('keydown', e => { if (e.key === 'ArrowDown') { const f = $('md-list-item', langList); if (f) { e.preventDefault(); f.focus(); } } });
 $('#btnLangDone').onclick = () => dlgLang.close();
-document.addEventListener('i18n', () => { paintState(); paintIcons(); paintBadge(); dlPaint(); if (SC.open) paintScan(); });
+document.addEventListener('i18n', () => { if (dlgLang.open) renderLangs(); buildKeys(); paintState(); paintIcons(); paintBadge(); dlPaint(); if (SC.open) paintScan(); });
 $('#btnPickOk').onclick = () => $('#dlgPick').close();
+
+/* ---------- Phím tắt ---------- */
+const dlgKeys = $('#dlgKeys');
+const KEYMAP = [
+  ['sc.group_cam', [[['key.space', 'key.enter'], 'sc.shutter'], [['V', 'P', 'S'], 'sc.mode_keys'], [['↑', '↓'], 'sc.modes'], [['←', '→'], 'sc.submodes'], [['T'], 'sc.timer'], [['M'], 'sc.mirror'], [['G'], 'sc.grid'], [['F'], 'sc.filters'], [['C'], 'sc.switch'], [['A'], 'sc.mic'], [['O'], 'sc.gallery'], [['key.esc'], 'sc.cancel']]],
+  ['sc.group_review', [[['key.enter'], 'sc.save_photo'], [['D'], 'sc.save_pdf'], [['E'], 'sc.edit'], [['N'], 'sc.add'], [['key.del'], 'sc.delete'], [['←', '→'], 'sc.pages'], [['key.esc'], 'sc.cancel']]],
+  ['sc.group_edit', [[['key.enter'], 'sc.done'], [['A'], 'sc.auto'], [['key.esc'], 'sc.cancel']]],
+  ['sc.group_general', [[['?'], 'sc.help']]]
+];
+function buildKeys() {
+  const b = $('#keysBody'); b.textContent = '';
+  KEYMAP.forEach(([g, rows]) => {
+    const h = document.createElement('h3'); h.textContent = t(g); b.appendChild(h);
+    rows.forEach(([ks, d]) => {
+      const r = document.createElement('div'); r.className = 'row'; const s = document.createElement('span'); s.textContent = t(d);
+      const k = document.createElement('span'); k.className = 'keys'; ks.forEach(x => { const e = document.createElement('kbd'); e.textContent = x.startsWith('key.') ? t(x) : x; k.appendChild(e); });
+      r.append(s, k); b.appendChild(r);
+    });
+  });
+  const n = document.createElement('p'); n.className = 'note'; n.textContent = t('sc.note'); b.appendChild(n);
+}
+$('#miKeys').onclick = () => { buildKeys(); dlgKeys.show(); };
+$('#btnKeysDone').onclick = () => dlgKeys.close();
+const clickIf = id => { const el = $(id); if (el && !el.hidden && !el.disabled) el.click(); return !!el; };
+/* Bắt ở pha capture trên window: chạy trước mọi nút / thành phần, nên dấu cách / Enter không còn "bấm" nhầm nút đang focus (vd nút xoá). Phím nhả (keyup) cũng bị chặn vì nút kích hoạt bằng Space khi nhả phím */
+const hotkeys = new Set();
+function hotkeyBlocked(e) {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return true;
+  if (document.querySelector('md-dialog[open]') || (!$('#gs').hidden) || menu.open) return true;
+  const el = e.composedPath ? e.composedPath()[0] : e.target;
+  return !!(el && (el.isContentEditable || (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) && !/^(button|checkbox|radio|range|submit)$/.test(el.type || ''))));
+}
+function hotkey(e) {
+  /* Chữ cái theo vị trí phím (e.code) để dùng được cả khi bàn phím đang là Nga, Nhật, Thái... */
+  const k = /^Key[A-Z]$/.test(e.code) ? e.code[3].toLowerCase() : e.key.length === 1 ? e.key.toLowerCase() : e.key, ed = !!SC.edit, rv = SC.open && !ed;
+  if (k === '?' || (k === '/' && e.shiftKey)) { buildKeys(); dlgKeys.show(); return true; }
+  if (ed) {
+    if (k === 'Enter') return clickIf('#svEdDone'); if (k === 'Escape') return clickIf('#svEdCancel'); if (k === 'a') return clickIf('#svEdAuto');
+    return k === ' ';
+  }
+  if (rv) {
+    if (k === 'Enter') return clickIf('#svPhoto'); if (k === 'd') return clickIf('#svPdf'); if (k === 'e') return clickIf('#svEditBtn'); if (k === 'n') return clickIf('#svAdd');
+    if (k === 'Delete' || k === 'Backspace') return clickIf('#svDel'); if (k === 'Escape') return clickIf('#svCancel');
+    if ((k === 'ArrowLeft' || k === 'ArrowRight') && SC.pages.length > 1) { SC.cur = (SC.cur + (k === 'ArrowRight' ? 1 : -1) + SC.pages.length) % SC.pages.length; paintScan(); return true; }
+    return k === ' ';
+  }
+  if (k === ' ' || k === 'Enter') { shutter(); return true; }
+  if (k === 'Escape') { if (S.counting) { S.counting.cancel(); return true; } return false; }
+  if (S.rec || S.counting) return false;   /* đang quay / đếm ngược: chỉ chụp / dừng / Esc */
+  const modes = ['video', 'photo', 'scan'], mi = modes.indexOf(S.mode);
+  if (k === 'v' || k === 'p' || k === 's') return clickIf(`.mode[data-mode=${{ v: 'video', p: 'photo', s: 'scan' }[k]}]`);
+  if (k === 'ArrowUp' || k === 'ArrowDown') return clickIf(`.mode[data-mode=${modes[(mi + (k === 'ArrowDown' ? 1 : -1) + 3) % 3]}]`);
+  if (k === 'ArrowLeft' || k === 'ArrowRight') {
+    const bs = $$(`#subModes .sub[data-for=${S.mode}] button`); if (!bs.length) return false;
+    const cur = bs.findIndex(b => b.dataset.sub === S.sub[S.mode]); bs[(cur + (k === 'ArrowRight' ? 1 : -1) + bs.length) % bs.length].click(); return true;
+  }
+  const map = { t: '#btnTimer', m: '#btnMirror', g: '#btnGrid', f: '#btnFilter', c: '#btnSwitch', a: '#btnMic', o: '#thumb' };
+  return map[k] ? clickIf(map[k]) : false;
+}
+window.addEventListener('keydown', e => {
+  if (hotkeyBlocked(e)) return;
+  if (e.repeat && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); e.stopImmediatePropagation(); return; }
+  if (hotkey(e)) { hotkeys.add(e.key); e.preventDefault(); e.stopImmediatePropagation(); }
+}, true);
+window.addEventListener('keyup', e => {
+  if (hotkeys.delete(e.key)) { e.preventDefault(); e.stopImmediatePropagation(); }
+}, true);
 
 /* ---------- Hướng dẫn bắt đầu (iframe, giống music-player / photos) ---------- */
 const gsBox = $('#gs'), gsFrame = $('#gsFrame');

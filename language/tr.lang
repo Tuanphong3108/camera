@@ -1,0 +1,211 @@
+# =========================================================
+#  Camera — Dil dosyası: Türkçe
+#  Biçim: anahtar=değer, satır başına bir giriş.
+#  "#" ile başlayan satırlar yorumdur. "\n" satır sonudur.
+#  {name} çalışma sırasında doldurulan yer tutucudur.
+#  To add a language: create language/<code>.lang and add the code to LANGS in i18n.js.
+# =========================================================
+
+## --- Genel ---
+common.close=Kapat
+common.done=Bitti
+
+## --- Üç nokta menüsü ---
+menu.open=Menü
+menu.folders=Kayıt klasörleri
+menu.language=Dil
+menu.getting_started=Başlarken
+menu.shortcuts=Klavye kısayolları
+menu.about=Hakkında
+
+## --- Modlar ---
+mode.video=Video
+mode.photo=Fotoğraf
+mode.scan=Tara
+sub.normal=Normal
+sub.gif=GIF
+sub.timelapse=Hızlandırılmış
+sub.document=Belge
+sub.qr=QR Kodu
+
+## --- Araçlar ---
+tool.mirror=Ayna
+tool.grid=Izgara
+tool.timer=Zamanlayıcı
+tool.switch=Kamerayı değiştir
+tool.mic=Mikrofon
+tool.filter=Filtreler
+timer.off=Kapalı
+timer.sec={n} saniye
+filter.none=Normal
+filter.sepia=Sepya
+filter.grayscale=Gri tonlama
+filter.vivid=Canlı
+filter.invert=Ters çevir
+filter.saturate=Doygunluk
+filter.contrast=Kontrast
+filter.brightness=Parlaklık
+
+## --- Deklanşör ---
+shutter.photo=Fotoğraf çek
+shutter.record=Kaydı başlat
+shutter.stop=Kaydı durdur
+shutter.cancel=Geri sayımı iptal et
+thumb.open=Photos'u aç
+
+## --- Mesajlar ---
+msg.no_camera=Tarayıcınız kamera erişimini desteklemiyor.
+msg.cam_error=Kameraya erişilemiyor. Lütfen izinleri kontrol edin.
+msg.countdown={n} saniyelik geri sayım başlıyor
+msg.recording=Kaydediliyor…
+msg.gif_encoding=GIF oluşturuluyor…
+msg.tl_rendering=Hızlandırılmış video oluşturuluyor…
+msg.saved_folder=“{folder}” klasörüne kaydedildi: {name}
+msg.saved_download=İndirildi: {name}
+msg.perm_denied=Klasöre yazma izni verilmedi, bu yüzden dosya indirildi.
+msg.save_failed=Dosya kaydedilemedi.
+msg.no_qr=Bu tarayıcı QR kodu taramayı desteklemiyor.
+msg.opened_photos=Fotoğraf Photos'ta açıldı
+msg.photos_fail=Fotoğraf Photos'a gönderilemedi, bunun yerine Photos kitaplığı açılıyor
+msg.copied=Kopyalandı
+qr.copy=Kopyala
+qr.open=Bağlantıyı aç
+
+## --- Kayıt klasörleri iletişim kutusu ---
+folders.title=Kayıt klasörleri
+folders.desc=Fotoğraflar ve videolar seçilen klasöre kaydedilir. Bu liste Photos ile paylaşılır: burada bir klasör eklemek veya kaldırmak orada da aynı etkiyi yapar, tersi de geçerlidir.
+folders.empty=Henüz klasör yok. Klasör seçmezseniz dosyalar her zamanki gibi indirilir.
+folders.add=Klasör ekle
+folders.remove=Listeden kaldır (Photos'ta izlemeyi de durdur)
+folders.active=Buraya kaydediliyor
+folders.select=Bu klasöre kaydet
+folders.reauth=Erişim yeniden verilmeli
+folders.added=“{name}” klasörü eklendi
+folders.dup=Bu klasör zaten listede
+folders.fail=Klasör açılamadı
+folders.unsupported=Bu tarayıcı kayıt klasörü seçemiyor. Dosyalar her zamanki gibi indirilir.
+
+## --- Dil iletişim kutusu ---
+lang.title=Dil
+lang.search=Dil ara
+lang.auto=Sistem dili
+lang.none=Dil bulunamadı
+
+## --- Hakkında ---
+about.title=Camera
+about.sub=Doğrudan tarayıcınızda çalışan bir kamera uygulaması
+about.desc=Kamera uygulaması olmayan cihazlar için ChromeOS Camera uygulamasından esinlenen hafif bir PWA. Geliştirici: Phong VN.
+about.version=Sürüm
+about.developer=Geliştirici
+about.source=Kaynak kodu
+
+## --- Başlarken (getting_started.html) ---
+gs.title=Başlarken - Camera
+gs.sub=Başlarken
+gs.skip=Atla
+gs.back=Geri
+gs.next=İleri
+gs.finish=Çekime başla
+gs.step=Adım {n} / {t}
+gs.name1=Hoş geldiniz
+gs.name2=Modlar
+gs.name3=Araçlar
+gs.name4=Kayıt yeri
+gs.s1_title=Camera'ya hoş geldiniz
+gs.s1_desc=Camera doğrudan tarayıcınızda çalışır: fotoğraf çekin, video kaydedin, GIF oluşturun, belgeleri ve QR kodlarını tarayın; internet bağlantısı olmadan bile.
+gs.s1_pick=Dilinizi seçin
+gs.s1_note=Fotoğraflar ve videolar cihazınızda kalır, hiçbir sunucuya yüklenmez.
+gs.s2_chip=Modlar
+gs.s2_title=Çekin, kaydedin ve tarayın
+gs.s2_desc=Alt çubuktaki üç mod arasında geçiş yapın.
+gs.s2_c1t=Video
+gs.s2_c1d=Normal video kaydedin, GIF (en fazla 5 saniye) veya hızlandırılmış video oluşturun.
+gs.s2_c2t=Fotoğraf
+gs.s2_c2d=Zamanlayıcıyla fotoğraf çekin, filtreleri doğrudan görüntüye uygulayın.
+gs.s2_c3t=Tara
+gs.s2_c3d=Daha net bir belge görüntüsü alın veya QR kodu tarayın; sonuç hemen kopyalamak veya açmak için görünür.
+gs.s2_note=Zamanlayıcı video kaydederken de çalışır; varsayılan Camera uygulaması bunu sunmaz.
+gs.s3_chip=Araçlar
+gs.s3_title=Yan taraftaki pratik düğmeler
+gs.s3_c1t=Zamanlayıcı
+gs.s3_c1d=3, 5 veya 10 saniye seçin. İptal etmek için geri sayım sırasında deklanşöre tekrar basın.
+gs.s3_c2t=Ayna
+gs.s3_c2d=Önizlemeyi ve fotoğrafı ayna gibi çevirin.
+gs.s3_c3t=Izgara
+gs.s3_c3d=Çekiminizi kadrajlamak için 3×3 ızgarayı açın.
+gs.s3_c4t=Filtreler
+gs.s3_c4d=Sepya, gri tonlama, canlı... canlı önizleyin ve fotoğrafınıza uygulayın.
+gs.s3_c5t=Kamerayı değiştir
+gs.s3_c5d=Cihazınızda birden fazla kamera olduğunda görünür.
+gs.s3_c6t=Mikrofon
+gs.s3_c6d=Video kaydederken sesi kapatın veya açın.
+gs.s4_chip=Depolama
+gs.s4_title=Kayıt yerini seçin
+gs.s4_desc=Camera'nın fotoğrafları ve videoları kaydedeceği bir klasör seçin. Klasörleri istediğiniz zaman üç nokta menüsü > Kayıt klasörleri bölümünden ekleyebilir veya değiştirebilirsiniz.
+gs.s4_c1t=Doğrudan klasöre kaydet
+gs.s4_c1d=Her dosyayı indirmeniz gerekmez: fotoğraflar ve videolar doğrudan seçtiğiniz klasöre yazılır.
+gs.s4_c2t=Photos ile bağlantılı
+gs.s4_c2d=Bu klasör Photos'a da eklenir ve sağ alttaki küçük fotoğraf düğmesi Photos'u doğrudan açar.
+gs.s4_pick=Kayıt klasörünü seç
+gs.s4_more=Başka klasör ekle
+gs.s4_picked=Seçilen: {names}
+gs.s4_unsupported=Bu tarayıcı klasör seçemiyor
+gs.s4_note=Bu adımı atlarsanız dosyalar her zamanki gibi indirilir.
+pick.title=Hangi klasöre kaydedilsin?
+pick.added={names} eklendi. Camera'nın fotoğrafları ve videoları kaydedeceği klasörü seçin.
+pick.removed=Camera'nın kaydettiği klasör kaldırıldı. Kaydetmek için başka bir klasör seçin.
+pick.multi=Birden fazla klasör seçtiniz. Camera hangisine kaydetsin?
+pick.ok=Bu klasörü kullan
+scan.hint=Kamerayı bir belgeye doğrultun
+scan.page=Sayfa {n} taranıyor
+scan.cancel=İptal
+scan.add=Sayfa ekle
+scan.edit=Perspektifi ayarla
+scan.delete=Bu sayfayı sil
+scan.share=Paylaş
+scan.save_photo=Fotoğraf olarak kaydet
+scan.save_pdf=PDF olarak kaydet
+scan.edit_cancel=İptal
+scan.edit_done=Bitti
+scan.title=Sayfa {n} / {m}
+scan.share_fail=Burada paylaşım kullanılamıyor. Bunun yerine kaydedin.
+scan.saved_n={n} sayfa kaydedildi
+dl.aria=Kitaplıklar indiriliyor
+dl.title=Kitaplıklar indiriliyor
+dl.opencv=OpenCV (belge algılama)
+scan.auto=Otomatik algıla
+dl.ml=Yapay zekâ belge algılayıcı (DocCornerNet)
+dl.seg=Kapak / nesneler için yapay zekâ bölütleme (U²-Net-P)
+
+## --- Klavye kısayolları ---
+sc.title=Klavye kısayolları
+sc.group_cam=Kamera
+sc.group_review=Belge incelemesi
+sc.group_edit=Köşeleri ayarla
+sc.group_general=Genel
+sc.shutter=Çek / kaydet / durdur
+sc.modes=Video, Fotoğraf ve Tara arasında geçiş yap
+sc.mode_keys=Video / Fotoğraf / Tara
+sc.submodes=Alt modu değiştir
+sc.timer=Zamanlayıcıyı değiştir
+sc.mirror=Ayna
+sc.grid=Izgarayı aç/kapat
+sc.filters=Filtreler
+sc.switch=Kamerayı değiştir
+sc.mic=Mikrofonu sessize al / sesi aç
+sc.gallery=Fotoğraf galerisini aç
+sc.help=Kısayolları göster
+sc.cancel=Geri sayımı iptal et / kapat
+sc.save_photo=Fotoğraf olarak kaydet
+sc.save_pdf=PDF olarak kaydet
+sc.edit=Köşeleri ayarla
+sc.add=Sayfa ekle
+sc.delete=Sayfayı sil
+sc.pages=Önceki / sonraki sayfa
+sc.done=Bitti
+sc.auto=Yeniden algıla
+sc.note=Kısayollar hangi düğme odaktayken olursa olsun çalışır; bir iletişim kutusu açıkken veya yazı yazarken duraklatılır.
+key.space=Boşluk
+key.enter=Enter
+key.esc=Esc
+key.del=Delete

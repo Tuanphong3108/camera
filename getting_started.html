@@ -63,7 +63,14 @@
   .btn[disabled] { opacity:.35; pointer-events:none; }
   .dots { display:flex; gap:6px; } .dot { width:8px; height:8px; border-radius:99px; background:var(--c3); transition:width .35s var(--spring), background .2s; } .dot.active { width:26px; background:var(--primary); }
   .pick { align-self:center; }
-  .lang { display:flex; gap:8px; justify-content:center; } .lang .btn { padding:10px 20px; } .lang .btn[aria-pressed=true] { background:var(--primary); color:var(--on-primary); }
+  .lang { display:flex; justify-content:center; position:relative; } .lang .btn { padding:10px 20px; }
+  .lang-pop { position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%); z-index:5; width:min(340px,92vw); padding:10px; border-radius:24px; background:var(--c2,#262a21); box-shadow:0 12px 36px rgba(0,0,0,.5); display:flex; flex-direction:column; gap:6px; }
+  .lang-pop[hidden] { display:none; }
+  .lang-q { display:flex; align-items:center; gap:10px; height:44px; padding:0 14px; border-radius:22px; background:var(--c3); color:var(--on-sc); } .lang-q input { flex:1; min-width:0; border:0; outline:0; background:none; color:inherit; font:500 15px var(--font); }
+  #langList { max-height:260px; overflow:auto; display:flex; flex-direction:column; }
+  #langList button { display:flex; flex-direction:column; align-items:flex-start; gap:1px; text-align:left; border:0; background:none; color:inherit; font:600 14px var(--font); padding:9px 14px; border-radius:14px; cursor:pointer; }
+  #langList button small { font-weight:400; font-size:12px; opacity:.7; } #langList button:hover, #langList button:focus-visible { background:var(--c3); outline:0; } #langList button[aria-selected=true] { background:var(--primary); color:var(--on-primary); }
+  #langNone { margin:8px; font-size:13px; opacity:.7; }
   .picked { display:none; align-items:center; gap:10px; padding:12px 18px; border-radius:20px; background:var(--pc); color:var(--on-pc); font-weight:600; font-size:14px; align-self:center; }
   .picked.show { display:inline-flex; } .picked .ms { color:var(--primary); }
   @media (max-width:720px) { .g3,.g2 { grid-template-columns:1fr; } .dots { display:none; } .btn { padding:13px 20px; } .hero { width:88px; height:88px; border-radius:30px; } .hero img { width:52px; height:52px; } }
@@ -83,7 +90,14 @@
       <div class="hero"><img src="icon.png" alt=""></div>
       <h2 data-i18n="gs.s1_title"></h2>
       <p class="lead" data-i18n="gs.s1_desc"></p>
-      <div class="lang" role="group" aria-label="Language"><button class="btn tonal" data-l="vi">Tiếng Việt</button><button class="btn tonal" data-l="en">English</button></div>
+      <div class="lang" role="group" aria-label="Language">
+        <button class="btn tonal" id="langBtn" aria-haspopup="listbox" aria-expanded="false"><span class="ms" data-i="language"></span><span id="langName"></span></button>
+        <div class="lang-pop" id="langPop" hidden>
+          <label class="lang-q"><span class="ms" data-i="search"></span><input id="langQ" type="search" autocomplete="off" spellcheck="false" data-i18n-ph="lang.search"></label>
+          <div id="langList" role="listbox"></div>
+          <p id="langNone" hidden data-i18n="lang.none"></p>
+        </div>
+      </div>
       <div class="note"><span class="ms" data-i="lock"></span><span data-i18n="gs.s1_note"></span></div>
     </div></section>
 
@@ -152,7 +166,7 @@
     var last = st.step === TOTAL - 1;
     $('#nextText').textContent = I18N.t(last ? 'gs.finish' : 'gs.next');
     $('#nextIco').dataset.i = last ? 'play_arrow' : 'arrow_forward'; paintIcons($('#nextIco').parentNode);
-    $$('.lang .btn').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.l === I18N.lang); });
+    langPaint();
     var names = picked.map(function (x) { return x.name; }).join(', ');
     $('#pickText').textContent = !window.showDirectoryPicker ? I18N.t('gs.s4_unsupported') : I18N.t(picked.length ? 'gs.s4_more' : 'gs.s4_pick');
     $('#pickedName').textContent = I18N.t('gs.s4_picked', { names: names });
@@ -172,10 +186,29 @@
     } catch (e) {}
   };
   window.addEventListener('keydown', function (e) {
+    if (e.target && e.target.tagName === 'INPUT') return;
     if (e.key === 'ArrowRight' && st.step < TOTAL - 1) go(st.step + 1);
     else if (e.key === 'ArrowLeft' && st.step > 0) go(st.step - 1);
   });
-  $$('.lang .btn').forEach(function (b) { b.onclick = function () { if (b.dataset.l !== I18N.lang) I18N.set(b.dataset.l).then(ui); }; });
+  /* Chọn ngôn ngữ: nút hiện ngôn ngữ hiện tại, bấm mở bảng có ô tìm kiếm (lọc theo tên bản ngữ / tiếng Anh) */
+  var pop = $('#langPop'), lq = $('#langQ');
+  function langPaint() {
+    var cur = I18N.list.filter(function (l) { return l[0] === I18N.lang; })[0]; $('#langName').textContent = cur ? cur[1] : I18N.lang;
+    var q = lq.value.trim(), box = $('#langList'); box.textContent = '';
+    var rows = I18N.search(q).map(function (l) { return [l[0], l[1], l[1] === l[2] ? '' : l[2]]; });
+    if (!q) rows.unshift(['auto', I18N.t('lang.auto'), '']);
+    rows.forEach(function (r) {
+      var b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', r[0] === I18N.pref);
+      b.innerHTML = '<span></span><small></small>'; b.firstChild.textContent = r[1]; if (r[2]) b.lastChild.textContent = r[2]; else b.lastChild.remove();
+      b.onclick = function () { pop.hidden = true; $('#langBtn').setAttribute('aria-expanded', 'false'); I18N.set(r[0]).then(ui); };
+      box.appendChild(b);
+    });
+    $('#langNone').hidden = rows.length > 0;
+  }
+  $('#langBtn').onclick = function (e) { e.stopPropagation(); pop.hidden = !pop.hidden; this.setAttribute('aria-expanded', String(!pop.hidden)); if (!pop.hidden) { lq.value = ''; langPaint(); lq.focus(); } };
+  lq.oninput = langPaint; pop.onclick = function (e) { e.stopPropagation(); };
+  document.addEventListener('click', function () { pop.hidden = true; $('#langBtn').setAttribute('aria-expanded', 'false'); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !pop.hidden) { pop.hidden = true; e.stopPropagation(); } }, true);
   document.addEventListener('i18n', ui);
   I18N.ready.then(function () { paintIcons(); ui(); });
 })();

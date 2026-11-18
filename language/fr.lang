@@ -1,0 +1,211 @@
+# =========================================================
+#  Camera — Fichier de langue : Français
+#  Format : clé=valeur, une entrée par ligne.
+#  Les lignes commençant par "#" sont des commentaires. "\n" est un saut de ligne.
+#  {name} est un espace réservé rempli à l'exécution.
+#  Pour ajouter une langue : créez language/<code>.lang et ajoutez le code à LANGS dans i18n.js.
+# =========================================================
+
+## --- Commun ---
+common.close=Fermer
+common.done=Terminé
+
+## --- Menu à trois points ---
+menu.open=Menu
+menu.folders=Dossiers d'enregistrement
+menu.language=Langue
+menu.getting_started=Premiers pas
+menu.shortcuts=Raccourcis clavier
+menu.about=À propos
+
+## --- Modes ---
+mode.video=Vidéo
+mode.photo=Photo
+mode.scan=Numériser
+sub.normal=Normal
+sub.gif=GIF
+sub.timelapse=Accéléré
+sub.document=Document
+sub.qr=Code QR
+
+## --- Outils ---
+tool.mirror=Miroir
+tool.grid=Grille
+tool.timer=Minuteur
+tool.switch=Changer de caméra
+tool.mic=Microphone
+tool.filter=Filtres
+timer.off=Désactivé
+timer.sec={n} secondes
+filter.none=Normal
+filter.sepia=Sépia
+filter.grayscale=Niveaux de gris
+filter.vivid=Éclatant
+filter.invert=Inverser
+filter.saturate=Saturation
+filter.contrast=Contraste
+filter.brightness=Luminosité
+
+## --- Déclencheur ---
+shutter.photo=Prendre une photo
+shutter.record=Démarrer l'enregistrement
+shutter.stop=Arrêter l'enregistrement
+shutter.cancel=Annuler le compte à rebours
+thumb.open=Ouvrir Photos
+
+## --- Messages ---
+msg.no_camera=Votre navigateur ne prend pas en charge l'accès à la caméra.
+msg.cam_error=Impossible d'accéder à la caméra. Vérifiez les autorisations.
+msg.countdown=Compte à rebours de {n} secondes lancé
+msg.recording=Enregistrement…
+msg.gif_encoding=Création du GIF…
+msg.tl_rendering=Création de la vidéo accélérée…
+msg.saved_folder=Enregistré dans « {folder} » : {name}
+msg.saved_download=Téléchargé : {name}
+msg.perm_denied=L'accès en écriture au dossier n'a pas été accordé, le fichier a donc été téléchargé.
+msg.save_failed=Impossible d'enregistrer le fichier.
+msg.no_qr=Ce navigateur ne prend pas en charge la lecture des codes QR.
+msg.opened_photos=Photo ouverte dans Photos
+msg.photos_fail=Impossible d'envoyer la photo à Photos, ouverture de la bibliothèque Photos à la place
+msg.copied=Copié
+qr.copy=Copier
+qr.open=Ouvrir le lien
+
+## --- Boîte de dialogue des dossiers d'enregistrement ---
+folders.title=Dossiers d'enregistrement
+folders.desc=Les photos et les vidéos sont enregistrées dans le dossier sélectionné. Cette liste est partagée avec Photos : ajouter ou supprimer un dossier ici fait de même là-bas, et inversement.
+folders.empty=Aucun dossier pour le moment. Si vous n'en choisissez pas, les fichiers sont téléchargés comme d'habitude.
+folders.add=Ajouter un dossier
+folders.remove=Retirer de la liste (arrête aussi la surveillance dans Photos)
+folders.active=Enregistrement ici
+folders.select=Enregistrer dans ce dossier
+folders.reauth=L'accès doit être accordé à nouveau
+folders.added=Dossier « {name} » ajouté
+folders.dup=Ce dossier figure déjà dans la liste
+folders.fail=Impossible d'ouvrir le dossier
+folders.unsupported=Ce navigateur ne permet pas de choisir un dossier d'enregistrement. Les fichiers sont téléchargés comme d'habitude.
+
+## --- Boîte de dialogue de la langue ---
+lang.title=Langue
+lang.search=Rechercher une langue
+lang.auto=Langue du système
+lang.none=Aucune langue trouvée
+
+## --- À propos ---
+about.title=Camera
+about.sub=Une application d'appareil photo qui s'exécute directement dans votre navigateur
+about.desc=Une PWA légère inspirée de l'application Appareil photo de ChromeOS, pour les appareils sans application d'appareil photo. Développée par Phong VN.
+about.version=Version
+about.developer=Développeur
+about.source=Code source
+
+## --- Premiers pas (getting_started.html) ---
+gs.title=Premiers pas - Camera
+gs.sub=Premiers pas
+gs.skip=Passer
+gs.back=Retour
+gs.next=Suivant
+gs.finish=Commencer à photographier
+gs.step=Étape {n} sur {t}
+gs.name1=Bienvenue
+gs.name2=Modes
+gs.name3=Outils
+gs.name4=Où enregistrer
+gs.s1_title=Bienvenue dans Camera
+gs.s1_desc=Camera s'exécute directement dans votre navigateur : prenez des photos, enregistrez des vidéos, créez des GIF, numérisez des documents et des codes QR, même sans connexion.
+gs.s1_pick=Choisissez votre langue
+gs.s1_note=Les photos et les vidéos restent sur votre appareil et ne sont jamais envoyées à un serveur.
+gs.s2_chip=Modes
+gs.s2_title=Photographiez, filmez et numérisez
+gs.s2_desc=Passez d'un mode à l'autre grâce à la barre du bas.
+gs.s2_c1t=Vidéo
+gs.s2_c1d=Enregistrez une vidéo normale, créez un GIF (jusqu'à 5 secondes) ou une vidéo accélérée.
+gs.s2_c2t=Photo
+gs.s2_c2d=Prenez des photos avec un minuteur et des filtres appliqués directement à l'image.
+gs.s2_c3t=Numériser
+gs.s2_c3d=Capturez un document plus net ou numérisez un code QR ; le résultat s'affiche aussitôt pour le copier ou l'ouvrir.
+gs.s2_note=Le minuteur fonctionne aussi pendant l'enregistrement vidéo, ce que l'application Appareil photo par défaut ne propose pas.
+gs.s3_chip=Outils
+gs.s3_title=Des boutons pratiques sur le côté
+gs.s3_c1t=Minuteur
+gs.s3_c1d=Choisissez 3, 5 ou 10 secondes. Appuyez de nouveau sur le déclencheur pendant le compte à rebours pour annuler.
+gs.s3_c2t=Miroir
+gs.s3_c2d=Inversez l'aperçu et la photo comme dans un miroir.
+gs.s3_c3t=Grille
+gs.s3_c3d=Activez une grille 3×3 pour composer votre cliché.
+gs.s3_c4t=Filtres
+gs.s3_c4d=Sépia, niveaux de gris, éclatant… prévisualisez en direct et appliquez-les à votre photo.
+gs.s3_c5t=Changer de caméra
+gs.s3_c5d=S'affiche lorsque votre appareil dispose de plusieurs caméras.
+gs.s3_c6t=Microphone
+gs.s3_c6d=Coupez ou réactivez le son pendant l'enregistrement vidéo.
+gs.s4_chip=Stockage
+gs.s4_title=Choisissez où enregistrer
+gs.s4_desc=Choisissez un dossier dans lequel Camera enregistrera les photos et les vidéos. Vous pouvez ajouter ou modifier des dossiers à tout moment depuis le menu à trois points > Dossiers d'enregistrement.
+gs.s4_c1t=Enregistrer directement dans un dossier
+gs.s4_c1d=Inutile de télécharger chaque fichier : les photos et les vidéos sont écrites directement dans le dossier que vous choisissez.
+gs.s4_c2t=Connecté à Photos
+gs.s4_c2d=Ce dossier est aussi ajouté à Photos, et le petit bouton photo en bas à droite ouvre directement Photos.
+gs.s4_pick=Choisir le dossier d'enregistrement
+gs.s4_more=Ajouter un autre dossier
+gs.s4_picked=Sélectionné : {names}
+gs.s4_unsupported=Ce navigateur ne permet pas de choisir des dossiers
+gs.s4_note=Si vous ignorez cette étape, les fichiers sont téléchargés comme d'habitude.
+pick.title=Enregistrer dans quel dossier ?
+pick.added={names} ajouté. Choisissez le dossier dans lequel Camera doit enregistrer les photos et les vidéos.
+pick.removed=Le dossier dans lequel Camera enregistrait a été supprimé. Choisissez un autre dossier d'enregistrement.
+pick.multi=Vous avez choisi plusieurs dossiers. Dans lequel Camera doit-il enregistrer ?
+pick.ok=Utiliser ce dossier
+scan.hint=Pointez la caméra vers un document
+scan.page=Numérisation de la page {n}
+scan.cancel=Annuler
+scan.add=Ajouter une page
+scan.edit=Ajuster la perspective
+scan.delete=Supprimer cette page
+scan.share=Partager
+scan.save_photo=Enregistrer en tant que photo
+scan.save_pdf=Enregistrer en PDF
+scan.edit_cancel=Annuler
+scan.edit_done=Terminé
+scan.title=Page {n} sur {m}
+scan.share_fail=Le partage n'est pas disponible ici. Enregistrez-le plutôt.
+scan.saved_n={n} pages enregistrées
+dl.aria=Téléchargement des bibliothèques
+dl.title=Téléchargement des bibliothèques
+dl.opencv=OpenCV (détection de documents)
+scan.auto=Détection auto
+dl.ml=Détecteur de documents par IA (DocCornerNet)
+dl.seg=Segmentation par IA pour couvertures / objets (U²-Net-P)
+
+## --- Raccourcis clavier ---
+sc.title=Raccourcis clavier
+sc.group_cam=Caméra
+sc.group_review=Révision du document
+sc.group_edit=Ajuster les coins
+sc.group_general=Général
+sc.shutter=Capturer / enregistrer / arrêter
+sc.modes=Passer de Vidéo à Photo et Numériser
+sc.mode_keys=Vidéo / Photo / Numériser
+sc.submodes=Changer de sous-mode
+sc.timer=Modifier le minuteur
+sc.mirror=Miroir
+sc.grid=Afficher/masquer la grille
+sc.filters=Filtres
+sc.switch=Changer de caméra
+sc.mic=Couper / réactiver le microphone
+sc.gallery=Ouvrir la galerie de photos
+sc.help=Afficher les raccourcis
+sc.cancel=Annuler le compte à rebours / fermer
+sc.save_photo=Enregistrer en tant que photo
+sc.save_pdf=Enregistrer en PDF
+sc.edit=Ajuster les coins
+sc.add=Ajouter une page
+sc.delete=Supprimer la page
+sc.pages=Page précédente / suivante
+sc.done=Terminé
+sc.auto=Détecter à nouveau
+sc.note=Les raccourcis fonctionnent quel que soit le bouton sélectionné ; ils sont suspendus lorsqu'une boîte de dialogue est ouverte ou pendant la saisie.
+key.space=Espace
+key.enter=Entrée
+key.esc=Échap
+key.del=Suppr

@@ -1,0 +1,211 @@
+# =========================================================
+#  Camera — Language file: Українська
+#  Format: key=value, one entry per line.
+#  Lines starting with "#" are comments. "\n" is a line break.
+#  {name} is a placeholder filled in at runtime.
+#  To add a language: create language/<code>.lang and add the code to LANGS in i18n.js.
+# =========================================================
+
+## --- Common ---
+common.close=Закрити
+common.done=Готово
+
+## --- Three-dot menu ---
+menu.open=Меню
+menu.folders=Папки збереження
+menu.language=Мова
+menu.getting_started=Початок роботи
+menu.shortcuts=Комбінації клавіш
+menu.about=Про застосунок
+
+## --- Modes ---
+mode.video=Відео
+mode.photo=Фото
+mode.scan=Сканування
+sub.normal=Звичайне
+sub.gif=GIF
+sub.timelapse=Таймлапс
+sub.document=Документ
+sub.qr=QR-код
+
+## --- Tools ---
+tool.mirror=Дзеркало
+tool.grid=Сітка
+tool.timer=Таймер
+tool.switch=Змінити камеру
+tool.mic=Мікрофон
+tool.filter=Фільтри
+timer.off=Вимкнено
+timer.sec={n} с
+filter.none=Звичайний
+filter.sepia=Сепія
+filter.grayscale=Відтінки сірого
+filter.vivid=Яскравий
+filter.invert=Інверсія
+filter.saturate=Насиченість
+filter.contrast=Контраст
+filter.brightness=Яскравість
+
+## --- Shutter ---
+shutter.photo=Зробити фото
+shutter.record=Почати запис
+shutter.stop=Зупинити запис
+shutter.cancel=Скасувати відлік
+thumb.open=Відкрити Photos
+
+## --- Messages ---
+msg.no_camera=Ваш браузер не підтримує доступ до камери.
+msg.cam_error=Не вдалося отримати доступ до камери. Перевірте дозволи.
+msg.countdown=Відлік розпочато: {n} с
+msg.recording=Запис…
+msg.gif_encoding=Створення GIF…
+msg.tl_rendering=Створення відео таймлапс…
+msg.saved_folder=Збережено в «{folder}»: {name}
+msg.saved_download=Завантажено: {name}
+msg.perm_denied=Дозвіл на запис у папку не надано, тому файл завантажено.
+msg.save_failed=Не вдалося зберегти файл.
+msg.no_qr=Цей браузер не підтримує сканування QR-кодів.
+msg.opened_photos=Фото відкрито в Photos
+msg.photos_fail=Не вдалося надіслати фото до Photos, відкриваємо бібліотеку Photos
+msg.copied=Скопійовано
+qr.copy=Копіювати
+qr.open=Відкрити посилання
+
+## --- Save folders dialog ---
+folders.title=Папки збереження
+folders.desc=Фото й відео зберігаються у вибрану папку. Цей список спільний із Photos: додавання чи видалення папки тут діє й там, і навпаки.
+folders.empty=Папок ще немає. Якщо не вибрати жодної, файли завантажуватимуться як зазвичай.
+folders.add=Додати папку
+folders.remove=Видалити зі списку (також припинити відстеження в Photos)
+folders.active=Збереження тут
+folders.select=Зберігати в цю папку
+folders.reauth=Потрібно знову надати доступ
+folders.added=Папку «{name}» додано
+folders.dup=Ця папка вже є в списку
+folders.fail=Не вдалося відкрити папку
+folders.unsupported=Цей браузер не може вибрати папку збереження. Файли завантажуються як зазвичай.
+
+## --- Language dialog ---
+lang.title=Мова
+lang.search=Пошук мов
+lang.auto=Мова системи
+lang.none=Мов не знайдено
+
+## --- About ---
+about.title=Camera
+about.sub=Застосунок камери, що працює прямо у браузері
+about.desc=Легкий PWA у стилі застосунку Camera з ChromeOS, для пристроїв без застосунку камери. Розробник: Phong VN.
+about.version=Версія
+about.developer=Розробник
+about.source=Вихідний код
+
+## --- Getting started (getting_started.html) ---
+gs.title=Початок роботи - Camera
+gs.sub=Початок роботи
+gs.skip=Пропустити
+gs.back=Назад
+gs.next=Далі
+gs.finish=Почати зйомку
+gs.step=Крок {n} з {t}
+gs.name1=Вітаємо
+gs.name2=Режими
+gs.name3=Інструменти
+gs.name4=Де зберігати
+gs.s1_title=Вітаємо в Camera
+gs.s1_desc=Camera працює прямо у браузері: знімайте фото, записуйте відео, створюйте GIF, скануйте документи та QR-коди, навіть без підключення.
+gs.s1_pick=Виберіть мову
+gs.s1_note=Фото й відео залишаються на вашому пристрої та ніколи не завантажуються на жоден сервер.
+gs.s2_chip=Режими
+gs.s2_title=Знімайте, записуйте й скануйте
+gs.s2_desc=Перемикайтеся між трьома режимами на нижній панелі.
+gs.s2_c1t=Відео
+gs.s2_c1d=Записуйте звичайне відео, створюйте GIF (до 5 секунд) або відео таймлапс.
+gs.s2_c2t=Фото
+gs.s2_c2d=Знімайте фото з таймером і фільтрами, що застосовуються просто до зображення.
+gs.s2_c3t=Сканування
+gs.s2_c3d=Зніміть чіткіший документ або відскануйте QR-код; результат одразу з'являється, щоб його скопіювати чи відкрити.
+gs.s2_note=Таймер працює й під час запису відео, чого не пропонує стандартний застосунок Camera.
+gs.s3_chip=Інструменти
+gs.s3_title=Зручні кнопки збоку
+gs.s3_c1t=Таймер
+gs.s3_c1d=Виберіть 3, 5 або 10 секунд. Натисніть затвор ще раз під час відліку, щоб скасувати.
+gs.s3_c2t=Дзеркало
+gs.s3_c2d=Віддзеркальте попередній перегляд і фото, як у дзеркалі.
+gs.s3_c3t=Сітка
+gs.s3_c3d=Увімкніть сітку 3×3 для компонування кадру.
+gs.s3_c4t=Фільтри
+gs.s3_c4d=Сепія, відтінки сірого, яскравий... переглядайте наживо й застосовуйте до фото.
+gs.s3_c5t=Змінити камеру
+gs.s3_c5d=З'являється, коли на пристрої більше однієї камери.
+gs.s3_c6t=Мікрофон
+gs.s3_c6d=Вимикайте чи вмикайте звук під час запису відео.
+gs.s4_chip=Сховище
+gs.s4_title=Виберіть, де зберігати
+gs.s4_desc=Виберіть папку, куди Camera зберігатиме фото й відео. Папки можна додати чи змінити будь-коли в меню з трьома крапками > Папки збереження.
+gs.s4_c1t=Зберігайте прямо в папку
+gs.s4_c1d=Не потрібно завантажувати кожен файл: фото й відео записуються безпосередньо у вибрану папку.
+gs.s4_c2t=Підключено до Photos
+gs.s4_c2d=Цю папку також додано до Photos, а маленька кнопка фото в правому нижньому куті відкриває Photos напряму.
+gs.s4_pick=Вибрати папку збереження
+gs.s4_more=Додати ще одну папку
+gs.s4_picked=Вибрано: {names}
+gs.s4_unsupported=Цей браузер не може вибирати папки
+gs.s4_note=Якщо пропустити цей крок, файли завантажуватимуться як зазвичай.
+pick.title=У яку папку зберігати?
+pick.added=Додано: {names}. Виберіть папку, куди Camera зберігатиме фото й відео.
+pick.removed=Папку, у яку зберігала Camera, видалено. Виберіть іншу папку для збереження.
+pick.multi=Ви вибрали кілька папок. У яку з них Camera має зберігати?
+pick.ok=Використати цю папку
+scan.hint=Наведіть камеру на документ
+scan.page=Сканування сторінки {n}
+scan.cancel=Скасувати
+scan.add=Додати сторінку
+scan.edit=Налаштувати перспективу
+scan.delete=Видалити цю сторінку
+scan.share=Поділитися
+scan.save_photo=Зберегти як фото
+scan.save_pdf=Зберегти як PDF
+scan.edit_cancel=Скасувати
+scan.edit_done=Готово
+scan.title=Сторінка {n} з {m}
+scan.share_fail=Тут не можна поділитися. Натомість збережіть файл.
+scan.saved_n=Збережено сторінок: {n}
+dl.aria=Завантаження бібліотек
+dl.title=Завантаження бібліотек
+dl.opencv=OpenCV (виявлення документів)
+scan.auto=Автовиявлення
+dl.ml=ШІ-детектор документів (DocCornerNet)
+dl.seg=ШІ-сегментація обкладинок / об'єктів (U²-Net-P)
+
+## --- Keyboard shortcuts ---
+sc.title=Комбінації клавіш
+sc.group_cam=Camera
+sc.group_review=Перегляд документа
+sc.group_edit=Налаштування кутів
+sc.group_general=Загальні
+sc.shutter=Знімати / записувати / зупинити
+sc.modes=Перемикання між Відео, Фото та Скануванням
+sc.mode_keys=Відео / Фото / Сканування
+sc.submodes=Перемкнути підрежим
+sc.timer=Змінити таймер
+sc.mirror=Дзеркало
+sc.grid=Увімкнути/вимкнути сітку
+sc.filters=Фільтри
+sc.switch=Змінити камеру
+sc.mic=Вимкнути / увімкнути мікрофон
+sc.gallery=Відкрити галерею фото
+sc.help=Показати комбінації клавіш
+sc.cancel=Скасувати відлік / закрити
+sc.save_photo=Зберегти як фото
+sc.save_pdf=Зберегти як PDF
+sc.edit=Налаштувати кути
+sc.add=Додати сторінку
+sc.delete=Видалити сторінку
+sc.pages=Попередня / наступна сторінка
+sc.done=Готово
+sc.auto=Виявити знову
+sc.note=Комбінації працюють незалежно від того, яка кнопка у фокусі; вони призупиняються, поки відкрито діалог або ви вводите текст.
+key.space=Пробіл
+key.enter=Enter
+key.esc=Esc
+key.del=Delete
