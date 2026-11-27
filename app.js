@@ -32,6 +32,8 @@ const S = {
   filter: 'none',
   mirror: store.get('camera.mirror') !== '0',
   grid: store.get('camera.grid') === '1',
+  geo: store.get('camera.geo') === '1',
+  geoCache: null,
   timer: 0,
   muted: false,
   stream: null, devices: [], devIdx: 0,
@@ -54,6 +56,7 @@ function paintState() {
   $$('.mode').forEach(b => b.setAttribute('aria-selected', b.dataset.mode === S.mode));
   $$('.sub button').forEach(b => b.setAttribute('aria-selected', b.closest('.sub').dataset.for === S.mode && b.dataset.sub === S.sub[S.mode]));
   $('#btnMirror').selected = S.mirror; $('#btnGrid').selected = S.grid;
+  const gc = $('#geoCheck'); if (gc) gc.hidden = !S.geo;
   $('#timerBadge').textContent = S.timer ? S.timer + 's' : '';
   $('#shutter').setAttribute('aria-label', t(S.rec ? 'shutter.stop' : (S.mode === 'video' ? 'shutter.record' : 'shutter.photo')));
   video.style.filter = S.mode === 'scan' ? '' : FILTERS[S.filter];
@@ -388,7 +391,29 @@ function recordStream(stream, label) {
     S.rec = { type: label, stop: () => { if (mr.state !== 'inactive') mr.stop(); } };
   });
 }
-function buildVideoMeta(modeLabel, startDate, w, h, fps) {
+/* ---------- Vị trí GPS (ISO 6709 cho Google Photos) ---------- */
+function fetchGeoOnce(timeout = 2500) {
+  return new Promise(res => {
+    if (!navigator.geolocation) return res(null);
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const c = pos.coords;
+        const iso = window.Mp4Muxer ? Mp4Muxer.formatIso6709(c.latitude, c.longitude, c.altitude) : '';
+        if (iso) S.geoCache = { iso, t: Date.now() };
+        res(iso || null);
+      },
+      () => res(null),
+      { enableHighAccuracy: true, timeout, maximumAge: 60000 }
+    );
+  });
+}
+async function getGeoIso() {
+  if (!S.geo) return '';
+  if (S.geoCache && Date.now() - S.geoCache.t < 60000) return S.geoCache.iso;
+  return (await fetchGeoOnce(2000)) || (S.geoCache ? S.geoCache.iso : '');
+}
+
+function buildVideoMeta(modeLabel, startDate, w, h, fps, durationSec, location) {
   const devLabel = (S.devices[S.devIdx] && S.devices[S.devIdx].label) || 'Camera';
   const parts = [
     `Mode: ${modeLabel}`,
@@ -401,6 +426,8 @@ function buildVideoMeta(modeLabel, startDate, w, h, fps) {
   return {
     title: `${modeLabel} ${startDate.toISOString().slice(0, 19).replace('T', ' ')}`,
     date: startDate,
+    durationSec,
+    location: location || '',
     software: 'Camera PWA (Tuanphong3108/camera)',
     comment: parts.join(' | '),
     description: parts.join(' | ')
@@ -417,11 +444,14 @@ async function exportMp4WithMetadata(rawBlob, metaOpts) {
 }
 async function startVideo() {
   const startedAt = new Date(), { w, h } = vsize();
+  const geoPromise = getGeoIso();
   setRecording(true); toast(t('msg.recording'), 1500);
   const rawBlob = await recordStream(S.stream, 'video');
+  const durationSec = Math.max(0.1, (Date.now() - startedAt.getTime()) / 1000);
   S.rec = null; setRecording(false);
   toast(t('msg.mp4_encoding'), 60000);
-  const mp4Blob = await exportMp4WithMetadata(rawBlob, buildVideoMeta('Video', startedAt, w, h, 30));
+  const loc = await geoPromise;
+  const mp4Blob = await exportMp4WithMetadata(rawBlob, buildVideoMeta('Video', startedAt, w, h, 30, durationSec, loc));
   toastEl.classList.remove('show');
   await saveBlob(mp4Blob, `video-${stamp()}.mp4`);
 }
@@ -453,6 +483,7 @@ async function startGif() {
 /* ---------- Tua nhanh (Time Lapse) ---------- */
 async function startTimeLapse() {
   const startedAt = new Date();
+  const geoPromise = getGeoIso();
   const { w: vw, h: vh } = vsize(), w = Math.min(1280, vw), h = Math.round(w * vh / vw);
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   const ctx = c.getContext('2d'), shots = [];
@@ -476,7 +507,8 @@ async function startTimeLapse() {
     await sleep(1000 / TL_PLAY_FPS);
   }
   S.rec.stop(); const rawBlob = await done; S.rec = null;
-  const mp4Blob = await exportMp4WithMetadata(rawBlob, buildVideoMeta('Time Lapse', startedAt, w, h, TL_PLAY_FPS));
+  const loc = await geoPromise;
+  const mp4Blob = await exportMp4WithMetadata(rawBlob, buildVideoMeta('Time Lapse', startedAt, w, h, TL_PLAY_FPS, shots.length / TL_PLAY_FPS, loc));
   toastEl.classList.remove('show');
   await saveBlob(mp4Blob, `timelapse-${stamp()}.mp4`);
 }
@@ -895,6 +927,18 @@ $('#thumb').onclick = openInPhotos;
 const menu = $('#menu');
 $('#btnMenu').onclick = () => { menu.open = !menu.open; };
 $('#miFolders').onclick = openFolders;
+$('#miGeo').onclick = async () => {
+  if (!S.geo) {
+    if (!navigator.geolocation) { toast(t('msg.geo_unsupported'), 3500); return; }
+    const iso = await fetchGeoOnce(6000);
+    if (!iso) { toast(t('msg.geo_denied'), 4000); return; }
+    S.geo = true; store.set('camera.geo', '1'); paintState();
+    toast(t('msg.geo_on'), 2200);
+  } else {
+    S.geo = false; store.set('camera.geo', '0'); paintState();
+    toast(t('msg.geo_off'), 1800);
+  }
+};
 $('#miAbout').onclick = () => $('#dlgAbout').show();
 $('#btnAboutDone').onclick = () => $('#dlgAbout').close();
 $('#miGs').onclick = () => openGettingStarted();
