@@ -1,6 +1,6 @@
-const CACHE = 'camera-v22';
+const CACHE = 'camera-v23';
 const ASSETS = [
-  './', 'index.html', 'style.css', 'app.js', 'i18n.js', 'icons.js', 'gif-encoder.js', 'mp4-muxer.js', 'scanner.js', 'getting_started.html',
+  './', 'index.html', 'style.css', 'app.js', 'i18n.js', 'icons.js', 'gif-encoder.js', 'exif-writer.js', 'mp4-muxer.js', 'scanner.js', 'getting_started.html',
   'language/vi.lang', 'language/en.lang', 'vendor/mwc.js',
   'fonts/gsf-latin.woff2', 'fonts/gsf-vietnamese.woff2', 'fonts/symbols-subset.woff2',
   'manifest.json', 'icon.png', 'favicon-96x96.png', 'web-app-manifest-192x192.png', 'web-app-manifest-512x512.png'
