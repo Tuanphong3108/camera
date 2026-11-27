@@ -367,13 +367,22 @@ function recTimerStart() {
 function recTimerStop() { clearInterval(recClock); $('#recTimer').classList.remove('on'); }
 function setRecording(on) { app.classList.toggle('recording', on); on ? recTimerStart() : recTimerStop(); paintState(); }
 
-/* ---------- Video thường ---------- */
-function pickMime() {
-  return ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'].find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
+/* ---------- Video thường & Tua nhanh (xuất MP4 chuẩn kèm đầy đủ metadata) ---------- */
+function pickMp4Mime() {
+  return [
+    'video/mp4;codecs=avc1.640028,mp4a.40.2',
+    'video/mp4;codecs=avc1.4D4028,mp4a.40.2',
+    'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+    'video/mp4;codecs=avc1',
+    'video/mp4'
+  ].find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
 }
-function recordStream(stream, label) {
+function pickFallbackMime() {
+  return pickMp4Mime() || ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
+}
+function recordStreamFallback(stream, label) {
   return new Promise(resolve => {
-    const mime = pickMime(), chunks = [];
+    const mime = pickFallbackMime(), chunks = [];
     const mr = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
     mr.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
     mr.onstop = () => resolve(new Blob(chunks, { type: (mr.mimeType || 'video/webm').split(';')[0] }));
@@ -382,10 +391,81 @@ function recordStream(stream, label) {
   });
 }
 const extOf = b => b.type.includes('mp4') ? 'mp4' : 'webm';
+const activeCameraLabel = () => {
+  const tr = S.stream && S.stream.getVideoTracks()[0];
+  return (tr && tr.label) || (S.devices[S.devIdx] && S.devices[S.devIdx].label) || '';
+};
+
+async function finalizeMp4Blob(blob, meta) {
+  if (!blob || !blob.type.includes('mp4') || !window.Mp4Recorder) return blob;
+  try {
+    const buf = await blob.arrayBuffer();
+    const patched = window.Mp4Recorder.injectMetadataIntoMp4(buf, meta);
+    return new Blob([patched], { type: 'video/mp4' });
+  } catch (e) {
+    console.warn('Tiêm metadata MP4:', e);
+    return blob;
+  }
+}
+
 async function startVideo() {
+  const { w, h } = vsize();
+  const track = S.stream && S.stream.getVideoTracks()[0];
+  const fps = Math.round((track && track.getSettings && track.getSettings().frameRate) || 30) || 30;
+  const audioTrack = !S.muted && S.stream ? S.stream.getAudioTracks()[0] : null;
+  const metaOpts = {
+    width: w & ~1, height: h & ~1, fps, mode: 'video',
+    filter: S.filter, mirror: S.mirror, cameraLabel: activeCameraLabel()
+  };
+
+  /* 1. Ưu tiên WebCodecs (H.264 + AAC) → MP4 fast-start + full metadata + áp dụng sẵn bộ lọc & lật gương */
+  if (window.Mp4Recorder && window.Mp4Recorder.createRealtimeRecorder) {
+    try {
+      const wcRec = await window.Mp4Recorder.createRealtimeRecorder({
+        ...metaOpts,
+        audioTrack,
+        drawFrame: (ctx, cw, ch) => drawFrame(ctx, cw, ch, FILTERS[S.filter])
+      });
+      if (wcRec) {
+        let doneResolve;
+        const done = new Promise(r => { doneResolve = r; });
+        S.rec = {
+          type: 'video',
+          stop: async () => {
+            if (!S.rec) return;
+            S.rec = null;
+            setRecording(false);
+            toast(t('msg.mp4_encoding'), 60000);
+            try {
+              const mp4Blob = await wcRec.stop();
+              toastEl.classList.remove('show');
+              doneResolve(mp4Blob);
+            } catch (err) {
+              console.error('WebCodecs stop:', err);
+              toastEl.classList.remove('show');
+              doneResolve(null);
+            }
+          }
+        };
+        setRecording(true); toast(t('msg.recording'), 1500);
+        const blob = await done;
+        if (blob && blob.size > 0) {
+          await saveBlob(blob, `video-${stamp()}.mp4`);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('WebCodecs MP4 fallback:', e);
+    }
+  }
+
+  /* 2. Fallback: MediaRecorder (ưu tiên video/mp4 rồi tiêm box metadata udta/XMP) */
   setRecording(true); toast(t('msg.recording'), 1500);
-  const blob = await recordStream(S.stream, 'video');
+  let blob = await recordStreamFallback(S.stream, 'video');
   S.rec = null; setRecording(false);
+  if (blob.type.includes('mp4') && window.Mp4Recorder) {
+    blob = await finalizeMp4Blob(blob, window.Mp4Recorder.buildRecordingMetadata(metaOpts));
+  }
   await saveBlob(blob, `video-${stamp()}.${extOf(blob)}`);
 }
 
@@ -413,9 +493,9 @@ async function startGif() {
   await saveBlob(enc.finish(), `gif-${stamp()}.gif`);
 }
 
-/* ---------- Tua nhanh (Time Lapse) ---------- */
+/* ---------- Tua nhanh (Time Lapse — xuất MP4 chuẩn kèm metadata) ---------- */
 async function startTimeLapse() {
-  const { w: vw, h: vh } = vsize(), w = Math.min(1280, vw), h = Math.round(w * vh / vw);
+  const { w: vw, h: vh } = vsize(), w = Math.min(1280, vw) & ~1, h = Math.round(w * vh / vw) & ~1;
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   const ctx = c.getContext('2d'), shots = [];
   let stop = false;
@@ -423,21 +503,45 @@ async function startTimeLapse() {
   setRecording(true);
   while (!stop && shots.length < TL_MAX_FRAMES) {
     drawFrame(ctx, w, h, FILTERS[S.filter]);
-    shots.push(await canvasBlob(c, 'image/jpeg', .8));
+    shots.push(await canvasBlob(c, 'image/jpeg', .85));
     const until = performance.now() + TL_EVERY_MS;
     while (!stop && performance.now() < until) await sleep(50);
   }
   S.rec = null; setRecording(false);
   if (!shots.length) return;
   toast(t('msg.tl_rendering'), 120000);
+
+  const metaOpts = {
+    width: w, height: h, fps: TL_PLAY_FPS, mode: 'timelapse',
+    filter: S.filter, mirror: S.mirror, cameraLabel: activeCameraLabel()
+  };
+
+  /* Ưu tiên đóng gói trực tiếp bằng WebCodecs H.264 → MP4 chuẩn + đủ metadata */
+  if (window.Mp4Recorder && window.Mp4Recorder.encodeFramesToMp4) {
+    try {
+      const mp4Blob = await window.Mp4Recorder.encodeFramesToMp4(shots, metaOpts);
+      if (mp4Blob && mp4Blob.size > 0) {
+        toastEl.classList.remove('show');
+        await saveBlob(mp4Blob, `timelapse-${stamp()}.mp4`);
+        return;
+      }
+    } catch (e) {
+      console.warn('TimeLapse WebCodecs fallback:', e);
+    }
+  }
+
+  /* Fallback MediaRecorder */
   const out = document.createElement('canvas'); out.width = w; out.height = h;
   const octx = out.getContext('2d'), stream = out.captureStream(TL_PLAY_FPS);
-  const done = recordStream(stream, 'render');
+  const done = recordStreamFallback(stream, 'render');
   for (const s of shots) {
     const bm = await createImageBitmap(s); octx.drawImage(bm, 0, 0); bm.close();
     await sleep(1000 / TL_PLAY_FPS);
   }
-  S.rec.stop(); const blob = await done; S.rec = null;
+  S.rec.stop(); let blob = await done; S.rec = null;
+  if (blob.type.includes('mp4') && window.Mp4Recorder) {
+    blob = await finalizeMp4Blob(blob, window.Mp4Recorder.buildRecordingMetadata(metaOpts));
+  }
   toastEl.classList.remove('show');
   await saveBlob(blob, `timelapse-${stamp()}.${extOf(blob)}`);
 }
