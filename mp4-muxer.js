@@ -1,11 +1,14 @@
 /* =========================================================
-   MP4 Muxer & Metadata Injector (ISO BMFF / QTFF)
-   - Đóng gói stream từ MediaRecorder (MP4 / WebM) sang chuẩn MP4 (ftyp + moov + mdat)
-   - Gắn đầy đủ metadata chuẩn QuickTime / iTunes / ISO BMFF:
-     • mvhd / tkhd / mdhd: creation_time, modification_time (kỷ nguyên Mac 1904)
-     • udta -> meta (ilst): ©nam (Tiêu đề), ©day (Ngày quay ISO-8601), ©too (Camera PWA / Encoder),
-       ©cmt (Ghi chú chế độ, bộ lọc, độ phân giải, FPS), ©mak (Hãng thiết bị), ©mod (Tên thiết bị/trình duyệt)
-     • udta -> ©xyz (Tọa độ GPS chuẩn ISO 6709 nếu có)
+   MP4 Muxer & Metadata Injector (ISO BMFF / QTFF — tương thích Google Photos)
+   - Đóng gói stream từ MediaRecorder (MP4 / fMP4 / WebM) sang chuẩn MP4
+   - Gắn đầy đủ metadata để Google Photos, Android Gallery, iOS Photos & MediaInfo đọc chuẩn:
+     • mvhd / tkhd / mdhd / mvex->mehd: creation_time, modification_time (Mac Epoch 1904) + duration chính xác
+     • moov -> meta (hdlr 'mdta' + keys + ilst):
+       - com.apple.quicktime.creationdate (ISO-8601 kèm múi giờ địa phương ±HHMM — Google Photos ưu tiên đọc tag này)
+       - com.apple.quicktime.location.ISO6709 (tọa độ GPS chuẩn ISO 6709 nếu bật)
+       - com.apple.quicktime.make / model / software / title / description
+     • moov -> udta -> ©xyz (GPS ISO 6709 chuẩn QuickTime/Android)
+     • moov -> udta -> meta (hdlr 'mdir'/'appl' + ilst): ©nam, ©day, ©too, ©cmt, ©mak, ©mod, ©alb, desc
    ========================================================= */
 (function (global) {
   'use strict';
@@ -16,13 +19,6 @@
   function u32(v) {
     const b = new Uint8Array(4);
     new DataView(b.buffer).setUint32(0, v >>> 0, false);
-    return b;
-  }
-  function u64(v) {
-    const b = new Uint8Array(8);
-    const dv = new DataView(b.buffer);
-    dv.setUint32(0, Math.floor(v / 0x100000000) >>> 0, false);
-    dv.setUint32(4, v >>> 0, false);
     return b;
   }
   function str4(s) {
@@ -46,6 +42,33 @@
   function fullBox(type, version, flags, ...payloads) {
     const vf = new Uint8Array([version & 255, (flags >>> 16) & 255, (flags >>> 8) & 255, flags & 255]);
     return box(type, vf, ...payloads);
+  }
+
+  /* Định dạng ngày giờ cục bộ kèm múi giờ (±HHMM) chuẩn Apple/Google Photos */
+  function formatLocalIsoDate(d) {
+    const p = n => String(n).padStart(2, '0');
+    const offMin = -d.getTimezoneOffset();
+    const sign = offMin >= 0 ? '+' : '-';
+    const abs = Math.abs(offMin);
+    const tz = `${sign}${p(Math.floor(abs / 60))}${p(abs % 60)}`;
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}${tz}`;
+  }
+
+  /* Định dạng tọa độ GPS chuẩn ISO 6709: +DD.DDDD+DDD.DDDD+AAA.AAA/ */
+  function formatIso6709(lat, lon, alt) {
+    if (!isFinite(lat) || !isFinite(lon)) return '';
+    const fmt = (val, intDigits) => {
+      const sign = val >= 0 ? '+' : '-';
+      const abs = Math.abs(val);
+      const [i, f] = abs.toFixed(4).split('.');
+      return `${sign}${i.padStart(intDigits, '0')}.${f}`;
+    };
+    let s = fmt(lat, 2) + fmt(lon, 3);
+    if (isFinite(alt)) {
+      const sign = alt >= 0 ? '+' : '-';
+      s += `${sign}${Math.abs(alt).toFixed(3)}`;
+    }
+    return s + '/';
   }
 
   /* Duyệt các box cấp 1 hoặc con trong buffer ISO BMFF */
@@ -72,30 +95,74 @@
     return list;
   }
 
-  /* Cập nhật creation_time & modification_time trong mvhd, tkhd, mdhd */
-  function patchHeaderTimes(moovBuf, macSec) {
+  /* Cập nhật creation_time, modification_time và vá duration = 0 trong mvhd, tkhd, mdhd, mvex/mehd */
+  function patchTimingBoxes(moovBuf, macSec, durationSec) {
     const out = new Uint8Array(moovBuf);
     const dv = new DataView(out.buffer, out.byteOffset, out.byteLength);
+    let movieTimescale = 1000;
+    const hasDur = isFinite(durationSec) && durationSec > 0;
+
+    // Lượt 1: đọc timescale của mvhd trước
+    for (const b of parseBoxes(out, 8, out.byteLength)) {
+      if (b.type === 'mvhd') {
+        const ver = out[b.start + b.hdr];
+        const tsOff = b.start + b.hdr + (ver === 1 ? 20 : 12);
+        if (tsOff + 4 <= b.end) movieTimescale = dv.getUint32(tsOff, false) || 1000;
+      }
+    }
+
+    function setU64(off, val) {
+      dv.setUint32(off, Math.floor(val / 0x100000000) >>> 0, false);
+      dv.setUint32(off + 4, val >>> 0, false);
+    }
+
     function walk(s, e) {
       for (const b of parseBoxes(out, s, e)) {
-        if (b.type === 'mvhd' || b.type === 'tkhd' || b.type === 'mdhd') {
-          const ver = out[b.start + b.hdr];
-          const tOff = b.start + b.hdr + 4;
-          if (ver === 0 && tOff + 8 <= b.end) {
-            dv.setUint32(tOff, macSec >>> 0, false);
-            dv.setUint32(tOff + 4, macSec >>> 0, false);
-          } else if (ver === 1 && tOff + 16 <= b.end) {
-            const hi = Math.floor(macSec / 0x100000000) >>> 0, lo = macSec >>> 0;
-            dv.setUint32(tOff, hi, false); dv.setUint32(tOff + 4, lo, false);
-            dv.setUint32(tOff + 8, hi, false); dv.setUint32(tOff + 12, lo, false);
+        const ver = out[b.start + b.hdr];
+        const p = b.start + b.hdr + 4; // sau version + flags
+        if (b.type === 'mvhd') {
+          if (ver === 0 && p + 16 <= b.end) {
+            dv.setUint32(p, macSec >>> 0, false);
+            dv.setUint32(p + 4, macSec >>> 0, false);
+            const ts = dv.getUint32(p + 8, false) || 1000;
+            if (hasDur && dv.getUint32(p + 12, false) === 0) dv.setUint32(p + 12, Math.round(durationSec * ts) >>> 0, false);
+          } else if (ver === 1 && p + 28 <= b.end) {
+            setU64(p, macSec); setU64(p + 8, macSec);
+            const ts = dv.getUint32(p + 16, false) || 1000;
+            if (hasDur && dv.getUint32(p + 20, false) === 0 && dv.getUint32(p + 24, false) === 0) setU64(p + 20, Math.round(durationSec * ts));
           }
-        } else if (b.type === 'trak' || b.type === 'mdia') {
+        } else if (b.type === 'tkhd') {
+          if (ver === 0 && p + 20 <= b.end) {
+            dv.setUint32(p, macSec >>> 0, false);
+            dv.setUint32(p + 4, macSec >>> 0, false);
+            if (hasDur && dv.getUint32(p + 16, false) === 0) dv.setUint32(p + 16, Math.round(durationSec * movieTimescale) >>> 0, false);
+          } else if (ver === 1 && p + 32 <= b.end) {
+            setU64(p, macSec); setU64(p + 8, macSec);
+            if (hasDur && dv.getUint32(p + 24, false) === 0 && dv.getUint32(p + 28, false) === 0) setU64(p + 24, Math.round(durationSec * movieTimescale));
+          }
+        } else if (b.type === 'mdhd') {
+          if (ver === 0 && p + 16 <= b.end) {
+            dv.setUint32(p, macSec >>> 0, false);
+            dv.setUint32(p + 4, macSec >>> 0, false);
+            const ts = dv.getUint32(p + 8, false) || 1000;
+            if (hasDur && dv.getUint32(p + 12, false) === 0) dv.setUint32(p + 12, Math.round(durationSec * ts) >>> 0, false);
+          } else if (ver === 1 && p + 28 <= b.end) {
+            setU64(p, macSec); setU64(p + 8, macSec);
+            const ts = dv.getUint32(p + 16, false) || 1000;
+            if (hasDur && dv.getUint32(p + 20, false) === 0 && dv.getUint32(p + 24, false) === 0) setU64(p + 20, Math.round(durationSec * ts));
+          }
+        } else if (b.type === 'mehd') {
+          if (hasDur) {
+            if (ver === 0 && p + 4 <= b.end && dv.getUint32(p, false) === 0) dv.setUint32(p, Math.round(durationSec * movieTimescale) >>> 0, false);
+            else if (ver === 1 && p + 8 <= b.end && dv.getUint32(p, false) === 0 && dv.getUint32(p + 4, false) === 0) setU64(p, Math.round(durationSec * movieTimescale));
+          }
+        } else if (b.type === 'trak' || b.type === 'mdia' || b.type === 'mvex') {
           walk(b.start + b.hdr, b.end);
         }
       }
     }
     walk(8, out.byteLength);
-    return out;
+    return { buf: out, movieTimescale };
   }
 
   /* Dịch offset trong stco / co64 khi kích thước phần đầu (trước mdat) thay đổi */
@@ -128,7 +195,41 @@
     return out;
   }
 
-  /* Tạo atom ilst item kiểu Apple/QuickTime UTF-8: [4-byte tag] -> data(type=1, locale=0, utf8) */
+  /* Tạo moov -> meta chuẩn QuickTime Metadata (hdlr 'mdta' + keys + ilst)
+     Google Photos ưu tiên đọc creationdate (có múi giờ) và location.ISO6709 từ box này */
+  function buildQuickTimeMeta(meta) {
+    const entries = [
+      ['com.apple.quicktime.creationdate', meta.creationDate],
+      ['com.apple.quicktime.location.ISO6709', meta.location],
+      ['com.apple.quicktime.make', meta.make],
+      ['com.apple.quicktime.model', meta.model],
+      ['com.apple.quicktime.software', meta.software],
+      ['com.apple.quicktime.title', meta.title],
+      ['com.apple.quicktime.description', meta.description]
+    ].filter(([, v]) => !!v);
+
+    const hdlr = fullBox('hdlr', 0, 0,
+      u32(0),
+      str4('mdta'),
+      u32(0), u32(0), u32(0),
+      new Uint8Array([0])
+    );
+
+    const keyParts = [u32(entries.length)];
+    const valParts = [];
+    entries.forEach(([k, v], i) => {
+      const kb = enc.encode(k);
+      keyParts.push(concat(u32(8 + kb.byteLength), str4('mdta'), kb));
+      const dataBox = fullBox('data', 0, 1, u32(0), enc.encode(String(v)));
+      valParts.push(concat(u32(8 + dataBox.byteLength), u32(i + 1), dataBox));
+    });
+
+    const keysBox = fullBox('keys', 0, 0, ...keyParts);
+    const ilstBox = box('ilst', ...valParts);
+    return fullBox('meta', 0, 0, hdlr, keysBox, ilstBox);
+  }
+
+  /* Tạo atom ilst item kiểu Apple/iTunes UTF-8 trong udta -> meta */
   function ilstTextItem(fourcc, text) {
     if (!text) return new Uint8Array(0);
     const dataBox = fullBox('data', 0, 1, u32(0), enc.encode(String(text)));
@@ -141,7 +242,7 @@
     return concat(u32(8 + raw.byteLength), raw);
   }
 
-  /* Tạo box udta chứa meta (hdlr 'mdir'/'appl' + ilst) và ©xyz (nếu có GPS) */
+  /* Tạo box udta chứa meta (hdlr 'mdir'/'appl' + ilst) và ©xyz (GPS ISO 6709) */
   function buildUdta(meta) {
     const hdlr = fullBox('hdlr', 0, 0,
       u32(0),
@@ -192,14 +293,24 @@
     return { make, model };
   }
 
-  /* Đóng gói lại MP4 (hoặc WebM fallback sang MP4 container) với đầy đủ metadata */
+  /* Bổ sung mehd vào mvex nếu fMP4 thiếu mehd (giúp Google Photos đọc đúng tổng thời lượng) */
+  function ensureMvexMehd(mvexSlice, movieTimescale, durationSec) {
+    if (!isFinite(durationSec) || durationSec <= 0) return mvexSlice;
+    const children = parseBoxes(mvexSlice, 8, mvexSlice.byteLength);
+    if (children.some(c => c.type === 'mehd')) return mvexSlice;
+    const mehd = fullBox('mehd', 0, 0, u32(Math.round(durationSec * (movieTimescale || 1000))));
+    return box('mvex', mehd, ...children.map(c => mvexSlice.slice(c.start, c.end)));
+  }
+
+  /* Đóng gói lại MP4 (hoặc WebM fallback sang MP4 container) với đầy đủ metadata chuẩn Google Photos */
   async function finalizeMp4(blob, opts = {}) {
     const now = opts.date || new Date();
     const macSec = Math.floor(now.getTime() / 1000) + MAC_EPOCH_OFFSET;
     const dev = detectDeviceInfo();
+    const durationSec = opts.durationSec || 0;
     const meta = {
-      title: opts.title || `Video ${now.toISOString().slice(0, 19).replace('T', ' ')}`,
-      creationDate: now.toISOString(),
+      title: opts.title || `Video ${formatLocalIsoDate(now).slice(0, 19).replace('T', ' ')}`,
+      creationDate: formatLocalIsoDate(now),
       software: opts.software || 'Camera PWA (Tuanphong3108/camera)',
       album: 'Camera',
       make: opts.make || dev.make,
@@ -213,36 +324,39 @@
     const src = new Uint8Array(ab);
     const top = parseBoxes(src);
 
-    // Trường hợp MediaRecorder đã xuất MP4 (ISO BMFF có ftyp + moov + mdat)
-    const ftypBox = top.find(b => b.type === 'ftyp');
     const moovBox = top.find(b => b.type === 'moov');
     const mdatBoxes = top.filter(b => b.type === 'mdat');
 
     if (moovBox && mdatBoxes.length) {
-      // Chuẩn hóa ftyp thành mp42 / isom tương thích mọi trình phát & Photos
       const cleanFtyp = box('ftyp',
         str4('mp42'), u32(0),
         str4('mp42'), str4('isom'), str4('avc1'), str4('mp41')
       );
 
-      // Lọc bỏ udta cũ bên trong moov nếu có, gắn udta mới với đầy đủ metadata
-      const moovInner = parseBoxes(src, moovBox.start + moovBox.hdr, moovBox.end)
-        .filter(b => b.type !== 'udta')
-        .map(b => src.slice(b.start, b.end));
-      const udta = buildUdta(meta);
-      let newMoov = box('moov', ...moovInner, udta);
-      newMoov = patchHeaderTimes(newMoov, macSec);
+      // Lọc bỏ udta & meta cũ trong moov, thay bằng bộ metadata mới đầy đủ (mdta + udta/mdir + ©xyz)
+      const moovChildren = parseBoxes(src, moovBox.start + moovBox.hdr, moovBox.end);
+      const rawMoovOnly = box('moov', ...moovChildren.filter(b => b.type !== 'udta' && b.type !== 'meta').map(b => src.slice(b.start, b.end)));
+      const { buf: timedMoov, movieTimescale } = patchTimingBoxes(rawMoovOnly, macSec, durationSec);
 
-      // Gom tất cả mdat (nếu MediaRecorder ghi fragmented MP4 có nhiều moof+mdat)
+      const finalInner = parseBoxes(timedMoov, 8, timedMoov.byteLength).map(b => {
+        const sl = timedMoov.slice(b.start, b.end);
+        return b.type === 'mvex' ? ensureMvexMehd(sl, movieTimescale, durationSec) : sl;
+      });
+
+      const qtMeta = buildQuickTimeMeta(meta);
+      const udta = buildUdta(meta);
+      let newMoov = box('moov', ...finalInner, qtMeta, udta);
+
       const hasMoof = top.some(b => b.type === 'moof');
       if (!hasMoof) {
+        // Non-fragmented MP4: đặt ftyp -> moov -> mdat (faststart) và cập nhật stco/co64
         const mdatSlice = src.slice(mdatBoxes[0].start, mdatBoxes[0].end);
         const oldDataOffset = mdatBoxes[0].start + mdatBoxes[0].hdr;
         const newDataOffset = cleanFtyp.byteLength + newMoov.byteLength + mdatBoxes[0].hdr;
         newMoov = shiftChunkOffsets(newMoov, newDataOffset - oldDataOffset);
         return new Blob([cleanFtyp, newMoov, mdatSlice], { type: 'video/mp4' });
       } else {
-        // Fragmented MP4 (moof + mdat): giữ nguyên chuỗi fragment sau ftyp + moov (trf dùng base-data-offset-present=0 hoặc relative)
+        // Fragmented MP4 (moof + mdat): giữ nguyên chuỗi fragment sau ftyp + moov
         const rest = [];
         for (const b of top) {
           if (b.type === 'ftyp' || b.type === 'moov' || b.type === 'free' || b.type === 'skip') continue;
@@ -252,15 +366,13 @@
       }
     }
 
-    // Fallback: nếu trình duyệt cũ không hỗ trợ ghi MP4 trực tiếp mà trả WebM,
-    // đóng gói lại bằng Canvas + WebCodecs (VideoEncoder H.264 + AAC/raw) thành MP4 chuẩn
+    // Fallback: trình duyệt chỉ ghi WebM -> chuyển mã H.264 qua WebCodecs thành MP4 chuẩn
     return await transcodeWebmToMp4(blob, meta, macSec);
   }
 
   /* Chuyển đổi WebM sang MP4 chuẩn bằng WebCodecs VideoEncoder (AVC/H.264) + MP4 Muxer tự viết */
   async function transcodeWebmToMp4(webmBlob, meta, macSec) {
     if (!('VideoEncoder' in window)) {
-      // Trình duyệt quá cũ không có cả MediaRecorder MP4 lẫn WebCodecs: trả về nguyên bản với mime mp4
       return new Blob([webmBlob], { type: 'video/mp4' });
     }
     const url = URL.createObjectURL(webmBlob);
@@ -315,7 +427,7 @@
     return buildSimpleAvcMp4(encodedChunks, avcC, w, h, fps, meta, macSec);
   }
 
-  /* Dựng file MP4 hoàn chỉnh từ các NAL chunk H.264 + avcC + metadata */
+  /* Dựng file MP4 hoàn chỉnh từ các NAL chunk H.264 + avcC + metadata chuẩn Google Photos */
   function buildSimpleAvcMp4(chunks, avcC, w, h, fps, meta, macSec) {
     const timescale = 90000;
     const sampleDur = Math.round(timescale / fps);
@@ -367,14 +479,15 @@
     const stss = fullBox('stss', 0, 0, u32(syncIdx.length), ...syncIdx);
     const stsc = fullBox('stsc', 0, 0, u32(1), u32(1), u32(chunks.length), u32(1));
     const stsz = fullBox('stsz', 0, 0, u32(0), u32(chunks.length), ...chunks.map(c => u32(c.data.byteLength)));
-    const stco = fullBox('stco', 0, 0, u32(1), u32(0)); // placeholder offset
+    const stco = fullBox('stco', 0, 0, u32(1), u32(0));
 
     const stbl = box('stbl', stsd, stts, stss, stsc, stsz, stco);
     const minf = box('minf', vmhd, dinf, stbl);
     const mdia = box('mdia', mdhd, hdlr, minf);
     const trak = box('trak', tkhd, mdia);
+    const qtMeta = buildQuickTimeMeta(meta);
     const udta = buildUdta(meta);
-    let moov = box('moov', mvhd, trak, udta);
+    let moov = box('moov', mvhd, trak, qtMeta, udta);
 
     const mdatOffset = ftyp.byteLength + moov.byteLength + 8;
     moov = shiftChunkOffsets(moov, mdatOffset);
@@ -382,5 +495,5 @@
     return new Blob([ftyp, moov, mdat], { type: 'video/mp4' });
   }
 
-  global.Mp4Muxer = { finalizeMp4 };
+  global.Mp4Muxer = { finalizeMp4, formatIso6709, formatLocalIsoDate };
 })(window);
