@@ -354,10 +354,24 @@ const vsize = () => ({ w: video.videoWidth || 1280, h: video.videoHeight || 720 
 const canvasBlob = (c, type, q) => new Promise(r => c.toBlob(r, type, q));
 
 async function takePhoto() {
+  const takenAt = new Date();
+  const geoPromise = getGeo();
   const { w, h } = vsize(), c = document.createElement('canvas'); c.width = w; c.height = h;
   drawFrame(c.getContext('2d'), w, h, FILTERS[S.filter]);
   const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
-  const blob = await canvasBlob(c, 'image/jpeg', .95);
+  let blob = await canvasBlob(c, 'image/jpeg', .95);
+  const gps = await geoPromise;
+  if (window.ExifWriter) {
+    try {
+      blob = await ExifWriter.injectJpegExif(blob, {
+        date: takenAt,
+        width: w,
+        height: h,
+        software: 'Camera PWA (Tuanphong3108/camera)',
+        gps
+      });
+    } catch (e) { console.warn('EXIF:', e); }
+  }
   await saveBlob(blob, `photo-${stamp()}.jpg`);
 }
 
@@ -391,7 +405,7 @@ function recordStream(stream, label) {
     S.rec = { type: label, stop: () => { if (mr.state !== 'inactive') mr.stop(); } };
   });
 }
-/* ---------- Vị trí GPS (ISO 6709 cho Google Photos) ---------- */
+/* ---------- Vị trí GPS (EXIF ảnh + ISO 6709 video cho Google Photos) ---------- */
 function fetchGeoOnce(timeout = 2500) {
   return new Promise(res => {
     if (!navigator.geolocation) return res(null);
@@ -399,18 +413,23 @@ function fetchGeoOnce(timeout = 2500) {
       pos => {
         const c = pos.coords;
         const iso = window.Mp4Muxer ? Mp4Muxer.formatIso6709(c.latitude, c.longitude, c.altitude) : '';
-        if (iso) S.geoCache = { iso, t: Date.now() };
-        res(iso || null);
+        const rec = { lat: c.latitude, lon: c.longitude, alt: c.altitude, iso, t: Date.now() };
+        S.geoCache = rec;
+        res(rec);
       },
       () => res(null),
       { enableHighAccuracy: true, timeout, maximumAge: 60000 }
     );
   });
 }
+async function getGeo() {
+  if (!S.geo) return null;
+  if (S.geoCache && Date.now() - S.geoCache.t < 60000) return S.geoCache;
+  return (await fetchGeoOnce(2000)) || S.geoCache || null;
+}
 async function getGeoIso() {
-  if (!S.geo) return '';
-  if (S.geoCache && Date.now() - S.geoCache.t < 60000) return S.geoCache.iso;
-  return (await fetchGeoOnce(2000)) || (S.geoCache ? S.geoCache.iso : '');
+  const g = await getGeo();
+  return (g && g.iso) || '';
 }
 
 function buildVideoMeta(modeLabel, startDate, w, h, fps, durationSec, location) {
